@@ -78,20 +78,12 @@ jobs:
 
       - name: Build MORPHEUS Firmware
         run: |
-          echo "=== Debug Info ==="
-          ls -la "$HOME/.jieli" || true
-          ls -la "$HOME/.jieli/toolchain" || true
+          set -eo pipefail
           export JIELI_TOOLCHAIN="$HOME/.jieli/toolchain"
           export AC79_SDK="$HOME/fw-AC79_AIoT_SDK"
           chmod +x build.sh
-          sh -x ./build.sh 2>&1 | tee firmware-build.log
-
-      - name: Upload Build Log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: firmware-build-log
-          path: firmware-build.log
+          ./build.sh
+          ls -la build/
 
       - name: Upload Firmware Binary Package
         uses: actions/upload-artifact@v4
@@ -100,6 +92,7 @@ jobs:
           path: |
             build/morpheus.fwsc
             build/morpheus.bin
+          if-no-files-found: error
 
   deploy-pages:
     name: Deploy MORPHEUS Web Demo & Firmware to GitHub Pages

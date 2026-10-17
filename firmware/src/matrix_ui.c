@@ -3,8 +3,6 @@
 #include "matrix_ui.h"
 #include "matrix_core.h"
 #include "matrix_synth.h"
-#include <stdio.h>
-#include <string.h>
 
 /* Colors (RGB565) */
 #define C_BG           RGB(8, 10, 12)
@@ -270,7 +268,14 @@ void matrix_ui_draw(void)
     str[6] = ':'; str[7] = '0' + g_matrix.view_octave; str[8] = '\0';
     cv_text(4, 8, &FONT_S, str, C_ORANGE_LED);
 
-    snprintf(str, sizeof(str), "%uBPM", g_matrix.bpm);
+    fmt_int(str, g_matrix.bpm);
+    {
+        unsigned slen = str_len(str);
+        str[slen] = 'B';
+        str[slen + 1] = 'P';
+        str[slen + 2] = 'M';
+        str[slen + 3] = '\0';
+    }
     cv_text(76, 8, &FONT_S, str, C_TEXT_WHITE);
 
     cv_text(142, 8, &FONT_S, "K1-4:EDIT", C_TEXT_DIM);

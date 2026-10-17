@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* MORPHEUS: Core Pattern Sequencer Implementation */
 #include "matrix_core.h"
-#include <string.h>
 
 matrix_core_t g_matrix;
 

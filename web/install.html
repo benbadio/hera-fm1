@@ -435,13 +435,14 @@ window.addEventListener("beforeunload", (e) => { if (writing) { e.preventDefault
 
 (async () => {
   if (!navigator.requestMIDIAccess) { sayK("nomidi"); return; }
+  say("Loading MORPHEUS firmware package...");
   try {
     const r = await fetch(meta.pkg);
     if (!r.ok) throw new Error(`${meta.pkg}: HTTP ${r.status}`);
     const pkg = new Uint8Array(await r.arrayBuffer());
     if (productOf(pkg) !== meta.product) { sayK("badpkg"); return; }
     image = logicalImage(pkg);
-    say(`MORPHEUS ${meta.version}`);
+    say(`MORPHEUS ${meta.version} ready. Connect FM-1 and click Install.`);
     $("go").disabled = false;
   } catch (e) {
     sayK("loadfail", e.message);

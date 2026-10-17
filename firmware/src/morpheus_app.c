@@ -1,8 +1,12 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* MORPHEUS: 4-Track Reason Matrix Pattern Sequencer & Synth for M-VAVE FM-1 */
 
+#ifndef APP_NAME
 #define APP_NAME "MORPHEUS"
+#endif
+#ifndef FELUCCA_ID
 #define FELUCCA_ID "FM-1_945"
+#endif
 
 #include "platform.c"
 #include "matrix_core.h"

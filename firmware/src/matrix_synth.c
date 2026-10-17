@@ -2,7 +2,6 @@
 /* MORPHEUS: Multi-Engine Digital Synthesizer Implementation */
 #include "matrix_synth.h"
 #include "matrix_core.h"
-#include <string.h>
 
 matrix_synth_t g_synth;
 
