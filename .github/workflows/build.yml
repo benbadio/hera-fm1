@@ -1,0 +1,79 @@
+name: Build Firmware & Host Simulator
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  host-test:
+    name: Host Simulator & Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y netpbm ffmpeg
+
+      - name: Run Host Simulator Test Suite
+        run: |
+          chmod +x tests/run_host.sh
+          ./tests/run_host.sh
+
+      - name: Upload Test Audio and Screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: host-test-artifacts
+          path: |
+            build/host/*.wav
+            build/host/*.png
+
+  firmware-build:
+    name: Build MORPHEUS .fwsc Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install Pillow mido python-rtmidi
+
+      - name: Download JieLi Toolchain
+        run: |
+          chmod +x tools/get_toolchain.sh
+          tools/get_toolchain.sh "$HOME/.jieli"
+
+      - name: Clone JieLi AC79 SDK
+        run: |
+          git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 \
+            https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$HOME/fw-AC79_AIoT_SDK"
+
+      - name: Build MORPHEUS Firmware
+        env:
+          JIELI_TOOLCHAIN: ${{ runner.tool_cache }}/../.jieli/toolchain
+          AC79_SDK: ${{ runner.tool_cache }}/../fw-AC79_AIoT_SDK
+        run: |
+          export JIELI_TOOLCHAIN="$HOME/.jieli/toolchain"
+          export AC79_SDK="$HOME/fw-AC79_AIoT_SDK"
+          chmod +x build.sh
+          ./build.sh
+
+      - name: Upload Firmware Binary Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: morpheus-firmware-fwsc
+          path: |
+            build/morpheus.fwsc
+            build/morpheus.bin

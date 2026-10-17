@@ -1,0 +1,368 @@
+/* MORPHEUS: In-Browser M-VAVE FM-1 Emulator Styles */
+:root {
+  --bg-dark: #0f1216;
+  --panel-body: #2c3138;
+  --panel-tray: #1c2024;
+  --key-white: #e4e7eb;
+  --key-black: #2d333b;
+  --knob-body: #181b1f;
+  --knob-cap: #24292e;
+  --accent-orange: #ff4500;
+  --accent-green: #00e676;
+  --accent-blue: #0099ff;
+  --accent-purple: #9933ff;
+  --text-main: #e2e8f0;
+  --text-dim: #94a3b8;
+  --line-rule: #3e4652;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg-dark);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 48px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+header {
+  width: 100%;
+  max-width: 1020px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-rule);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand h1 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #fff;
+}
+
+.brand h1 span {
+  color: var(--accent-orange);
+}
+
+.tagline {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.top-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-header {
+  background: #1e242c;
+  color: var(--text-main);
+  border: 1px solid var(--line-rule);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-header:hover {
+  background: #2a333e;
+  border-color: #556070;
+}
+
+/* Device Shell Container */
+.device-shell {
+  width: 100%;
+  max-width: 1020px;
+  background: var(--panel-body);
+  border-radius: 36px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), inset 0 2px 4px rgba(255, 255, 255, 0.1);
+  border: 2px solid #3c434d;
+  padding: 24px;
+  position: relative;
+}
+
+.device-top-section {
+  display: grid;
+  grid-template-columns: 280px 1fr 340px;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+/* Screen Housing */
+.screen-housing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.screen-bezel {
+  background: #000;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: inset 0 3px 10px rgba(0,0,0,0.8), 0 2px 6px rgba(255,255,255,0.05);
+  border: 2px solid #1a1d22;
+}
+
+#matrixCanvas {
+  display: block;
+  width: 280px;
+  height: 280px;
+  image-rendering: pixelated;
+  border-radius: 4px;
+  background: #080a0c;
+}
+
+/* Encoders & Knobs */
+.knobs-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 20px;
+}
+
+.knob-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: ns-resize;
+}
+
+.knob-body {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #323842, #181b1f);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.2);
+  border: 2px solid #3f4752;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.knob-pointer {
+  position: absolute;
+  top: 6px;
+  width: 4px;
+  height: 16px;
+  background: #fff;
+  border-radius: 2px;
+  box-shadow: 0 0 4px rgba(255,255,255,0.8);
+  transform-origin: 50% 24px;
+  transform: rotate(0deg);
+}
+
+.knob-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+/* Master & Aux knobs */
+.master-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+/* Pushbuttons Panel */
+.buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px 14px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--panel-tray);
+  border-radius: 18px;
+  border: 1px solid #2d333b;
+}
+
+.btn-fm1 {
+  background: #333a44;
+  color: #fff;
+  border: 1px solid #4a5462;
+  border-radius: 10px;
+  padding: 12px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.08s ease;
+}
+
+.btn-fm1:active, .btn-fm1.active {
+  transform: translateY(2px);
+  background: #252b33;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  border-color: var(--accent-orange);
+}
+
+.btn-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #444d56;
+  transition: background 0.1s ease, box-shadow 0.1s ease;
+}
+
+.btn-fm1.lit .btn-led {
+  background: var(--accent-orange);
+  box-shadow: 0 0 8px var(--accent-orange);
+}
+
+.btn-fm1.lit-green .btn-led {
+  background: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
+}
+
+/* 27 Silicone Keyboard Section */
+.keyboard-tray {
+  background: var(--panel-tray);
+  padding: 16px 20px 24px;
+  border-radius: 24px;
+  border: 1px solid #2d333b;
+}
+
+.keyboard-keys {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.key-silicone {
+  position: relative;
+  background: var(--key-white);
+  color: #1a1e24;
+  border-radius: 6px;
+  width: 32px;
+  height: 110px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.06s ease, background 0.08s ease;
+}
+
+.key-silicone.black {
+  background: var(--key-black);
+  color: #fff;
+  height: 72px;
+  margin-left: -14px;
+  margin-right: -14px;
+  z-index: 2;
+  box-shadow: 0 5px 8px rgba(0,0,0,0.6);
+}
+
+.key-silicone:active, .key-silicone.pressed {
+  transform: translateY(3px);
+  background: var(--accent-orange);
+  color: #fff;
+}
+
+.key-silicone.lit {
+  background: var(--accent-orange);
+  color: #fff;
+  box-shadow: 0 0 12px var(--accent-orange);
+}
+
+.key-led {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.25);
+  margin-bottom: 6px;
+}
+
+.key-silicone.black .key-led {
+  background: rgba(255,255,255,0.3);
+}
+
+.key-silicone.lit .key-led {
+  background: #fff;
+  box-shadow: 0 0 6px #fff;
+}
+
+/* Audio Start Overlay */
+.audio-start-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 15, 18, 0.85);
+  backdrop-filter: blur(4px);
+  border-radius: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 50;
+}
+
+.btn-start-audio {
+  background: var(--accent-orange);
+  color: #fff;
+  border: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 14px 32px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(255, 69, 0, 0.4);
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+
+.btn-start-audio:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+/* Footer & Help */
+footer {
+  width: 100%;
+  max-width: 1020px;
+  margin-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+footer a {
+  color: var(--accent-orange);
+  text-decoration: none;
+}

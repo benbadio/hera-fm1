@@ -54,7 +54,9 @@ static volatile uint32_t fm1_ms;                /* milliseconds since power-on (
 #define RING_PUBLISH() __asm__ volatile("" ::: "memory")
 #include "libc.c"
 #include "lcd.c"
-#define CV_MAX (240u * 64u)                     /* the biggest text box drawn at once */
+#ifndef CV_MAX
+#define CV_MAX (240u * 128u)
+#endif
 #include "gfx.c"
 
 #define FS 44100u                               /* the sample rate */

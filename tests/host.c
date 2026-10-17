@@ -25,6 +25,8 @@
 #define HALF_FRAMES 256u
 
 static volatile uint32_t fm1_ms;
+static inline uint32_t fm1_micros(void) { return fm1_ms * 1000u; }
+static inline uint32_t fm1_ticks(void) { return fm1_ms * 24000u; }
 static struct { uint32_t notes, buttons; } fm1_in;
 static uint32_t host_edges;
 static uint32_t fm1_input_edges(uint32_t *released) { uint32_t b = host_edges; host_edges = 0; *released = 0; return b; }
@@ -52,7 +54,9 @@ static void lcd_blit(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint1
                 fb[(y + j) * 240u + x + i] = (uint16_t)(c >> 8 | c << 8);
             }
 }
-#define CV_MAX (240u * 64u)
+#ifndef CV_MAX
+#define CV_MAX (240u * 128u)
+#endif
 #include "gfx.c"
 
 static uint8_t host_store[256 + 4];
@@ -99,7 +103,7 @@ static const host_ev_t SCRIPT0[] = {
 };
 static const host_ev_t *script = SCRIPT0;
 static uint32_t script_n = sizeof SCRIPT0 / sizeof SCRIPT0[0], end_ms = 6500, frame_fps;
-static const uint32_t SHOT[] = {1000, 3000};
+static const uint32_t SHOT[] = {500, 2000, 3500, 5000};
 
 static void read_script(const char *path)
 {

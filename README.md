@@ -1,128 +1,128 @@
-<p align="center"><img src="assets/logo.svg" width="96" alt="Dinghy"></p>
+# MORPHEUS // M-VAVE FM-1 Pattern Sequencer & Synthesizer
 
-# Dinghy
+<p align="center">
+  <strong>4-Track Pattern Sequencer styled after the Reason Studios Matrix Pattern Sequencer, featuring a built-in 303 Acid Synth Engine, Multi-Engine Sound Generator, and 240x240 Color LCD UI.</strong>
+</p>
 
-**The smallest firmware for the M-VAVE FM-1 to build your own on.**
+<p align="center">
+  <img src="assets/screen_preview.png" width="360" alt="MORPHEUS Screen Preview">
+</p>
 
-Dinghy plays a sine wave on the keys, and that is all it does. Under it is everything an FM-1 firmware needs
-before it can be any fun: the update path, the USB rescue, USB-MIDI, USB audio, the keys, knobs and LEDs, the
-screen and a place to keep settings. It all works, so you start with the part you actually want to write.
+MORPHEUS transforms the ultra-portable **M-VAVE FM-1** into a standalone hardware pattern sequencer workstation and synthesizer rack inspired by the classic **Reason Studios Matrix Pattern Sequencer**.
 
-```
-firmware/src/dinghy.c     <- your firmware: ~200 lines, a 4-voice sine. Start here.
-firmware/src/platform.c   <- the plumbing (boot, USB, updates, audio ISR, settings). Done; read it, don't fight it.
-firmware/src/*.c, hal/    <- Felucca's platform, as SLOOP carries it, unchanged
-```
+---
 
-Dinghy is based on [Felucca](https://github.com/hugelton/Felucca) by Leo Kuroshita (Hügelton Instruments), with its
-platform as [SLOOP](https://github.com/isod89/sloop-fm1) (isod89) carries it: it keeps that platform and throws away the
-rest. The smallest boat of the family, after the felucca and the sloop.
+## Key Features
 
-<p align="center"><img src="docs/screen.png" width="240" alt="Dinghy's screen: the name, the note played, a keyboard with the keys that sound"></p>
+- **4 Simultaneous Independent Tracks (T1 – T4):**
+  - Drive up to 4 external hardware synths, drum machines, or DAW tracks simultaneously over USB-MIDI and 3.5mm TRS-MIDI on distinct channels.
+  - Per-track polyrhythmic sequence lengths (1 to 32 steps).
+  - Independent step resolution (1/2, 1/4, 1/8, 1/16, 1/32, plus triplet modes 1/4T, 1/8T, 1/16T).
+  - Global and per-track shuffle/swing (0% to 75%).
+- **Reason Matrix UI Faithful Emulation:**
+  - Designed for the FM-1's 240x240 color LCD.
+  - 120px 16-step grid with interactive piano roll view.
+  - Dual modes: **KEYS** (Note Pitch + Velocity Bars + Tied Step Bridges) and **CURVE** (Bipolar/Unipolar CV Modulation Curves for filter cutoffs, automation, and MIDI CC).
+  - Bank (A–D) & Pattern (1–8) selector with 32 patterns per track (128 total patterns).
+  - Quick pattern operations: Shift Left/Right, Transpose Octave Up/Down, Randomize, Alter, Copy/Paste.
+- **Built-in Multi-Engine Sound Generator (Real-time Q15 DSP):**
+  - **303 Acid Bass Engine:** Non-linear resonant diode-ladder filter with saturation, accent overdrive, and portamento pitch slide across tied steps.
+  - **Subtractive Lead/Chord Engine:** Dual-oscillator analog emulation with pulse-width modulation and 24dB ladder filter.
+  - **2-OP FM Engine:** Dynamic frequency modulation for bells, metallic plucks, and FM percussion.
+  - **MUTE Engine:** Zero-latency silent mode for pure MIDI sequencing to external hardware without internal audio overhead.
+- **Factory Demo Grooves:**
+  - Bank A pre-loaded with a cohesive 4-track acid techno / electronic groove:
+    - **Track 1:** 303 Acid Bassline (MIDI Ch 1)
+    - **Track 2:** Syncopated Synthesizer Lead (MIDI Ch 2)
+    - **Track 3:** Arpeggiator (MIDI Ch 3)
+    - **Track 4:** Drum Trigger Pattern (MIDI Ch 10 - Kick, Snare, Hi-Hat)
+- **In-Browser Web Emulator:**
+  - Interactive Web Audio demo in `web/` with SVG front panel, canvas LCD screen, draggable knobs, and 27 playable silicone keys.
+  - Automatic deployment to GitHub Pages.
 
-> **Status: 0.3, runs on the FM-1.** Tested on the device: the install, MIDI in (pitch exact, 4 voices), USB audio
-> at 44.1 / 48 kHz, the keys, the screen, the octave kept in flash, and back to another firmware through the hub.
+---
 
-## What you get
+## Hardware Controls & Panel Mapping
 
-| | |
-| --- | --- |
-| **Updates that always work** | `tools/fm1_install.py`, the web installers and the [FM-1 Firmware Hub](https://fm1.designburgapps.com) reach your firmware over USB, so you (and your users) can always install the next build, or go back to the official firmware. |
-| **USB rescue** | Hold **OCT-** while switching on: no sound, only the updater. If your firmware crashes twice at boot, the FM-1 goes there by itself. |
-| **USB-MIDI** | In and out, class compliant: `midi_get()`, `midi_send()`. |
-| **USB audio** | The FM-1 shows up as a 16-bit stereo audio input (44.1 or 48 kHz): record it into any DAW or phone. Nothing to do. |
-| **Panel** | 27 keys, 14 buttons, 7 encoders, the MASTER knob, the LEDs, by name (`BTN_PLAY`, `ENC_KNOB1`, ...). |
-| **Screen** | 240 x 240, text in two sizes, rectangles, lines, pixels. |
-| **Settings** | `settings_load()` / `settings_save()`: up to 256 bytes with a CRC in their own flash sector. |
-| **A crash screen** | A fault shows where it happened (the PC), then the FM-1 restarts. |
-| **Host mode** | The same `dinghy.c` on your computer: the screen as an image, the sound as a WAV. No FM-1 needed to try an idea. |
-| **Checks** | The build fails on what bricks or breaks an FM-1 firmware: a 64-bit division, a call into the chip ROM, too much RAM, a register touched outside `hal/`. |
+| Hardware Control | Primary Function | With SHIFT / Secondary |
+|---|---|---|
+| **27 Silicone Keys** | Audition / Play notes, Step Record in REC mode | Step Jump (1-16 / 17-32) |
+| **K1 (Cutoff)** | Synth Filter Cutoff / Active Step Note Pitch | Step Velocity |
+| **K2 (Resonance)** | Synth Resonance / Active Step Gate Length | Step Tie (On/Off) |
+| **K3 (Decay)** | Filter Envelope Decay / Curve Value | CC Modulation Depth |
+| **K4 (Accent)** | 303 Accent Intensity / Pattern Length (1-32) | Track Resolution |
+| **TEMPO Knob** | Sequencer Tempo (50 - 240 BPM) | Shuffle / Swing (0 - 75%) |
+| **SELECT Knob** | Scrub Active Step (1 - 32) | Pattern Transpose (±12) |
+| **PLAY** | Start / Stop Sequencer | Restart from Step 1 |
+| **REC** | Step Record Mode (Audition + Step Advance) | Clear Active Step |
+| **TRACK** | Switch Active Track (T1 -> T2 -> T3 -> T4) | Track Mute / Solo |
+| **MODE** | Toggle KEYS (Notes) / CURVE (Modulation) | Curve CC Assignment |
+| **SOUND** | Cycle Engine: 303 Acid -> SUB -> FM -> MUTE | Engine Parameters |
+| **PAGE** | Toggle Page 1 (Steps 1-16) / Page 2 (Steps 17-32) | Set Pattern Length |
+| **OCT- / OCT+** | Grid Octave Scroll (C1..B5) | Track Octave Transpose |
+| **BANK / PAT** | Select Bank A–D / Pattern 1–8 | Pattern Copy / Paste |
+| **SAVE** | Save all tracks & patterns to Flash / Storage | Reload from Flash |
 
-## Build your own
+---
 
-From nothing to your own firmware on the FM-1, step by step. Each step works before you go to the next.
+## Testing & Host Mode Simulation
 
-### 1. Copy it
-
-On GitHub: **Use this template** (top right on this page) or fork it, then clone your copy. Rename nothing yet:
-first make sure the unchanged Dinghy builds on your machine.
-
-### 2. Set up once
-
-You need Linux on x86-64 (or macOS / Windows with Docker or WSL), Python 3 with Pillow, the JieLi toolchain
-and three files of the JieLi AC79 SDK:
+You can test MORPHEUS on your computer (macOS or Linux) without an FM-1 hardware device:
 
 ```sh
+# Run host test suite (renders audio WAV and generates LCD screenshots)
+./tests/run_host.sh
+```
+
+Outputs generated in `build/host/`:
+- `morpheus.wav`: 44.1 kHz 16-bit stereo audio render of the 4-track sequencer.
+- `morpheus-500.png`: LCD screenshot at 500 ms (Keys View).
+- `morpheus-3500.png`: LCD screenshot at 3500 ms (Curve View).
+- `morpheus-5000.png`: LCD screenshot at 5000 ms (Subtractive Engine).
+
+---
+
+## Building the Physical Firmware (`.fwsc`)
+
+To build the hardware binary package for installation on the M-VAVE FM-1:
+
+### 1. Requirements (Linux x86_64 or GitHub Actions)
+```sh
 pip3 install Pillow mido python-rtmidi
-tools/get_toolchain.sh                      # JieLi's clang for the chip, to ~/.jieli/toolchain
+tools/get_toolchain.sh
 git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 \
     https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git ~/fw-AC79_AIoT_SDK
 ```
 
-On macOS the build runs the toolchain in a `linux/amd64` Docker container by itself (have Docker running).
-`JIELI_TOOLCHAIN` and `AC79_SDK` point elsewhere if your copies live somewhere else.
-
-### 3. Hear it without an FM-1
-
+### 2. Compile Package
 ```sh
-tests/run_host.sh                           # -> build/host/dinghy.wav and screen PNGs
+./build.sh
 ```
+Outputs `build/morpheus.fwsc` with identity `FM-1_945`.
 
-Host mode runs the same `dinghy.c` on your computer: the sound as a WAV, the screen as images. Most ideas can be
-tried here first, in seconds.
+### 3. Installation to M-VAVE FM-1
+- **Via USB cable:**
+  ```sh
+  python3 tools/fm1_install.py build/morpheus.fwsc
+  ```
+- **Via Browser:**
+  Upload `build/morpheus.fwsc` through [The Firmware Hub](https://thefirmwarehub.com/) using Web MIDI in Google Chrome / Edge.
 
-### 4. Your first change
+---
 
-Open [firmware/src/dinghy.c](firmware/src/dinghy.c) (~200 lines). The sound is `app_audio()`: it gets an empty
-buffer of stereo frames and adds to it. Make the sine a square:
+## In-Browser Interactive Demo
 
-```c
-s = ((int32_t)ph < 0 ? 8000 : -8000) * amp >> 15;     /* instead of s = (sine(ph) * amp) >> 15; */
-```
+A standalone web emulator is available in the `web/` directory:
+- Open `web/index.html` in any modern web browser, or run:
+  ```sh
+  python3 -m http.server 8000 --directory web
+  ```
+- Access at `http://localhost:8000`.
 
-Run `tests/run_host.sh` again and listen to `build/host/dinghy.wav`. The screen is drawn in `app_main()`, the keys
-are read there too: change the text, add a knob ([docs/API.md](docs/API.md) has every call).
-
-### 5. Onto the FM-1
-
-```sh
-./build.sh                                       # -> build/dinghy.fwsc (fails on what would brick the FM-1)
-python3 tools/fm1_install.py build/dinghy.fwsc   # over USB; asks before it writes, restarts into your build
-python3 tools/fm1_install.py --info              # what runs on the connected FM-1
-```
-
-That is the whole loop: change, hear it on the host, build, install. Back to another firmware, or to the official
-one, with the [FM-1 Firmware Hub](https://fm1.designburgapps.com) in Chrome or Edge: Dinghy (and every copy of it)
-answers the hub's updater like every firmware there. Installing firmware is at your own risk.
-
-### 6. When it goes wrong
-
-- **It crashes:** the screen shows where (the PC), then the FM-1 restarts. Twice at boot and it goes to the
-  USB rescue by itself.
-- **It won't start at all:** hold **OCT-** while switching on: the USB rescue, no sound, only the updater. Install
-  a working build (or another firmware from the hub) from there.
-- **The build refuses:** it checks for a 64-bit division, a call into the chip ROM, too much RAM, a register touched
-  outside `hal/`. [docs/RULES.md](docs/RULES.md) says why each one matters; read it before your first crash.
-
-### 7. Make it yours, release it, get into the hub
-
-Your name and logo, your own package identity (so the FM-1 and the installers tell your firmware from Dinghy),
-a GitHub release with the `.fwsc`, and how to get listed next to the others in the
-[FM-1 Firmware Hub](https://fm1.designburgapps.com): **[docs/MAKE-IT-YOURS.md](docs/MAKE-IT-YOURS.md)**.
-
-## Where to go next
-
-- **[docs/API.md](docs/API.md)**: everything `platform.c` gives you, with the panel's ids, the screen calls, the
-  audio contract, MIDI, settings, the flash map, timing.
-- **[docs/MAKE-IT-YOURS.md](docs/MAKE-IT-YOURS.md)**: turn Dinghy into your firmware: the name, the package
-  identity, releases, getting into the FM-1 Firmware Hub.
-- **[docs/RULES.md](docs/RULES.md)**: the chip's rules (no FPU, no libgcc, the audio ISR's budget) and what the build
-  checks for you. Read it before your first crash, not after.
+---
 
 ## License
 
-GPL-3.0-only, as Felucca and SLOOP: you may change and share it, and whoever gets your firmware gets its source.
-Details, credits and third-party parts in [LICENSING.md](LICENSING.md).
-
-The platform is Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments, with SLOOP's changes (isod89).
-Dinghy (the app, the host mode, the docs) by zvenson.
+GPL-3.0-only. See [LICENSE](LICENSE) and [LICENSING.md](LICENSING.md).
+Based on the Felucca / SLOOP platform by Leo Kuroshita (@kurogedelic) & isod89.
+Reason Matrix sequencer design inspired by Reason Studios.
