@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Install Guide // MORPHEUS FM-1</title>
-  <meta name="description" content="How to install MORPHEUS firmware on the M-VAVE FM-1 via The Firmware Hub or USB.">
+  <meta name="description" content="How to install MORPHEUS firmware on the M-VAVE FM-1 via Web MIDI or USB.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎛️</text></svg>">
   <link rel="stylesheet" href="style.css?v=3">
   <style>
@@ -27,21 +27,19 @@
     <nav aria-label="Navigation">
       <a href="index.html">Emulator</a>
       <a href="manual.html">Manual</a>
-      <a href="https://thefirmwarehub.com/" target="_blank" rel="noreferrer">The Firmware Hub</a>
       <a href="https://github.com/benbadio/morpheus-fm1" target="_blank" rel="noreferrer">Source</a>
     </nav>
   </header>
 
   <section>
     <div class="step-box">
-      <h3>Method 1: One-Click Browser Install via The Firmware Hub (Recommended)</h3>
+      <h3>Method 1: Web MIDI Browser Install</h3>
       <p>
-        The simplest and safest way to flash MORPHEUS onto your M-VAVE FM-1 without installing any tools:
+        The simplest and safest way to flash MORPHEUS onto your M-VAVE FM-1 without installing command-line tools:
       </p>
       <ol>
         <li>Connect your M-VAVE FM-1 to your computer using the USB-C cable and turn it on.</li>
-        <li>Open <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong> (browsers with Web MIDI support).</li>
-        <li>Visit <strong><a href="https://thefirmwarehub.com/" target="_blank" rel="noreferrer">The Firmware Hub</a></strong>.</li>
+        <li>Open <strong>Google Chrome</strong>, <strong>Opera</strong>, or <strong>Microsoft Edge</strong> (browsers with native Web MIDI support).</li>
         <li>Select <strong>MORPHEUS</strong> (Package ID: <code>FM-1_945</code>).</li>
         <li>Click <strong>Install Firmware</strong> and confirm the Web MIDI permission. The device will be safely updated in under 30 seconds and reboot into MORPHEUS!</li>
       </ol>
@@ -68,7 +66,7 @@ python3 tools/fm1_install.py --info</code></pre>
         If an install is ever interrupted or you wish to revert to stock firmware:
       </p>
       <div class="callout">
-        Hold the <strong>OCT-</strong> button on the FM-1 while turning on the power switch. The screen will remain dark and the device will boot into the hardware bootloader rescue mode. You can immediately install any working firmware or stock build from The Firmware Hub.
+        Hold the <strong>OCT-</strong> button on the FM-1 while turning on the power switch. The screen will remain dark and the device will boot into the hardware bootloader rescue mode. You can immediately reinstall any firmware or stock build via USB or Web MIDI.
       </div>
     </div>
   </section>

@@ -25,6 +25,7 @@
     soundEngine: 0,   // 0=303, 1=SUB, 2=FM, 3=MUTE
     menuMode: 'none', // 'none' or 'fx'
     menuSel: 0,       // active item in modal menu
+    screenEditEnabled: false, // Hardware faithful by default; toggleable
     clipboard: null,
     tracks: []
   };
@@ -829,6 +830,11 @@
       return;
     }
 
+    if (!state.screenEditEnabled) {
+      showHint("🖥️ 240×240 LCD (Hardware Faithful Mode): Controlled via panel knobs, buttons & keys. Enable 'Screen Edit' in toolbar to draw notes with mouse.");
+      return;
+    }
+
     if (cy >= 26 && cy <= 146) {
       showHint(state.viewMode === 'keys'
         ? "✏️ NOTE GRID: Click any square on the screen to toggle notes on/off and audition them!"
@@ -864,6 +870,12 @@
         state.menuMode = 'none';
         showHint("Pattern tools closed.");
       }
+      return;
+    }
+
+    // Hardware Faithful Mode: direct screen editing is disabled unless user enabled it
+    if (!state.screenEditEnabled) {
+      showHint("🔒 Screen mouse editing is OFF (Hardware Faithful). Use REC + keys or SELECT/K1-K4 to edit, or toggle 'Screen Edit' in the toolbar!");
       return;
     }
 
@@ -1160,6 +1172,17 @@
   });
 
   bindKnob(knobs.KNOB1, (dy) => {
+    if (state.shiftMode) {
+      const trk = state.tracks[state.activeTrack];
+      const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+      const st = pat.steps[state.activeStep];
+      pushUndo("Step Pitch");
+      st.note = Math.min(127, Math.max(0, st.note + (dy > 0 ? 1 : -1)));
+      if (st.gate === 0) st.gate = 110;
+      play303Note(st.note, st.gate, false, st.curve);
+      showHint(`🎹 Step ${state.activeStep + 1} Note Pitch: MIDI ${st.note}`);
+      return;
+    }
     synthCutoff = Math.min(127, Math.max(0, synthCutoff + dy));
     knobs.KNOB1.angle = (synthCutoff / 127) * 270 - 135;
     drawKnob(knobs.KNOB1);
@@ -1169,6 +1192,17 @@
   drawKnob(knobs.KNOB1);
 
   bindKnob(knobs.KNOB2, (dy) => {
+    if (state.shiftMode) {
+      const trk = state.tracks[state.activeTrack];
+      const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+      const st = pat.steps[state.activeStep];
+      pushUndo("Step Velocity");
+      st.gate = Math.min(127, Math.max(0, st.gate + dy * 2));
+      if (dy > 3 && st.tie === 0) st.tie = 1;
+      else if (dy < -3 && st.tie === 1) st.tie = 0;
+      showHint(`📊 Step ${state.activeStep + 1} Gate: ${st.gate}/127 (Slide Tie: ${st.tie ? 'ON' : 'OFF'})`);
+      return;
+    }
     synthResonance = Math.min(127, Math.max(0, synthResonance + dy));
     knobs.KNOB2.angle = (synthResonance / 127) * 270 - 135;
     drawKnob(knobs.KNOB2);
@@ -1178,6 +1212,15 @@
   drawKnob(knobs.KNOB2);
 
   bindKnob(knobs.KNOB3, (dy) => {
+    if (state.shiftMode || state.viewMode === 'curve') {
+      const trk = state.tracks[state.activeTrack];
+      const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+      const st = pat.steps[state.activeStep];
+      pushUndo("Step Curve");
+      st.curve = Math.min(127, Math.max(0, st.curve + dy * 2));
+      showHint(`📈 Step ${state.activeStep + 1} Curve CC: ${st.curve}/127`);
+      return;
+    }
     synthDecay = Math.min(127, Math.max(0, synthDecay + dy));
     knobs.KNOB3.angle = (synthDecay / 127) * 270 - 135;
     drawKnob(knobs.KNOB3);
@@ -1187,6 +1230,13 @@
   drawKnob(knobs.KNOB3);
 
   bindKnob(knobs.KNOB4, (dy) => {
+    if (state.shiftMode) {
+      const trk = state.tracks[state.activeTrack];
+      const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+      pat.length = Math.min(32, Math.max(1, pat.length + (dy > 0 ? 1 : -1)));
+      showHint(`📏 Track ${state.activeTrack + 1} Pattern Length: ${pat.length} steps`);
+      return;
+    }
     synthAccent = Math.min(127, Math.max(0, synthAccent + dy));
     knobs.KNOB4.angle = (synthAccent / 127) * 270 - 135;
     drawKnob(knobs.KNOB4);
@@ -1577,6 +1627,30 @@
   const btnClear = document.getElementById("btnClear");
   if (btnClear) {
     btnClear.addEventListener("click", clearPattern);
+  }
+
+  // Toggle Screen Mouse/Touch Editing (Disabled by default for hardware fidelity)
+  const btnToggleScreenEdit = document.getElementById("btnToggleScreenEdit");
+  const screenEditState = document.getElementById("screenEditState");
+  const deviceEl = document.getElementById("device");
+
+  if (btnToggleScreenEdit) {
+    btnToggleScreenEdit.addEventListener("click", () => {
+      state.screenEditEnabled = !state.screenEditEnabled;
+      btnToggleScreenEdit.setAttribute("aria-pressed", state.screenEditEnabled ? "true" : "false");
+      btnToggleScreenEdit.classList.toggle("active-toggle", state.screenEditEnabled);
+      if (deviceEl) deviceEl.classList.toggle("screen-edit-active", state.screenEditEnabled);
+
+      if (screenEditState) {
+        screenEditState.textContent = state.screenEditEnabled ? "ON (Mouse/Touch)" : "OFF (Hardware Faithful)";
+      }
+
+      if (state.screenEditEnabled) {
+        showHint("✏️ Screen Edit ENABLED: Click or drag directly on the 240x240 LCD to draw notes and curves!");
+      } else {
+        showHint("🔒 Hardware Faithful Mode: Screen mouse editing disabled. Compose using panel knobs, buttons, and silicone keys.");
+      }
+    });
   }
 
   // Kick off screen rendering loop

@@ -12,7 +12,8 @@
     .devicebox { overflow-x: auto; overscroll-behavior-x: contain; }
     .device { position: relative; width: 100%; min-width: 560px; aspect-ratio: 1000 / 640; background: #2e3238; border-radius: 4.4% / 6.9%; }
     .device svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-    .device canvas { position: absolute; left: 31.8%; top: 9.6875%; width: 20%; height: 31.25%; image-rendering: pixelated; background: #080a0c; border-radius: 4px; cursor: crosshair; }
+    .device canvas { position: absolute; left: 31.8%; top: 9.6875%; width: 20%; height: 31.25%; image-rendering: pixelated; background: #080a0c; border-radius: 4px; cursor: default; }
+    .device.screen-edit-active canvas { cursor: crosshair; }
     .start { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(10, 11, 13, .55); border-radius: 4.4% / 6.9%; z-index: 50; }
     .start[hidden] { display: none !important; }
   </style>
@@ -25,7 +26,6 @@
     <nav aria-label="Navigation">
       <a href="manual.html">Manual</a>
       <a href="install.html">Install</a>
-      <a href="https://thefirmwarehub.com/" target="_blank" rel="noreferrer">The Firmware Hub</a>
       <a href="https://github.com/benbadio/morpheus-fm1" target="_blank" rel="noreferrer">Source</a>
     </nav>
   </header>
@@ -80,6 +80,12 @@
       <button id="btnRandomize" type="button" title="Generate musical pattern variation (Shift+FX on device)">Randomize</button>
       <button id="btnClear" type="button" title="Clear notes in active pattern">Clear Pattern</button>
     </div>
+    <div class="toolbar-group">
+      <span class="toolbar-label">LCD Interaction:</span>
+      <button id="btnToggleScreenEdit" type="button" aria-pressed="false" title="Toggle interactive mouse editing directly on the 240x240 LCD screen (Disabled by default for hardware fidelity)">
+        🖱️ Screen Edit: <span id="screenEditState">OFF (Hardware Faithful)</span>
+      </button>
+    </div>
   </div>
 
   <!-- Quick Start Guide (4 Cards) -->
@@ -103,9 +109,9 @@
     <div class="guide-card">
       <div class="guide-card-header">
         <span class="guide-badge">STEP 3</span>
-        <h3>Click Grid to Edit</h3>
+        <h3>Compose & Edit</h3>
       </div>
-      <p>Click any square on the <strong>240&times;240 screen grid</strong> to toggle notes on and off in real time! Drag in the lower bars to set velocity and accents.</p>
+      <p>Compose using panel knobs &amp; silicone keys in <strong>REC</strong> mode (or enable <strong>Screen Edit</strong> above to click and draw directly on the LCD grid!).</p>
     </div>
 
     <div class="guide-card">
@@ -145,7 +151,7 @@
     <div>
       <h2>Documentation & Firmwares</h2>
       <p>
-        Read the comprehensive <strong><a href="manual.html">User Manual</a></strong> for full MIDI charts, polyrhythm settings, and memory maps. To flash this firmware onto a real M-VAVE FM-1 groovebox, check the <strong><a href="install.html">Installation Guide</a></strong> or visit <strong><a href="https://thefirmwarehub.com/" target="_blank" rel="noreferrer">The Firmware Hub</a></strong>.
+        Read the comprehensive <strong><a href="manual.html">User Manual</a></strong> for full MIDI charts, polyrhythm settings, and memory maps. To flash this firmware onto a real M-VAVE FM-1 groovebox, check the <strong><a href="install.html">Installation Guide</a></strong>.
       </p>
     </div>
   </section>

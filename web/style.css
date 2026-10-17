@@ -374,6 +374,14 @@ a {
   transform: none;
 }
 
+.toolbar-box button[aria-pressed="true"], .toolbar-box button.active-toggle {
+  background: #f0a043;
+  color: #121518;
+  font-weight: 700;
+  border-color: #ffb366;
+  box-shadow: 0 0 10px rgba(240, 160, 67, 0.35);
+}
+
 /* Preset Grooves Bar */
 .presets-bar {
   display: flex;

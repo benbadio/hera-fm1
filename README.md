@@ -10,7 +10,7 @@
 
 MORPHEUS transforms the ultra-portable **M-VAVE FM-1** into a standalone hardware pattern sequencer workstation and synthesizer rack inspired by classic matrix pattern sequencers.
 
-- 📖 **[User Manual](web/manual.html)** &bull; 💾 **[Installation Guide](web/install.html)** &bull; 🎛️ **[Live Web Demo](https://benbadio.github.io/morpheus-fm1/)** &bull; 🚀 **[The Firmware Hub](https://thefirmwarehub.com/)**
+- 📖 **[User Manual](web/manual.html)** &bull; 💾 **[Installation Guide](web/install.html)** &bull; 🎛️ **[Live Web Demo](https://benbadio.github.io/morpheus-fm1/)**
 
 ---
 
@@ -108,8 +108,8 @@ Outputs `build/morpheus.fwsc` with identity `FM-1_945`.
   ```sh
   python3 tools/fm1_install.py build/morpheus.fwsc
   ```
-- **Via Browser:**
-  Upload `build/morpheus.fwsc` through [The Firmware Hub](https://thefirmwarehub.com/) using Web MIDI in Google Chrome / Edge.
+- **Via Web MIDI:**
+  Flash `build/morpheus.fwsc` through Web MIDI in Google Chrome or Edge.
 
 ---
 
