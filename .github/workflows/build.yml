@@ -1,4 +1,4 @@
-name: Build Firmware & Host Simulator
+name: Build Firmware & Deploy Pages
 
 on:
   push:
@@ -6,6 +6,15 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
   host-test:
@@ -61,9 +70,6 @@ jobs:
             https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$HOME/fw-AC79_AIoT_SDK"
 
       - name: Build MORPHEUS Firmware
-        env:
-          JIELI_TOOLCHAIN: ${{ runner.tool_cache }}/../.jieli/toolchain
-          AC79_SDK: ${{ runner.tool_cache }}/../fw-AC79_AIoT_SDK
         run: |
           export JIELI_TOOLCHAIN="$HOME/.jieli/toolchain"
           export AC79_SDK="$HOME/fw-AC79_AIoT_SDK"
@@ -77,3 +83,38 @@ jobs:
           path: |
             build/morpheus.fwsc
             build/morpheus.bin
+
+  deploy-pages:
+    name: Deploy MORPHEUS Web Demo & Firmware to GitHub Pages
+    if: github.ref == 'refs/heads/main'
+    needs: [host-test, firmware-build]
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Built Firmware
+        uses: actions/download-artifact@v4
+        with:
+          name: morpheus-firmware-fwsc
+          path: build-artifacts
+
+      - name: Stage Firmware for Web Installation
+        run: |
+          mkdir -p web/firmware
+          cp build-artifacts/morpheus.fwsc web/firmware/morpheus.fwsc
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'web'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

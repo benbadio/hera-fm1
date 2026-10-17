@@ -16,7 +16,13 @@ echo "==> Converting screenshots to PNG..."
 for p in build/host/morpheus-*.ppm; do
     if [ -f "$p" ]; then
         png="${p%.ppm}.png"
-        sips -s format png "$p" --out "$png" >/dev/null 2>&1
+        if command -v sips >/dev/null 2>&1; then
+            sips -s format png "$p" --out "$png" >/dev/null 2>&1
+        elif command -v pnmtopng >/dev/null 2>&1; then
+            pnmtopng "$p" > "$png" 2>/dev/null
+        else
+            python3 -c "from PIL import Image; Image.open('$p').save('$png')"
+        fi
         rm -f "$p"
         echo "  [OK] screen -> $png"
     fi

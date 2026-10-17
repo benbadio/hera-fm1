@@ -61,11 +61,6 @@
   <p class="small"><a href="https://www.m-vave.com/download" target="_blank" rel="noopener" style="color:inherit">www.m-vave.com/download<span class="sr" data-t="newtab"></span></a></p>
   
   <p><button id="go" disabled data-t="install"></button></p>
-  
-  <p class="small" id="pkgchoice">
-    <label for="pkgfile" data-t="custompkg"></label><br>
-    <input type="file" id="pkgfile" accept=".fwsc">
-  </p>
 
   <progress id="bar" max="100" value="0" data-t-label="progress"></progress>
   <p id="status" role="status"></p>
@@ -339,8 +334,6 @@ const TEXT = {
     stockdone: "完了。FM-1 は純正ファームウェアで起動しました。",
     nomidi: "このブラウザでは使えません。Chrome か Edge で開いてください。",
     loadfail: "読み込めませんでした: ",
-    loadfilehint: "ダウンロードした morpheus.fwsc を下のファイル選択で指定するか、USB 接続後に選択してください。",
-    custompkg: "またはダウンロードした morpheus.fwsc ファイルを選択:",
     start: "開始します", verify: "確認中", loader: "書き込みモードに切り替え中", write: "書き込み中",
     reboot: "再起動中", done: "完了しました", stopped: "途中で止まりました。USB を挿し直してもう一度押してください。",
     error: "エラー: ",
@@ -351,7 +344,7 @@ const TEXT = {
     noloader: "書き込みモードの FM-1 が見つかりません。USB を挿し直してもう一度押してください（終わるまで書き込みモードのままです）。",
     noreturn: "FM-1 が戻ってきません。電源を入れ直してください。",
     mismatch: "書き込みは終わりましたが、FM-1 が別のバージョンを報告しています: ",
-    badpkg: "インストールするファイルが壊れています。正しい .fwsc ファイルを選んでください。",
+    badpkg: "インストールするファイルが壊れています。ページを再読み込みしてください。",
     leave: "書き込み中です。ページを閉じないでください。",
     license: "GPL-3.0、無保証。ソース:",
     newtab: "（新しいタブで開きます）", progress: "書き込みの進み具合", percent: "%",
@@ -380,8 +373,6 @@ const TEXT = {
     stockdone: "Done. The FM-1 has restarted with its original firmware.",
     nomidi: "This browser cannot do it. Open the page in Chrome or Edge.",
     loadfail: "Could not load: ",
-    loadfilehint: "Choose a downloaded or custom morpheus.fwsc file below to install.",
-    custompkg: "Or choose a downloaded / custom morpheus.fwsc file:",
     start: "Starting", verify: "Verifying", loader: "Switching to update mode", write: "Writing",
     reboot: "Restarting", done: "Done", stopped: "Stopped. Replug the USB cable and press Install again.",
     error: "Error: ",
@@ -392,7 +383,7 @@ const TEXT = {
     noloader: "The FM-1 in update mode was not found. Replug the USB cable and press Install again (it stays in update mode until it is finished).",
     noreturn: "The FM-1 did not come back. Power-cycle it.",
     mismatch: "Written, but the FM-1 reports another version: ",
-    badpkg: "The file to install is damaged or invalid. Choose a valid .fwsc package.",
+    badpkg: "The file to install is damaged. Reload the page.",
     leave: "Writing. Do not close the page.",
     license: "GPL-3.0, no warranty. Source:",
     newtab: " (opens in a new tab)", progress: "Install progress", percent: " percent",
@@ -453,29 +444,9 @@ window.addEventListener("beforeunload", (e) => { if (writing) { e.preventDefault
     say(`MORPHEUS ${meta.version}`);
     $("go").disabled = false;
   } catch (e) {
-    sayK("loadfilehint");
+    sayK("loadfail", e.message);
   }
 })();
-
-// Allow user to select a downloaded or custom morpheus.fwsc file
-$("pkgfile").addEventListener("change", async (e) => {
-  const f = e.target.files && e.target.files[0];
-  if (!f) return;
-  try {
-    const raw = new Uint8Array(await f.arrayBuffer());
-    const prod = productOf(raw);
-    if (!prod.startsWith("FM-1_")) {
-      sayK("badpkg");
-      return;
-    }
-    image = logicalImage(raw);
-    meta.product = prod;
-    say(`Loaded ${f.name} (${prod})`);
-    $("go").disabled = writing;
-  } catch (err) {
-    sayK("error", err && err.message);
-  }
-});
 
 const STOCK_SHA256 = "db1642b2b6fa5c2cccb11ffd13878068bb28601678d3644049f99dc40e7edb8a";
 let stock = null;
