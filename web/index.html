@@ -3,27 +3,38 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MORPHEUS // M-VAVE FM-1 Reason Matrix Sequencer & Synth</title>
-  <meta name="description" content="Play MORPHEUS, the Reason Matrix 4-track pattern sequencer & 303 acid synth for the M-VAVE FM-1 in your browser.">
+  <title>MORPHEUS // 4-Track Pattern Sequencer & Synthesizer</title>
+  <meta name="description" content="In-browser interactive emulator for MORPHEUS: 4-track pattern sequencer & 303 acid synth firmware for the M-VAVE FM-1.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎛️</text></svg>">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20261017c">
+  <!-- Critical inline fallback styling -->
+  <style>
+    body { background: #131518; color: #e6e8eb; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .devicebox { overflow-x: auto; overscroll-behavior-x: contain; }
+    .device { position: relative; width: 100%; min-width: 560px; aspect-ratio: 1000 / 640; background: #2e3238; border-radius: 4.4% / 6.9%; }
+    .device svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .device canvas { position: absolute; left: 31.8%; top: 9.6875%; width: 20%; height: 31.25%; image-rendering: pixelated; background: #080a0c; border-radius: 4px; cursor: crosshair; }
+    .start { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(10, 11, 13, .55); border-radius: 4.4% / 6.9%; z-index: 50; }
+    .start[hidden] { display: none !important; }
+  </style>
 </head>
 <body>
 <main>
   <header>
     <h1>MORPHEUS</h1>
-    <p>in the browser: Reason Matrix 4-track sequencer & 303 acid synth on the M-VAVE FM-1</p>
+    <p>4-track matrix pattern sequencer & 303 acid synth for the M-VAVE FM-1</p>
     <nav aria-label="Navigation">
-      <a href="https://docs.reasonstudios.com/reason13/matrix-pattern-sequencer" target="_blank" rel="noreferrer">Matrix Manual</a>
-      <a href="https://thefirmwarehub.com/" target="_blank" rel="noreferrer">Firmware Hub</a>
-      <a href="https://github.com/benbadio/morpheus-fm1" target="_blank" rel="noreferrer">GitHub Source</a>
+      <a href="manual.html">Manual</a>
+      <a href="install.html">Install</a>
+      <a href="https://thefirmwarehub.com/" target="_blank" rel="noreferrer">The Firmware Hub</a>
+      <a href="https://github.com/benbadio/morpheus-fm1" target="_blank" rel="noreferrer">Source</a>
     </nav>
   </header>
 
   <div class="devicebox">
     <div class="device" id="device" role="group" aria-label="M-VAVE FM-1 Hardware" tabindex="-1">
       <svg id="panel" viewBox="0 0 1000 640" aria-hidden="true" focusable="false"></svg>
-      <canvas id="matrixCanvas" width="240" height="240" role="img" aria-label="MORPHEUS 240x240 Matrix LCD Screen"></canvas>
+      <canvas id="matrixCanvas" width="240" height="240" role="img" aria-label="MORPHEUS 240x240 LCD Screen"></canvas>
       <div class="controls" id="controls"></div>
       <div class="start" id="start"><button id="btnStart" type="button">Switch on</button></div>
       <div hidden id="descs"></div>
@@ -37,22 +48,39 @@
     <span class="cpu" id="statusInfo">128 BPM &bull; 4 Tracks &bull; 303 Bass</span>
   </div>
 
+  <div class="toolbar-box">
+    <div class="toolbar-group">
+      <span class="toolbar-label">Pattern Library:</span>
+      <button id="btnExportJson" type="button" title="Download all tracks and patterns as a JSON file">Export JSON</button>
+      <button id="btnImportJson" type="button" title="Load custom patterns from a JSON file">Import JSON</button>
+      <input type="file" id="fileImportJson" accept=".json" style="display:none;">
+      <button id="btnCopyPat" type="button" title="Copy active pattern to clipboard">Copy</button>
+      <button id="btnPastePat" type="button" title="Paste copied pattern to active slot">Paste</button>
+    </div>
+    <div class="toolbar-group">
+      <span class="toolbar-label">Quick Actions:</span>
+      <button id="btnRandomize" type="button" title="Generate musical pattern variation">Randomize</button>
+      <button id="btnClear" type="button" title="Clear notes in active pattern">Clear Pattern</button>
+    </div>
+  </div>
+
   <section class="help">
     <div>
-      <h2>Hardware Panel Controls</h2>
+      <h2>Interactive Browser Editing</h2>
       <ul>
-        <li><strong>Left Encoders:</strong> MASTER (volume), SELECT (step scrubber), TEMPO (BPM), TRACK (T1–T4).</li>
-        <li><strong>Right Encoders:</strong> K1 Cutoff, K2 Resonance, K3 Decay, K4 Accent.</li>
-        <li><strong>Left Buttons:</strong> OCT- / OCT+ scroll the active octave window across the Reason grid.</li>
-        <li><strong>12 Function Buttons:</strong> FX (Randomize), SEL (Page 1/2), ENV (Keys/Curve), LFO (Engine: 303/SUB/FM/MUTE), EDIT (Shift), GLO (Settings), HOME (Track), SAVE (Flash), ARP (Bank A–D), SEQ (Pattern 1–8), PLAY/STOP, REC.</li>
+        <li><strong>Click the Screen Grid:</strong> Click any step and pitch row on the 240x240 LCD screen to toggle notes on/off and audition them instantly!</li>
+        <li><strong>Drag Velocity Bars:</strong> Click or drag inside the lower velocity bar area to dynamically adjust gate level (0–127).</li>
+        <li><strong>Draw Curves:</strong> In CURVE mode (press ENV), click inside the grid to draw CC modulation curves.</li>
+        <li><strong>Step Record:</strong> Press REC, then press keys to input notes and auto-advance.</li>
       </ul>
     </div>
     <div>
-      <h2>27 Silicone Keys</h2>
+      <h2>Hardware Panel Controls</h2>
       <ul>
-        <li><strong>Lower 16 Keys:</strong> Step Jump / White keys (audition notes, step record in REC mode).</li>
-        <li><strong>Upper 11 Keys:</strong> Black accidental keys (audition chromatic sharps/flats).</li>
-        <li><strong>Step Record:</strong> Press REC, then press keys to input pitch and automatically step forward!</li>
+        <li><strong>Left Knobs:</strong> MASTER (volume), SELECT (step scrubber), TEMPO (BPM), TRACK (T1–T4).</li>
+        <li><strong>Right Knobs:</strong> K1 Cutoff, K2 Resonance, K3 Decay, K4 Accent.</li>
+        <li><strong>Left Buttons:</strong> OCT- / OCT+ scroll the active octave window across the grid.</li>
+        <li><strong>12 Function Buttons:</strong> FX (Random), SEL (Page 1/2), ENV (Keys/Curve), LFO (Engine: 303/SUB/FM/MUTE), EDIT (Shift), GLO (Settings), HOME (Track), SAVE (Flash), ARP (Bank A–D), SEQ (Pattern 1–8), PLAY/STOP, REC.</li>
       </ul>
     </div>
     <div>
@@ -64,6 +92,6 @@
   </section>
 </main>
 
-<script src="emulator.js"></script>
+<script src="emulator.js?v=20261017c"></script>
 </body>
 </html>

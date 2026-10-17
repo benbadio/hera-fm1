@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>User Manual // MORPHEUS FM-1</title>
+  <meta name="description" content="Official User Manual for MORPHEUS: 4-track pattern sequencer and synthesizer firmware for the M-VAVE FM-1.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎛️</text></svg>">
+  <link rel="stylesheet" href="style.css?v=3">
+  <style>
+    .doc { max-width: 860px; margin: 0 auto; line-height: 1.7; font-size: 1rem; color: #d0d4da; }
+    .doc h1 { font: 800 2.5rem/1.1 "Barlow Semi Condensed", sans-serif; color: #fff; margin: 1.5rem 0 0.5rem; }
+    .doc h2 { font: 700 1.6rem/1.2 "Barlow Semi Condensed", sans-serif; color: #f0a043; margin: 2rem 0 0.8rem; border-bottom: 1px solid #2d3137; padding-bottom: 0.4rem; }
+    .doc h3 { font: 600 1.25rem/1.3 "Barlow Semi Condensed", sans-serif; color: #e6e8eb; margin: 1.5rem 0 0.5rem; }
+    .doc p { margin-bottom: 1rem; }
+    .doc table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; font-size: 0.95rem; }
+    .doc th, .doc td { border: 1px solid #2d3137; padding: 10px 14px; text-align: left; }
+    .doc th { background: #1c2024; color: #fff; font-weight: 600; }
+    .doc tr:nth-child(even) { background: #16181b; }
+    .callout { background: #1c2026; border-left: 4px solid #f0a043; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 1.2rem 0; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.82rem; font-weight: 700; background: #2b3038; color: #f0a043; }
+  </style>
+</head>
+<body>
+<main class="doc">
+  <header>
+    <h1>MORPHEUS // MANUAL</h1>
+    <p>4-Track Pattern Sequencer & Multi-Engine Synthesizer for M-VAVE FM-1</p>
+    <nav aria-label="Navigation">
+      <a href="index.html">Emulator</a>
+      <a href="install.html">Install</a>
+      <a href="https://thefirmwarehub.com/" target="_blank" rel="noreferrer">The Firmware Hub</a>
+      <a href="https://github.com/benbadio/morpheus-fm1" target="_blank" rel="noreferrer">Source</a>
+    </nav>
+  </header>
+
+  <section>
+    <h2>1. Introduction</h2>
+    <p>
+      <strong>MORPHEUS</strong> transforms the ultra-portable M-VAVE FM-1 hardware groovebox into a standalone 4-track pattern sequencer workstation and synthesizer rack inspired by classic matrix pattern sequencers.
+    </p>
+    <p>
+      It pairs a 240×240 pixel color LCD pattern grid with an integer fixed-point (Q15) audio DSP engine. Each of the 4 independent tracks can sequence external synthesizers over USB-MIDI and 3.5mm TRS-MIDI, or play internal sound generators: a resonant 303 acid bassline with non-linear saturation and portamento slide, an analog subtractive lead, a 2-operator FM synth, or silent MUTE mode for pure MIDI sequencing.
+    </p>
+  </section>
+
+  <section>
+    <h2>2. Hardware Layout & Controls</h2>
+    <p>
+      The M-VAVE FM-1 front panel features 7 rotary encoders, 14 pushbuttons, and a 27-key silicone keyboard:
+    </p>
+
+    <table>
+      <thead>
+        <tr><th>Control</th><th>Primary Function</th><th>With SHIFT (EDIT held)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>MASTER</strong></td><td>Hardware audio volume (0–100%)</td><td>Audio Headphone Gain</td></tr>
+        <tr><td><strong>SELECT</strong></td><td>Scrub active step (1–32)</td><td>Pattern Transpose (±12 semitones)</td></tr>
+        <tr><td><strong>TEMPO</strong></td><td>Sequencer BPM (50–240 BPM)</td><td>Global Shuffle / Swing (0–75%)</td></tr>
+        <tr><td><strong>TRACK</strong></td><td>Switch active track (T1 &rarr; T4)</td><td>Track Mute / Solo toggle</td></tr>
+        <tr><td><strong>KNOB 1 (Cutoff)</strong></td><td>Filter Cutoff / Active Step Note Pitch</td><td>Step Gate Velocity (0–127)</td></tr>
+        <tr><td><strong>KNOB 2 (Resonance)</strong></td><td>Filter Resonance / Gate Length</td><td>Tied Note (Slide On/Off)</td></tr>
+        <tr><td><strong>KNOB 3 (Decay)</strong></td><td>Envelope Decay / Curve Modulation Value</td><td>MIDI CC Modulation Depth</td></tr>
+        <tr><td><strong>KNOB 4 (Accent)</strong></td><td>303 Accent Intensity / Pattern Length (1–32)</td><td>Step Resolution (1/16, 1/8T, 1/32...)</td></tr>
+        <tr><td><strong>OCT- / OCT+</strong></td><td>Grid Octave Scroll (C1..B5)</td><td>Track Octave Transpose</td></tr>
+        <tr><td><strong>PLAY</strong></td><td>Start / Stop sequencer transport</td><td>Restart from Step 1</td></tr>
+        <tr><td><strong>REC</strong></td><td>Step Record Mode (Audition + Auto-advance)</td><td>Clear current step</td></tr>
+        <tr><td><strong>FX</strong></td><td>Randomize / Alter pattern musically</td><td>Clear entire pattern</td></tr>
+        <tr><td><strong>SEL</strong></td><td>Toggle Page 1 (Steps 1–16) / Page 2 (17–32)</td><td>Set loop end point</td></tr>
+        <tr><td><strong>ENV</strong></td><td>Toggle KEYS (Notes) / CURVE (Modulation) View</td><td>Toggle unipolar / bipolar curve</td></tr>
+        <tr><td><strong>LFO</strong></td><td>Cycle Sound Engine (303 &rarr; SUB &rarr; FM &rarr; MUTE)</td><td>Engine Parameters</td></tr>
+        <tr><td><strong>EDIT</strong></td><td>SHIFT button for secondary functions</td><td>Latch Shift</td></tr>
+        <tr><td><strong>GLO</strong></td><td>Cycle sequence length (16, 24, 32 steps)</td><td>Global MIDI channel routing</td></tr>
+        <tr><td><strong>HOME</strong></td><td>Switch Active Track (T1, T2, T3, T4)</td><td>Track overview</td></tr>
+        <tr><td><strong>SAVE</strong></td><td>Save all patterns and settings to flash storage</td><td>Reload from flash</td></tr>
+        <tr><td><strong>ARP</strong></td><td>Cycle Bank (A, B, C, D)</td><td>Copy Pattern</td></tr>
+        <tr><td><strong>SEQ</strong></td><td>Cycle Pattern (1 to 8) within current bank</td><td>Paste Pattern</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>3. 4-Track Sequencer Engine</h2>
+    <p>
+      MORPHEUS functions like a rack of 4 synced pattern sequencer units operating simultaneously:
+    </p>
+    <ul>
+      <li><strong>Total Memory:</strong> 4 Tracks &times; 4 Banks (A–D) &times; 8 Patterns = <strong>128 patterns</strong> saved into flash memory.</li>
+      <li><strong>Polyrhythmic Track Lengths:</strong> Each track can run independent sequence lengths from 1 to 32 steps (e.g., T1 running 16 steps in 4/4 while T2 runs 7 steps for polymetric grooves).</li>
+      <li><strong>Step Resolutions:</strong> Selectable per track: 1/2, 1/4, 1/8, 1/16, 1/32, and triplets (1/4T, 1/8T, 1/16T).</li>
+      <li><strong>Shuffle / Swing:</strong> Adjustable from 0% (straight) to 75% for groovy acid shuffles.</li>
+      <li><strong>Independent MIDI Routing:</strong>
+        <ul>
+          <li>Track 1: MIDI Channel 1 (Default: 303 Bass)</li>
+          <li>Track 2: MIDI Channel 2 (Default: Synth Lead)</li>
+          <li>Track 3: MIDI Channel 3 (Default: Arpeggiator)</li>
+          <li>Track 4: MIDI Channel 10 (Default: Drum Machine Triggers)</li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>4. Step Recording & Editing</h2>
+    <h3>Step Recording:</h3>
+    <ol>
+      <li>Press <strong>REC</strong> (LED illuminates).</li>
+      <li>Press any of the <strong>27 silicone keys</strong>. The note is assigned to the active step with default gate velocity (115), and the cursor automatically advances to the next step.</li>
+      <li>To enter a rest, turn the <strong>SELECT</strong> knob forward without pressing a key.</li>
+      <li>To tie a note into the next step (for an acid slide), turn <strong>KNOB 2</strong> clockwise.</li>
+      <li>Press <strong>REC</strong> again to exit recording.</li>
+    </ol>
+
+    <h3>Manual Grid Editing:</h3>
+    <ul>
+      <li>Scrub through steps with the <strong>SELECT</strong> encoder.</li>
+      <li>Adjust pitch with <strong>KNOB 1</strong>.</li>
+      <li>Adjust gate length / tie with <strong>KNOB 2</strong>.</li>
+      <li>Adjust modulation curve value with <strong>KNOB 3</strong>.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>5. Built-in Multi-Engine Sound Generator</h2>
+    <p>
+      Press <strong>LFO</strong> (or Sound) on the hardware to cycle through the internal audio engines:
+    </p>
+
+    <h3>1. 303 Acid Bass Engine:</h3>
+    <p>
+      A non-linear model of the classic transistor bass synthesizer:
+    </p>
+    <ul>
+      <li><strong>Resonant Diode Ladder Filter:</strong> Saturated self-oscillating 4-pole low-pass filter with asymmetric feedback distortion.</li>
+      <li><strong>Portamento Slide on Tied Steps:</strong> When two adjacent steps are tied, the pitch smoothly glides at 60 ms without re-triggering the envelope attack.</li>
+      <li><strong>Accent Overdrive:</strong> Velocities &ge; 105 engage accent boost, opening the filter cutoff exponentially and shortening decay for punchy resonant squelch.</li>
+    </ul>
+
+    <h3>2. Subtractive Analog Lead Engine:</h3>
+    <p>
+      Dual-oscillator subtractive engine with pulse-width modulation and an analog 24 dB/oct low-pass filter for leads, pads, and chord stabs.
+    </p>
+
+    <h3>3. 2-Operator FM Engine:</h3>
+    <p>
+      Dynamic phase-modulation engine with carrier-modulator feedback for bells, metallic plucks, and FM bass.
+    </p>
+
+    <h3>4. MUTE Mode:</h3>
+    <p>
+      Completely disables internal audio DSP for 0% CPU consumption and zero latency when using MORPHEUS exclusively as a hardware MIDI sequencer for external synthesizers.
+    </p>
+  </section>
+
+  <section>
+    <h2>6. Saving, Import & Export</h2>
+    <p>
+      Press <strong>SAVE</strong> on the FM-1 to write all tracks and patterns into the on-board flash storage sector. The firmware automatically reloads your patterns on power-up.
+    </p>
+    <p>
+      In the web emulator, click <strong>Export JSON</strong> in the toolbar to save your entire library to a `.json` file on your computer. You can restore or share patterns anytime via <strong>Import JSON</strong>.
+    </p>
+  </section>
+
+  <section>
+    <h2>7. Factory Reset & USB Rescue</h2>
+    <div class="callout">
+      <strong>USB Rescue Mode:</strong> Hold the <strong>OCT-</strong> button while turning on the FM-1 power switch. The FM-1 will boot into USB updater rescue mode, allowing you to reinstall firmware or revert to factory state via The Firmware Hub.
+    </div>
+  </section>
+</main>
+</body>
+</html>

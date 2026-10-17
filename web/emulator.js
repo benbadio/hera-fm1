@@ -8,8 +8,6 @@
   const NUM_TRACKS = 4;
   const TOTAL_PATS = 32;
   const MAX_STEPS = 32;
-  const NOTE_NAMES = ['B', 'A#', 'A', 'G#', 'G', 'F#', 'F', 'E', 'D#', 'D', 'C#', 'C'];
-  const PIANO_IS_BLACK = [0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0];
   const SOUND_MODES = ['303', 'SUB', 'FM', 'MUTE'];
 
   // Global State
@@ -25,6 +23,7 @@
     recMode: false,
     shiftMode: false,
     soundEngine: 0,   // 0=303, 1=SUB, 2=FM, 3=MUTE
+    clipboard: null,
     tracks: []
   };
 
@@ -32,7 +31,7 @@
   function createDefaultPattern(trackIdx) {
     const pat = {
       length: 16,
-      resolution: 16, // 16th notes
+      resolution: 16,
       shuffle: 0,
       midiCh: trackIdx === 3 ? 10 : (trackIdx + 1),
       mute: false,
@@ -128,12 +127,16 @@
 
   function initAudio() {
     if (audioCtx) return;
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    audioCtx = new AudioContext({ sampleRate: 44100 });
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContext({ sampleRate: 44100 });
 
-    masterGain = audioCtx.createGain();
-    masterGain.gain.setValueAtTime(state.masterVol, audioCtx.currentTime);
-    masterGain.connect(audioCtx.destination);
+      masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(state.masterVol, audioCtx.currentTime);
+      masterGain.connect(audioCtx.destination);
+    } catch (e) {
+      console.warn('AudioContext init error:', e);
+    }
   }
 
   function midiToFreq(m) {
@@ -148,7 +151,6 @@
     const freq = midiToFreq(note);
     const isAccent = velocity >= 105;
 
-    // Filter calculations
     const cutoffBase = (synthCutoff / 127) * 4500 + 100;
     const modOffset = (curveVal - 64) * 20;
     const accentBoost = isAccent ? ((synthAccent / 127) * 4000 + 1000) : 1800;
@@ -157,7 +159,6 @@
     const decayTime = 0.06 + (synthDecay / 127) * 0.40;
 
     if (isTied && activeVoice) {
-      // Acid portamento glide across tied notes
       activeVoice.osc.frequency.cancelScheduledValues(now);
       activeVoice.osc.frequency.linearRampToValueAtTime(freq, now + 0.06);
 
@@ -215,7 +216,6 @@
     const now = audioCtx.currentTime;
 
     if (note === 36) {
-      // 909 Kick
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.frequency.setValueAtTime(140, now);
@@ -229,7 +229,6 @@
       osc.start(now);
       osc.stop(now + 0.25);
     } else if (note === 38) {
-      // 909 Snare
       const osc = audioCtx.createOscillator();
       const oscGain = audioCtx.createGain();
       osc.frequency.setValueAtTime(190, now);
@@ -241,7 +240,6 @@
       osc.start(now);
       osc.stop(now + 0.15);
     } else if (note === 42 || note === 46) {
-      // Hi-Hat
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = 'triangle';
@@ -255,9 +253,7 @@
     }
   }
 
-  // ===========================================================================
-  // Sequencer Engine Step Scheduler
-  // ===========================================================================
+  // Sequencer Step Scheduler
   let stepTimer = null;
 
   function stepSequencer() {
@@ -321,6 +317,8 @@
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
+  const PIANO_IS_BLACK = [0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0];
+
   function renderScreen() {
     ctx.fillStyle = '#080a0c';
     ctx.fillRect(0, 0, 240, 240);
@@ -345,7 +343,6 @@
     ctx.textAlign = 'center';
     ctx.fillText(`T${trkIdx + 1}`, 14, 16);
 
-    // Track mini indicators
     for (let t = 0; t < 4; t++) {
       ctx.fillStyle = (t === trkIdx) ? '#f0a043' : '#444d56';
       ctx.fillRect(28 + t * 6, 10, 4, 5);
@@ -385,7 +382,7 @@
     ctx.textAlign = 'left';
     ctx.fillText(state.isRunning ? 'RUN' : 'STOP', 212, 15);
 
-    // 2. Upper Matrix Note Grid (y: 26..148)
+    // 2. Upper Note Grid (y: 26..148)
     const gridX = 22;
     const gridW = 216;
     const rowH = 10;
@@ -442,13 +439,11 @@
 
       const st = pat.steps[actualStep];
 
-      // Playback Scrubber highlight
       if (state.isRunning && actualStep === curPlayStep) {
         ctx.fillStyle = 'rgba(240, 160, 67, 0.15)';
         ctx.fillRect(gridX + sIdx * colW, 26, colW, 120);
       }
 
-      // Step cursor
       if (actualStep === state.activeStep) {
         ctx.strokeStyle = '#f0a043';
         ctx.lineWidth = 1.5;
@@ -473,7 +468,6 @@
           }
         }
       } else {
-        // CURVE mode
         const cvY = 146 - (st.curve / 127) * 116;
         ctx.fillStyle = '#3399ff';
         ctx.fillRect(gridX + sIdx * colW + 2, cvY - 2, colW - 3, 5);
@@ -506,7 +500,6 @@
         ctx.fillStyle = (actualStep === state.activeStep) ? '#ffffff' : (st.gate > 105 ? '#ff9900' : '#f0a043');
         ctx.fillRect(bx + 2, by, colW - 4, barH);
 
-        // Tied step bridge
         if (st.tie && sIdx < 15) {
           ctx.fillStyle = '#ff6600';
           ctx.fillRect(bx + colW - 3, by + 4, 5, 4);
@@ -531,7 +524,7 @@
     ctx.fillText(`${state.bpm}BPM`, 82, 233);
 
     ctx.fillStyle = '#808b96';
-    ctx.fillText('K1-4:EDIT', 148, 233);
+    ctx.fillText('CLICK:EDIT', 148, 233);
   }
 
   function loop() {
@@ -540,7 +533,71 @@
   }
 
   // ===========================================================================
-  // SVG Front Panel & Controls Generation (Faithful to M-VAVE FM-1)
+  // Interactive Direct Grid Editing on Canvas
+  // ===========================================================================
+  canvas.addEventListener('click', (e) => {
+    initAudio();
+    const rect = canvas.getBoundingClientRect();
+    const scale = 240 / rect.width;
+    const cx = (e.clientX - rect.left) * scale;
+    const cy = (e.clientY - rect.top) * scale;
+
+    const trk = state.tracks[state.activeTrack];
+    const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+    const stepOffset = state.viewPage * 16;
+    const gridX = 22;
+    const colW = 13;
+    const rowH = 10;
+
+    // 1. Clicked inside the Note Grid (y: 26..146)
+    if (cx >= gridX && cx <= gridX + 16 * colW && cy >= 26 && cy <= 146) {
+      const col = Math.floor((cx - gridX) / colW);
+      const row = Math.floor((cy - 26) / rowH);
+      const actualStep = stepOffset + col;
+
+      if (actualStep < pat.length && row >= 0 && row < 12) {
+        state.activeStep = actualStep;
+        const st = pat.steps[actualStep];
+
+        if (state.viewMode === 'keys') {
+          const noteSemi = 11 - row;
+          const targetNote = (state.viewOctave + 1) * 12 + noteSemi;
+
+          if (st.gate > 0 && st.note === targetNote) {
+            st.gate = 0; // Toggle off
+          } else {
+            st.note = targetNote;
+            st.gate = 115;
+            st.tie = 0;
+            play303Note(targetNote, 115, false, st.curve);
+          }
+        } else {
+          // Curve view
+          const curveVal = Math.min(127, Math.max(0, Math.round((146 - cy) / 116 * 127)));
+          st.curve = curveVal;
+        }
+      }
+    }
+
+    // 2. Clicked inside Velocity Bar area (y: 150..218)
+    else if (cx >= gridX && cx <= gridX + 16 * colW && cy >= 150 && cy <= 218) {
+      const col = Math.floor((cx - gridX) / colW);
+      const actualStep = stepOffset + col;
+
+      if (actualStep < pat.length) {
+        state.activeStep = actualStep;
+        const st = pat.steps[actualStep];
+        const vel = Math.min(127, Math.max(0, Math.round((216 - cy) / 58 * 127)));
+        st.gate = vel;
+        if (vel > 0) {
+          play303Note(st.note, vel, false, st.curve);
+        }
+      }
+    }
+  });
+
+  // ===========================================================================
+  // SVG Front Panel & Controls Generation (1:1 with M-VAVE FM-1)
   // ===========================================================================
   const NS = "http://www.w3.org/2000/svg";
   const BODY = "#2e3238", TRAY = "#212428", KEY_W = "#5e636b", KEY_B = "#484d54", KNOB = "#1b1d20", BTNC = "#272a2e", LABEL = "#d0d4da";
@@ -584,17 +641,18 @@
     const ind = el("line", { x1: x, y1: y - r + 5, x2: x, y2: y - r + 15, stroke: LABEL, "stroke-width": 3, "stroke-linecap": "round" }, g);
     text(g, x, y - r - 12, label, 16);
     el("circle", { cx: x, cy: y, r: r + 14, fill: "transparent" }, g);
-    knobs[label] = { g, ind, x, y, angle: 0, role, label };
+    knobs[label] = {
+      g, ind, x, y, angle: 0, role, label,
+      fallbackBox: { x: x - r - 8, y: y - r - 18, width: (r + 8) * 2, height: (r + 18) * 2 }
+    };
     return knobs[label];
   }
 
-  // Left knobs (2x2 grid)
   knob(105, 100, 24, "MASTER", "master");
   knob(215, 100, 24, "SELECT", "select");
   knob(105, 205, 24, "TEMPO", "tempo");
   knob(215, 205, 24, "TRACK", "track");
 
-  // Right knobs (4 in a row)
   knob(610, 100, 22, "KNOB1", "k1");
   knob(714, 100, 22, "KNOB2", "k2");
   knob(818, 100, 22, "KNOB3", "k3");
@@ -611,15 +669,13 @@
     } else {
       text(g, x + w / 2, y + h / 2 + 5, label, 15);
     }
-    buttons[label] = { g, label, x, y, w, h };
+    buttons[label] = { g, label, fallbackBox: { x, y, width: w, height: h } };
   }
 
-  // Left 2 buttons under left knobs
   el("rect", { x: 58, y: 258, width: 210, height: 58, rx: 14, fill: TRAY });
   button(72, 268, 82, 38, "OCT-");
   button(170, 268, 82, 38, "OCT+");
 
-  // Right 12 buttons (6x2 grid)
   el("rect", { x: 568, y: 160, width: 400, height: 140, rx: 18, fill: TRAY });
   const ROW1 = ["FX", "SEL", "ENV", "LFO", "EDIT", "GLO"];
   const ROW2 = ["HOME", "SAVE", "ARP", "SEQ", "PLAY", "REC"];
@@ -639,34 +695,39 @@
     const pitch = (w - 24) / 16;
     const kw = pitch * 0.78;
 
-    // 16 White keys (lower row)
     for (let i = 0; i < 16; i++) {
       const g = el("g", { class: "ctl" });
       const kx = x0 + 12 + i * pitch + (pitch - kw) / 2;
       const ky = y0 + h * 0.43;
       const kh = h * 0.52;
       el("rect", { x: kx, y: ky, width: kw, height: kh, rx: kw / 2, fill: KEY_W, class: "keyface white" }, g);
-      keys[WHITE_K[i]] = { g, idx: WHITE_K[i], isBlack: false, x: kx, y: ky, w: kw, h: kh };
+      keys[WHITE_K[i]] = { g, idx: WHITE_K[i], isBlack: false, fallbackBox: { x: kx, y: ky, width: kw, height: kh } };
     }
 
-    // 11 Black keys (upper row)
     BLACK_AFTER.forEach((a, k) => {
       const g = el("g", { class: "ctl" });
       const kx = x0 + 12 + (a + 1) * pitch - kw / 2;
       const ky = y0 + h * 0.06;
       const kh = h * 0.33;
       el("rect", { x: kx, y: ky, width: kw, height: kh, rx: kw / 2, fill: KEY_B, class: "keyface black" }, g);
-      keys[BLACK_K[k]] = { g, idx: BLACK_K[k], isBlack: true, x: kx, y: ky, w: kw, h: kh };
+      keys[BLACK_K[k]] = { g, idx: BLACK_K[k], isBlack: true, fallbackBox: { x: kx, y: ky, width: kw, height: kh } };
     });
   })(36, 340, 928, 270);
 
-  // 6. Interactive Transparent Hit-Target Layer
+  // 6. Interactive Transparent Hit-Target Layer (With foolproof bounding box fallback)
   function createHit(c, kind) {
     const d = document.createElement(kind === "knob" ? "div" : "button");
     d.className = "hit" + (kind === "knob" ? " knob" : "");
     if (kind !== "knob") d.type = "button";
 
-    const b = c.g.getBBox();
+    let b = null;
+    try {
+      b = c.g.getBBox();
+    } catch (e) {}
+    if (!b || b.width === 0 || b.height === 0) {
+      b = c.fallbackBox || { x: 0, y: 0, width: 30, height: 30 };
+    }
+
     Object.assign(d.style, {
       left: `${(b.x / 10)}%`,
       top: `${(b.y / 6.4)}%`,
@@ -684,12 +745,10 @@
   Object.values(buttons).forEach(b => createHit(b, "button"));
   keys.forEach(k => { if (k) createHit(k, "key"); });
 
-  // Update knob indicator angle
   function drawKnob(k) {
     k.ind.setAttribute("transform", `rotate(${k.angle} ${k.x} ${k.y})`);
   }
 
-  // Setup knob dragging
   function bindKnob(k, onTurn) {
     let drag = null;
     k.hit.addEventListener("pointerdown", (e) => {
@@ -834,8 +893,7 @@
     state.recMode = !state.recMode;
   });
 
-  bindButton(buttons.FX, () => {
-    // Randomize pattern
+  function randomizePattern() {
     const trk = state.tracks[state.activeTrack];
     const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
     const scale = [0, 3, 5, 7, 10, 12, 15];
@@ -849,7 +907,9 @@
       }
       pat.steps[i].curve = Math.floor(Math.random() * 127);
     }
-  });
+  }
+
+  bindButton(buttons.FX, randomizePattern);
 
   bindButton(buttons.SEL, () => {
     state.viewPage = state.viewPage === 0 ? 1 : 0;
@@ -945,9 +1005,10 @@
   btnStart.addEventListener("click", () => {
     initAudio();
     startOverlay.hidden = true;
+    startOverlay.style.display = "none";
     startSequencer();
     if (statusEl) {
-      statusEl.textContent = "Running. 4-Track Reason Matrix Sequencer & 303 Acid Synth active.";
+      statusEl.textContent = "Running. 4-Track Pattern Sequencer & 303 Acid Synth active.";
     }
   });
 
@@ -971,6 +1032,85 @@
         localStorage.removeItem("morpheus_patterns");
         initTracks();
       }
+    });
+  }
+
+  // ===========================================================================
+  // Pattern Management Toolbar Handlers (Import / Export / Copy / Paste)
+  // ===========================================================================
+  const btnExportJson = document.getElementById("btnExportJson");
+  if (btnExportJson) {
+    btnExportJson.addEventListener("click", () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.tracks, null, 2));
+      const downloadAnchor = document.createElement("a");
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `morpheus_patterns_${Date.now()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    });
+  }
+
+  const btnImportJson = document.getElementById("btnImportJson");
+  const fileImportJson = document.getElementById("fileImportJson");
+  if (btnImportJson && fileImportJson) {
+    btnImportJson.addEventListener("click", () => fileImportJson.click());
+    fileImportJson.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const parsed = JSON.parse(event.target.result);
+          if (Array.isArray(parsed) && parsed.length === NUM_TRACKS) {
+            state.tracks = parsed;
+            localStorage.setItem("morpheus_patterns", JSON.stringify(state.tracks));
+            alert("MORPHEUS: Successfully imported patterns!");
+          } else {
+            alert("Error: Invalid MORPHEUS pattern file structure.");
+          }
+        } catch (err) {
+          alert("Error parsing JSON: " + err);
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  const btnCopyPat = document.getElementById("btnCopyPat");
+  if (btnCopyPat) {
+    btnCopyPat.addEventListener("click", () => {
+      const trk = state.tracks[state.activeTrack];
+      const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+      state.clipboard = JSON.parse(JSON.stringify(pat));
+      alert(`Pattern ${String.fromCharCode(65 + trk.curBank)}${trk.curPat + 1} copied!`);
+    });
+  }
+
+  const btnPastePat = document.getElementById("btnPastePat");
+  if (btnPastePat) {
+    btnPastePat.addEventListener("click", () => {
+      if (!state.clipboard) {
+        alert("Clipboard is empty! Copy a pattern first.");
+        return;
+      }
+      const trk = state.tracks[state.activeTrack];
+      trk.patterns[trk.curBank * 8 + trk.curPat] = JSON.parse(JSON.stringify(state.clipboard));
+      alert(`Pasted into Pattern ${String.fromCharCode(65 + trk.curBank)}${trk.curPat + 1}!`);
+    });
+  }
+
+  const btnRandomize = document.getElementById("btnRandomize");
+  if (btnRandomize) {
+    btnRandomize.addEventListener("click", randomizePattern);
+  }
+
+  const btnClear = document.getElementById("btnClear");
+  if (btnClear) {
+    btnClear.addEventListener("click", () => {
+      const trk = state.tracks[state.activeTrack];
+      const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+      pat.steps.forEach(st => { st.gate = 0; st.tie = 0; });
     });
   }
 

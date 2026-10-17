@@ -1,14 +1,16 @@
 # MORPHEUS // M-VAVE FM-1 Pattern Sequencer & Synthesizer
 
 <p align="center">
-  <strong>4-Track Pattern Sequencer styled after the Reason Studios Matrix Pattern Sequencer, featuring a built-in 303 Acid Synth Engine, Multi-Engine Sound Generator, and 240x240 Color LCD UI.</strong>
+  <strong>4-Track Pattern Sequencer & Synthesizer, inspired by classic matrix pattern sequencers, featuring a built-in 303 Acid Synth Engine, Multi-Engine Sound Generator, and 240x240 Color LCD UI.</strong>
 </p>
 
 <p align="center">
   <img src="assets/screen_preview.png" width="360" alt="MORPHEUS Screen Preview">
 </p>
 
-MORPHEUS transforms the ultra-portable **M-VAVE FM-1** into a standalone hardware pattern sequencer workstation and synthesizer rack inspired by the classic **Reason Studios Matrix Pattern Sequencer**.
+MORPHEUS transforms the ultra-portable **M-VAVE FM-1** into a standalone hardware pattern sequencer workstation and synthesizer rack inspired by classic matrix pattern sequencers.
+
+- 📖 **[User Manual](web/manual.html)** &bull; 💾 **[Installation Guide](web/install.html)** &bull; 🎛️ **[Live Web Demo](https://benbadio.github.io/morpheus-fm1/)** &bull; 🚀 **[The Firmware Hub](https://thefirmwarehub.com/)**
 
 ---
 
@@ -19,7 +21,7 @@ MORPHEUS transforms the ultra-portable **M-VAVE FM-1** into a standalone hardwar
   - Per-track polyrhythmic sequence lengths (1 to 32 steps).
   - Independent step resolution (1/2, 1/4, 1/8, 1/16, 1/32, plus triplet modes 1/4T, 1/8T, 1/16T).
   - Global and per-track shuffle/swing (0% to 75%).
-- **Reason Matrix UI Faithful Emulation:**
+- **High-Contrast Matrix UI Emulation:**
   - Designed for the FM-1's 240x240 color LCD.
   - 120px 16-step grid with interactive piano roll view.
   - Dual modes: **KEYS** (Note Pitch + Velocity Bars + Tied Step Bridges) and **CURVE** (Bipolar/Unipolar CV Modulation Curves for filter cutoffs, automation, and MIDI CC).
@@ -125,4 +127,4 @@ A standalone web emulator is available in the `web/` directory:
 
 GPL-3.0-only. See [LICENSE](LICENSE) and [LICENSING.md](LICENSING.md).
 Based on the Felucca / SLOOP platform by Leo Kuroshita (@kurogedelic) & isod89.
-Reason Matrix sequencer design inspired by Reason Studios.
+Firmware concept inspired by classic hardware matrix pattern sequencers.
