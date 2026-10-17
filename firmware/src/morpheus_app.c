@@ -201,37 +201,53 @@ static void app_main(void)
             g_synth.engine_mode = g_matrix.sound_engine;
         }
 
-        /* BTN_FX: Open/Close Pattern FX menu */
+        /* BTN_FX: Open/Close Pattern FX menu, or Shift+FX for Randomize */
         if (pressed & (1u << BTN_FX)) {
-            if (g_matrix.menu_mode == MENU_FX) {
+            if (fm1_in.buttons & (1u << BTN_EDIT)) {
+                /* Shift + FX = Deliberate Randomize with Undo */
+                matrix_randomize(g_matrix.active_track);
+            } else {
+                if (g_matrix.menu_mode == MENU_FX) {
+                    g_matrix.menu_mode = MENU_NONE;
+                } else {
+                    g_matrix.menu_mode = MENU_FX;
+                    g_matrix.menu_sel = 0;
+                }
+            }
+        }
+
+        /* BTN_SAVE: Save patterns to flash, or Shift+SAVE for Redo */
+        if (pressed & (1u << BTN_SAVE)) {
+            if (fm1_in.buttons & (1u << BTN_EDIT)) {
+                matrix_redo();
+            } else {
+                save_pending = 1;
+                last_save_ms = now_ms;
+            }
+        }
+
+        /* BTN_HOME: Cycle track, Execute Menu, or Shift+HOME for Undo */
+        if (pressed & (1u << BTN_HOME)) {
+            if (fm1_in.buttons & (1u << BTN_EDIT)) {
+                matrix_undo();
+            } else if (g_matrix.menu_mode == MENU_FX) {
+                uint8_t cur_t = g_matrix.active_track;
+                switch (g_matrix.menu_sel) {
+                    case 0: matrix_undo(); break;
+                    case 1: matrix_redo(); break;
+                    case 2: matrix_shift_horizontal(cur_t, -1); break;
+                    case 3: matrix_shift_horizontal(cur_t, 1); break;
+                    case 4: matrix_shift_vertical(cur_t, 1); break;
+                    case 5: matrix_shift_vertical(cur_t, -1); break;
+                    case 6: matrix_alter(cur_t); break;
+                    case 7: matrix_randomize(cur_t); break;
+                    case 8: matrix_clear(cur_t); break;
+                    case 9: break; /* Exit menu */
+                }
                 g_matrix.menu_mode = MENU_NONE;
             } else {
-                g_matrix.menu_mode = MENU_FX;
-                g_matrix.menu_sel = 0;
+                g_matrix.active_track = (g_matrix.active_track + 1u) % NUM_TRACKS;
             }
-        }
-
-        /* BTN_SAVE: Save patterns to flash */
-        if (pressed & (1u << BTN_SAVE)) {
-            save_pending = 1;
-            last_save_ms = now_ms;
-        }
-
-        /* Execute FX Menu Action on BTN_HOME */
-        if ((pressed & (1u << BTN_HOME)) && g_matrix.menu_mode == MENU_FX) {
-            uint8_t cur_t = g_matrix.active_track;
-            switch (g_matrix.menu_sel) {
-                case 0: matrix_shift_horizontal(cur_t, -1); break;
-                case 1: matrix_shift_horizontal(cur_t, 1); break;
-                case 2: matrix_shift_vertical(cur_t, 1); break;
-                case 3: matrix_shift_vertical(cur_t, -1); break;
-                case 4: matrix_randomize(cur_t); break;
-                case 5: matrix_alter(cur_t); break;
-                case 6: matrix_copy(cur_t); break;
-                case 7: matrix_paste(cur_t); break;
-                case 8: matrix_clear(cur_t); break;
-            }
-            g_matrix.menu_mode = MENU_NONE;
         }
 
         /* =====================================================================
@@ -241,8 +257,8 @@ static void app_main(void)
         if (enc_sel != 0) {
             if (g_matrix.menu_mode == MENU_FX) {
                 int8_t ms = g_matrix.menu_sel + (int8_t)enc_sel;
-                if (ms < 0) ms = 8;
-                if (ms > 8) ms = 0;
+                if (ms < 0) ms = 9;
+                if (ms > 9) ms = 0;
                 g_matrix.menu_sel = ms;
             } else {
                 int32_t as = (int32_t)g_matrix.active_step + enc_sel;
@@ -334,6 +350,7 @@ static void app_main(void)
 
                     if (g_matrix.rec_mode) {
                         /* Record note directly to current step, then advance */
+                        matrix_undo_push(g_matrix.active_track);
                         p->steps[g_matrix.active_step].note = midi_note;
                         p->steps[g_matrix.active_step].gate = 110;
                         g_matrix.active_step = (g_matrix.active_step + 1u) % p->length;

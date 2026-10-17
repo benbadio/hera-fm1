@@ -66,14 +66,14 @@
         <tr><td><strong>OCT- / OCT+</strong></td><td>Grid Octave Scroll (C1..B5)</td><td>Track Octave Transpose</td></tr>
         <tr><td><strong>PLAY</strong></td><td>Start / Stop sequencer transport</td><td>Restart from Step 1</td></tr>
         <tr><td><strong>REC</strong></td><td>Step Record Mode (Audition + Auto-advance)</td><td>Clear current step</td></tr>
-        <tr><td><strong>FX</strong></td><td>Randomize / Alter pattern musically</td><td>Clear entire pattern</td></tr>
+        <tr><td><strong>FX</strong></td><td>Toggle Pattern Tools Menu (Undo, Redo, Shift, Transpose, Alter, Randomize, Clear)</td><td>Shift+FX: Deliberate Randomize</td></tr>
         <tr><td><strong>SEL</strong></td><td>Toggle Page 1 (Steps 1–16) / Page 2 (17–32)</td><td>Set loop end point</td></tr>
         <tr><td><strong>ENV</strong></td><td>Toggle KEYS (Notes) / CURVE (Modulation) View</td><td>Toggle unipolar / bipolar curve</td></tr>
         <tr><td><strong>LFO</strong></td><td>Cycle Sound Engine (303 &rarr; SUB &rarr; FM &rarr; MUTE)</td><td>Engine Parameters</td></tr>
-        <tr><td><strong>EDIT</strong></td><td>SHIFT button for secondary functions</td><td>Latch Shift</td></tr>
+        <tr><td><strong>EDIT</strong></td><td>SHIFT modifier button for secondary functions</td><td>Shift+HOME: Undo / Shift+SAVE: Redo</td></tr>
         <tr><td><strong>GLO</strong></td><td>Cycle sequence length (16, 24, 32 steps)</td><td>Global MIDI channel routing</td></tr>
-        <tr><td><strong>HOME</strong></td><td>Switch Active Track (T1, T2, T3, T4)</td><td>Track overview</td></tr>
-        <tr><td><strong>SAVE</strong></td><td>Save all patterns and settings to flash storage</td><td>Reload from flash</td></tr>
+        <tr><td><strong>HOME</strong></td><td>Switch Active Track (T1–T4) / Execute Menu Option</td><td>Shift+HOME: Instant Undo</td></tr>
+        <tr><td><strong>SAVE</strong></td><td>Save all patterns and settings to flash storage</td><td>Shift+SAVE: Instant Redo</td></tr>
         <tr><td><strong>ARP</strong></td><td>Cycle Bank (A, B, C, D)</td><td>Copy Pattern</td></tr>
         <tr><td><strong>SEQ</strong></td><td>Cycle Pattern (1 to 8) within current bank</td><td>Paste Pattern</td></tr>
       </tbody>
@@ -118,6 +118,18 @@
       <li>Adjust pitch with <strong>KNOB 1</strong>.</li>
       <li>Adjust gate length / tie with <strong>KNOB 2</strong>.</li>
       <li>Adjust modulation curve value with <strong>KNOB 3</strong>.</li>
+    </ul>
+
+    <h3>Pattern Tools & Multi-Level Undo / Redo:</h3>
+    <p>
+      To protect your sequences, destructive actions like <strong>Randomize</strong> and <strong>Clear</strong> are safeguarded inside the <strong>Pattern Tools</strong> menu:
+    </p>
+    <ul>
+      <li><strong>Opening Pattern Tools:</strong> Tap <strong>FX</strong>. The 240&times;240 screen displays the Tools overlay (Undo, Redo, Shift Left/Right, Transpose &plusmn;1, Alter, Randomize, Clear).</li>
+      <li><strong>Navigating Tools:</strong> Turn the <strong>SELECT</strong> knob (or click directly on screen). Press <strong>HOME</strong> to execute the selected tool. Tap <strong>FX</strong> again to cancel with zero changes.</li>
+      <li><strong>Multi-Level Undo:</strong> Hold <strong>EDIT</strong> and press <strong>HOME</strong> (or press <strong>Ctrl+Z / Cmd+Z</strong> in browser). Every note entry, velocity change, transpose, or randomize operation can be reverted immediately.</li>
+      <li><strong>Multi-Level Redo:</strong> Hold <strong>EDIT</strong> and press <strong>SAVE</strong> (or press <strong>Ctrl+Y / Cmd+Shift+Z</strong>).</li>
+      <li><strong>Intentional Randomize Shortcut:</strong> Hold <strong>EDIT</strong> and press <strong>FX</strong> to generate a fresh minor pentatonic pattern with automatic Undo snapshot creation.</li>
     </ul>
   </section>
 

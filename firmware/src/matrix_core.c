@@ -122,6 +122,7 @@ void matrix_factory_patterns(void)
 void matrix_shift_horizontal(uint8_t track_idx, int8_t dir)
 {
     if (track_idx >= NUM_TRACKS) return;
+    matrix_undo_push(track_idx);
     matrix_pattern_t *pat = &g_matrix.patterns[track_idx][g_matrix.cur_bank[track_idx] * PATS_PER_BANK + g_matrix.cur_pat[track_idx]];
     uint8_t len = pat->length;
     if (len <= 1) return;
@@ -144,6 +145,7 @@ void matrix_shift_horizontal(uint8_t track_idx, int8_t dir)
 void matrix_shift_vertical(uint8_t track_idx, int8_t semitones)
 {
     if (track_idx >= NUM_TRACKS) return;
+    matrix_undo_push(track_idx);
     matrix_pattern_t *pat = &g_matrix.patterns[track_idx][g_matrix.cur_bank[track_idx] * PATS_PER_BANK + g_matrix.cur_pat[track_idx]];
     uint32_t i;
     for (i = 0; i < pat->length; i++) {
@@ -157,6 +159,7 @@ void matrix_shift_vertical(uint8_t track_idx, int8_t semitones)
 void matrix_randomize(uint8_t track_idx)
 {
     if (track_idx >= NUM_TRACKS) return;
+    matrix_undo_push(track_idx);
     matrix_pattern_t *pat = &g_matrix.patterns[track_idx][g_matrix.cur_bank[track_idx] * PATS_PER_BANK + g_matrix.cur_pat[track_idx]];
     /* Scale root C3 (48), pentatonic / blues minor intervals */
     static const uint8_t SCALE[7] = {0, 3, 5, 7, 10, 12, 15};
@@ -179,6 +182,7 @@ void matrix_randomize(uint8_t track_idx)
 void matrix_alter(uint8_t track_idx)
 {
     if (track_idx >= NUM_TRACKS) return;
+    matrix_undo_push(track_idx);
     matrix_pattern_t *pat = &g_matrix.patterns[track_idx][g_matrix.cur_bank[track_idx] * PATS_PER_BANK + g_matrix.cur_pat[track_idx]];
     uint32_t i;
     for (i = 0; i < pat->length; i++) {
@@ -198,6 +202,7 @@ void matrix_alter(uint8_t track_idx)
 void matrix_clear(uint8_t track_idx)
 {
     if (track_idx >= NUM_TRACKS) return;
+    matrix_undo_push(track_idx);
     matrix_pattern_t *pat = &g_matrix.patterns[track_idx][g_matrix.cur_bank[track_idx] * PATS_PER_BANK + g_matrix.cur_pat[track_idx]];
     uint32_t i;
     for (i = 0; i < MAX_STEPS; i++) {
@@ -217,7 +222,99 @@ void matrix_copy(uint8_t track_idx)
 void matrix_paste(uint8_t track_idx)
 {
     if (track_idx >= NUM_TRACKS || !g_matrix.has_clipboard) return;
+    matrix_undo_push(track_idx);
     g_matrix.patterns[track_idx][g_matrix.cur_bank[track_idx] * PATS_PER_BANK + g_matrix.cur_pat[track_idx]] = g_matrix.clipboard;
+}
+
+/* =========================================================================
+ * Undo / Redo System
+ * ========================================================================= */
+void matrix_undo_push(uint8_t track_idx)
+{
+    if (track_idx >= NUM_TRACKS) return;
+
+    if (g_matrix.undo_count >= MATRIX_UNDO_DEPTH) {
+        uint32_t i;
+        for (i = 0; i < MATRIX_UNDO_DEPTH - 1; i++) {
+            g_matrix.undo_stack[i] = g_matrix.undo_stack[i + 1];
+        }
+        g_matrix.undo_count = MATRIX_UNDO_DEPTH - 1;
+    }
+
+    uint8_t bank = g_matrix.cur_bank[track_idx];
+    uint8_t pat = g_matrix.cur_pat[track_idx];
+    g_matrix.undo_stack[g_matrix.undo_count].track_idx = track_idx;
+    g_matrix.undo_stack[g_matrix.undo_count].bank_idx = bank;
+    g_matrix.undo_stack[g_matrix.undo_count].pat_idx = pat;
+    g_matrix.undo_stack[g_matrix.undo_count].pattern = g_matrix.patterns[track_idx][bank * PATS_PER_BANK + pat];
+    g_matrix.undo_count++;
+
+    /* Reset redo stack on new action */
+    g_matrix.redo_count = 0;
+}
+
+uint8_t matrix_can_undo(void)
+{
+    return g_matrix.undo_count > 0;
+}
+
+uint8_t matrix_can_redo(void)
+{
+    return g_matrix.redo_count > 0;
+}
+
+uint8_t matrix_undo(void)
+{
+    if (g_matrix.undo_count == 0) return 0;
+
+    g_matrix.undo_count--;
+    uint8_t t = g_matrix.undo_stack[g_matrix.undo_count].track_idx;
+    uint8_t b = g_matrix.undo_stack[g_matrix.undo_count].bank_idx;
+    uint8_t p = g_matrix.undo_stack[g_matrix.undo_count].pat_idx;
+    if (t >= NUM_TRACKS || b >= NUM_BANKS || p >= PATS_PER_BANK) return 0;
+
+    /* Push current into redo stack */
+    if (g_matrix.redo_count < MATRIX_UNDO_DEPTH) {
+        g_matrix.redo_stack[g_matrix.redo_count].track_idx = t;
+        g_matrix.redo_stack[g_matrix.redo_count].bank_idx = b;
+        g_matrix.redo_stack[g_matrix.redo_count].pat_idx = p;
+        g_matrix.redo_stack[g_matrix.redo_count].pattern = g_matrix.patterns[t][b * PATS_PER_BANK + p];
+        g_matrix.redo_count++;
+    }
+
+    /* Restore previous pattern */
+    g_matrix.patterns[t][b * PATS_PER_BANK + p] = g_matrix.undo_stack[g_matrix.undo_count].pattern;
+    g_matrix.active_track = t;
+    g_matrix.cur_bank[t] = b;
+    g_matrix.cur_pat[t] = p;
+    return 1;
+}
+
+uint8_t matrix_redo(void)
+{
+    if (g_matrix.redo_count == 0) return 0;
+
+    g_matrix.redo_count--;
+    uint8_t t = g_matrix.redo_stack[g_matrix.redo_count].track_idx;
+    uint8_t b = g_matrix.redo_stack[g_matrix.redo_count].bank_idx;
+    uint8_t p = g_matrix.redo_stack[g_matrix.redo_count].pat_idx;
+    if (t >= NUM_TRACKS || b >= NUM_BANKS || p >= PATS_PER_BANK) return 0;
+
+    /* Push current into undo stack */
+    if (g_matrix.undo_count < MATRIX_UNDO_DEPTH) {
+        g_matrix.undo_stack[g_matrix.undo_count].track_idx = t;
+        g_matrix.undo_stack[g_matrix.undo_count].bank_idx = b;
+        g_matrix.undo_stack[g_matrix.undo_count].pat_idx = p;
+        g_matrix.undo_stack[g_matrix.undo_count].pattern = g_matrix.patterns[t][b * PATS_PER_BANK + p];
+        g_matrix.undo_count++;
+    }
+
+    /* Restore redo pattern */
+    g_matrix.patterns[t][b * PATS_PER_BANK + p] = g_matrix.redo_stack[g_matrix.redo_count].pattern;
+    g_matrix.active_track = t;
+    g_matrix.cur_bank[t] = b;
+    g_matrix.cur_pat[t] = p;
+    return 1;
 }
 
 uint32_t matrix_get_step_interval_us(uint8_t resolution, uint16_t bpm, uint8_t step_idx, uint8_t shuffle)

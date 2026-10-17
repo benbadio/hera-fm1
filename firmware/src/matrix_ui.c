@@ -33,16 +33,18 @@ static const uint8_t PIANO_IS_BLACK[12] = {
     0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0
 };
 
-static const char *const FX_MENU_ITEMS[9] = {
-    "1. SHIFT LEFT",
-    "2. SHIFT RIGHT",
-    "3. TRANSPOSE +1",
-    "4. TRANSPOSE -1",
-    "5. RANDOMIZE",
-    "6. ALTER PATTERN",
-    "7. COPY PATTERN",
-    "8. PASTE PATTERN",
-    "9. CLEAR PATTERN"
+#define NUM_FX_MENU_ITEMS 10
+static const char *const FX_MENU_ITEMS[NUM_FX_MENU_ITEMS] = {
+    "1. UNDO LAST EDIT",
+    "2. REDO EDIT",
+    "3. SHIFT LEFT",
+    "4. SHIFT RIGHT",
+    "5. TRANSPOSE +1",
+    "6. TRANSPOSE -1",
+    "7. ALTER PATTERN",
+    "8. RANDOMIZE PAT",
+    "9. CLEAR PATTERN",
+    "10. EXIT MENU"
 };
 
 void matrix_ui_init(void)
@@ -279,21 +281,21 @@ void matrix_ui_draw(void)
      * MODAL MENUS
      * ========================================================================= */
     if (g_matrix.menu_mode == MENU_FX) {
-        cv_begin(190, 134, C_TOPBAR);
+        cv_begin(190, 144, C_TOPBAR);
         cv_rect(0, 0, 190, 1, C_RED_LED);
-        cv_rect(0, 0, 1, 134, C_RED_LED);
-        cv_rect(189, 0, 1, 134, C_RED_LED);
-        cv_rect(0, 133, 190, 1, C_RED_LED);
+        cv_rect(0, 0, 1, 144, C_RED_LED);
+        cv_rect(189, 0, 1, 144, C_RED_LED);
+        cv_rect(0, 143, 190, 1, C_RED_LED);
 
-        cv_text(30, 4, &FONT_S, "-- PATTERN FX --", C_ORANGE_LED);
+        cv_text(30, 4, &FONT_S, "-- PATTERN TOOLS --", C_ORANGE_LED);
         uint32_t m;
-        for (m = 0; m < 9; m++) {
+        for (m = 0; m < NUM_FX_MENU_ITEMS; m++) {
             uint16_t tc = (g_matrix.menu_sel == (int8_t)m) ? C_PLAY_HL : C_TEXT_DIM;
             if (g_matrix.menu_sel == (int8_t)m) {
                 cv_rect(6, 18 + m * 12, 178, 11, C_DIVIDER);
             }
             cv_text(10, 18 + m * 12, &FONT_S, FX_MENU_ITEMS[m], tc);
         }
-        cv_blit(25, 52);
+        cv_blit(25, 48);
     }
 }

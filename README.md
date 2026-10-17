@@ -46,7 +46,7 @@ MORPHEUS transforms the ultra-portable **M-VAVE FM-1** into a standalone hardwar
 
 ## Hardware Controls & Panel Mapping
 
-| Hardware Control | Primary Function | With SHIFT / Secondary |
+| Hardware Control | Primary Function | With SHIFT (EDIT) / Secondary |
 |---|---|---|
 | **27 Silicone Keys** | Audition / Play notes, Step Record in REC mode | Step Jump (1-16 / 17-32) |
 | **K1 (Cutoff)** | Synth Filter Cutoff / Active Step Note Pitch | Step Velocity |
@@ -54,16 +54,17 @@ MORPHEUS transforms the ultra-portable **M-VAVE FM-1** into a standalone hardwar
 | **K3 (Decay)** | Filter Envelope Decay / Curve Value | CC Modulation Depth |
 | **K4 (Accent)** | 303 Accent Intensity / Pattern Length (1-32) | Track Resolution |
 | **TEMPO Knob** | Sequencer Tempo (50 - 240 BPM) | Shuffle / Swing (0 - 75%) |
-| **SELECT Knob** | Scrub Active Step (1 - 32) | Pattern Transpose (±12) |
+| **SELECT Knob** | Scrub Active Step (1 - 32) / Menu Navigation | Pattern Transpose (±12) |
 | **PLAY** | Start / Stop Sequencer | Restart from Step 1 |
 | **REC** | Step Record Mode (Audition + Step Advance) | Clear Active Step |
-| **TRACK** | Switch Active Track (T1 -> T2 -> T3 -> T4) | Track Mute / Solo |
-| **MODE** | Toggle KEYS (Notes) / CURVE (Modulation) | Curve CC Assignment |
-| **SOUND** | Cycle Engine: 303 Acid -> SUB -> FM -> MUTE | Engine Parameters |
-| **PAGE** | Toggle Page 1 (Steps 1-16) / Page 2 (Steps 17-32) | Set Pattern Length |
+| **FX** | Open/Close Pattern Tools (Undo, Redo, Shift, Transpose, Alter, Randomize, Clear) | **Shift+FX:** Deliberate Randomize |
+| **HOME** | Cycle Active Track (T1 -> T2 -> T3 -> T4) / Execute Menu Option | **Shift+HOME:** Multi-Level Undo |
+| **SAVE** | Save all tracks & patterns to Flash / Storage | **Shift+SAVE:** Multi-Level Redo |
+| **EDIT** | Toggle KEYS (Notes) / CURVE (Modulation) View | Hold as SHIFT modifier |
+| **SEL (Page)** | Toggle Page 1 (Steps 1-16) / Page 2 (Steps 17-32) | Set Pattern Length |
+| **ENV / LFO** | Cycle Engine: 303 Acid -> SUB -> FM -> MUTE | Engine Parameters |
 | **OCT- / OCT+** | Grid Octave Scroll (C1..B5) | Track Octave Transpose |
-| **BANK / PAT** | Select Bank A–D / Pattern 1–8 | Pattern Copy / Paste |
-| **SAVE** | Save all tracks & patterns to Flash / Storage | Reload from Flash |
+| **ARP / SEQ** | Cycle Bank A–D / Pattern 1–8 | Pattern Copy / Paste |
 
 ---
 

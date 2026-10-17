@@ -95,6 +95,24 @@ typedef struct {
     /* Pattern Clipboard */
     matrix_pattern_t clipboard;
     uint8_t has_clipboard;
+
+    /* Undo / Redo Stacks */
+#define MATRIX_UNDO_DEPTH 8
+    struct {
+        uint8_t track_idx;
+        uint8_t bank_idx;
+        uint8_t pat_idx;
+        matrix_pattern_t pattern;
+    } undo_stack[MATRIX_UNDO_DEPTH];
+    uint8_t undo_count;
+
+    struct {
+        uint8_t track_idx;
+        uint8_t bank_idx;
+        uint8_t pat_idx;
+        matrix_pattern_t pattern;
+    } redo_stack[MATRIX_UNDO_DEPTH];
+    uint8_t redo_count;
 } matrix_core_t;
 
 /* Global instance */
@@ -112,6 +130,13 @@ void matrix_alter(uint8_t track_idx);
 void matrix_clear(uint8_t track_idx);
 void matrix_copy(uint8_t track_idx);
 void matrix_paste(uint8_t track_idx);
+
+/* Undo / Redo operations */
+void matrix_undo_push(uint8_t track_idx);
+uint8_t matrix_undo(void);
+uint8_t matrix_redo(void);
+uint8_t matrix_can_undo(void);
+uint8_t matrix_can_redo(void);
 
 /* Clock & tick calculation */
 uint32_t matrix_get_step_interval_us(uint8_t resolution, uint16_t bpm, uint8_t step_idx, uint8_t shuffle);

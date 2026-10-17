@@ -23,6 +23,8 @@
     recMode: false,
     shiftMode: false,
     soundEngine: 0,   // 0=303, 1=SUB, 2=FM, 3=MUTE
+    menuMode: 'none', // 'none' or 'fx'
+    menuSel: 0,       // active item in modal menu
     clipboard: null,
     tracks: []
   };
@@ -130,7 +132,7 @@
 
   const HINTS = {
     MASTER: "🔊 MASTER: Adjusts hardware audio volume (0–100%).",
-    SELECT: "📍 SELECT: Scrubs the active step cursor across the 32-step sequence. With EDIT: Transpose ±12 semitones.",
+    SELECT: "📍 SELECT: Scrubs active step cursor. In FX Menu: Selects tool. With EDIT: Transpose ±12 semitones.",
     TEMPO: "⏱️ TEMPO: Adjusts sequencer tempo from 50 to 240 BPM. With EDIT: Swing / Shuffle (0–75%).",
     TRACK: "🔀 TRACK: Switches between the 4 independent sequencer tracks (T1: Bass, T2: Lead, T3: Arp, T4: Drums).",
     KNOB1: "🎛️ KNOB 1 (Cutoff): Shapes 303 lowpass filter cutoff. In EDIT mode: Changes active step note pitch.",
@@ -141,14 +143,14 @@
     "OCT+": "🎹 OCTAVE UP: Scrolls the 12-semitone grid octave window upward (C1 to B5).",
     PLAY: "▶️ PLAY / STOP: Starts or pauses sequencer playback across all 4 synced tracks.",
     REC: "🔴 REC (Step Record): Tap REC, then press silicone keys to punch in notes step-by-step and auto-advance!",
-    FX: "🎲 FX (Randomize): Generates a fresh musical acid bassline using a minor pentatonic scale.",
+    FX: "⚙️ FX / Tools Menu: Toggles Pattern Tools on screen (Undo, Redo, Shift, Transpose, Alter, Randomize, Clear). Hold EDIT + FX for instant Randomize.",
     SEL: "📄 SEL (Page): Toggles between Page 1 (Steps 1–16) and Page 2 (Steps 17–32).",
     ENV: "📈 ENV (Mode): Switches between KEYS view (note pitches) and CURVE view (filter modulation curves).",
     LFO: "🔊 LFO (Engine): Cycles sound engines: 303 Acid Bass, Subtractive Lead, 2-OP FM, or silent MUTE mode.",
-    EDIT: "⚡ EDIT (Shift): Secondary modifier button for track transpose, swing, and loop lengths.",
+    EDIT: "⚡ EDIT (Shift): Secondary modifier button. Hold with HOME for Undo, with SAVE for Redo, or with FX for Randomize.",
     GLO: "📏 GLO (Length): Cycles track sequence length (16, 24, or 32 steps) for polymetric grooves.",
-    HOME: "🏠 HOME (Track): Cycles through Track 1 (Bass), Track 2 (Lead), Track 3 (Arp), and Track 4 (Drums).",
-    SAVE: "💾 SAVE: Writes all 4 tracks, banks, and patterns to persistent storage.",
+    HOME: "🏠 HOME (Track): Cycles through Tracks T1–T4. In FX Menu: Executes selected tool. With EDIT: Instant Undo!",
+    SAVE: "💾 SAVE: Writes patterns to browser storage. With EDIT: Instant Redo!",
     ARP: "📚 ARP (Bank): Cycles between Banks A, B, C, and D (each bank holds 8 patterns).",
     SEQ: "🔢 SEQ (Pattern): Cycles through patterns 1 to 8 in the active bank."
   };
@@ -564,6 +566,239 @@
 
     ctx.fillStyle = '#808b96';
     ctx.fillText('CLICK:EDIT', 148, 233);
+
+    // 5. Modal Pattern Tools Overlay (when FX menu is open)
+    if (state.menuMode === 'fx') {
+      const menuW = 196;
+      const menuH = 158;
+      const mx = (240 - menuW) / 2;
+      const my = 38;
+
+      ctx.fillStyle = 'rgba(10, 12, 16, 0.92)';
+      ctx.fillRect(0, 26, 240, 194);
+
+      ctx.fillStyle = '#181d22';
+      ctx.fillRect(mx, my, menuW, menuH);
+      ctx.strokeStyle = '#f0a043';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(mx + 0.5, my + 0.5, menuW - 1, menuH - 1);
+
+      ctx.fillStyle = '#f0a043';
+      ctx.font = 'bold 9px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('-- PATTERN TOOLS --', 120, my + 13);
+
+      for (let m = 0; m < FX_MENU_ITEMS.length; m++) {
+        const iy = my + 18 + m * 13;
+        if (state.menuSel === m) {
+          ctx.fillStyle = '#2d3540';
+          ctx.fillRect(mx + 4, iy, menuW - 8, 12);
+          ctx.fillStyle = '#ffb366';
+        } else {
+          ctx.fillStyle = '#c5cdd6';
+        }
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(FX_MENU_ITEMS[m], mx + 8, iy + 9);
+      }
+    }
+  }
+
+  // ===========================================================================
+  // Multi-Level Undo / Redo History System
+  // ===========================================================================
+  const undoStack = [];
+  const redoStack = [];
+  const MAX_UNDO = 32;
+
+  function updateUndoUi() {
+    const u = document.getElementById("btnUndo");
+    const r = document.getElementById("btnRedo");
+    if (u) u.disabled = undoStack.length === 0;
+    if (r) r.disabled = redoStack.length === 0;
+  }
+
+  function pushUndo(actionName = "Edit") {
+    const trk = state.tracks[state.activeTrack];
+    const patIndex = trk.curBank * 8 + trk.curPat;
+    undoStack.push({
+      track: state.activeTrack,
+      bank: trk.curBank,
+      pat: trk.curPat,
+      action: actionName,
+      pattern: JSON.parse(JSON.stringify(trk.patterns[patIndex]))
+    });
+    if (undoStack.length > MAX_UNDO) undoStack.shift();
+    redoStack.length = 0;
+    updateUndoUi();
+  }
+
+  function undo() {
+    if (undoStack.length === 0) {
+      showHint("⚠️ Nothing to undo.");
+      return false;
+    }
+    const entry = undoStack.pop();
+    const trk = state.tracks[entry.track];
+    const patIndex = entry.bank * 8 + entry.pat;
+
+    redoStack.push({
+      track: entry.track,
+      bank: entry.bank,
+      pat: entry.pat,
+      action: entry.action,
+      pattern: JSON.parse(JSON.stringify(trk.patterns[patIndex]))
+    });
+
+    trk.patterns[patIndex] = entry.pattern;
+    state.activeTrack = entry.track;
+    trk.curBank = entry.bank;
+    trk.curPat = entry.pat;
+
+    updateUndoUi();
+    showHint(`↶ Undone: ${entry.action} on Track ${entry.track + 1}`);
+    return true;
+  }
+
+  function redo() {
+    if (redoStack.length === 0) {
+      showHint("⚠️ Nothing to redo.");
+      return false;
+    }
+    const entry = redoStack.pop();
+    const trk = state.tracks[entry.track];
+    const patIndex = entry.bank * 8 + entry.pat;
+
+    undoStack.push({
+      track: entry.track,
+      bank: entry.bank,
+      pat: entry.pat,
+      action: entry.action,
+      pattern: JSON.parse(JSON.stringify(trk.patterns[patIndex]))
+    });
+
+    trk.patterns[patIndex] = entry.pattern;
+    state.activeTrack = entry.track;
+    trk.curBank = entry.bank;
+    trk.curPat = entry.pat;
+
+    updateUndoUi();
+    showHint(`↷ Redone: ${entry.action} on Track ${entry.track + 1}`);
+    return true;
+  }
+
+  // Keyboard Shortcuts for Undo/Redo
+  window.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      if (e.shiftKey) redo();
+      else undo();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+      e.preventDefault();
+      redo();
+    }
+  });
+
+  // ===========================================================================
+  // Pattern Edit Operations (Shift, Transpose, Alter, Randomize, Clear)
+  // ===========================================================================
+  const FX_MENU_ITEMS = [
+    "1. UNDO LAST EDIT",
+    "2. REDO EDIT",
+    "3. SHIFT LEFT",
+    "4. SHIFT RIGHT",
+    "5. TRANSPOSE +1",
+    "6. TRANSPOSE -1",
+    "7. ALTER PATTERN",
+    "8. RANDOMIZE PATTERN",
+    "9. CLEAR PATTERN",
+    "10. EXIT MENU"
+  ];
+
+  function shiftPatternHorizontal(dir) {
+    const trk = state.tracks[state.activeTrack];
+    const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+    if (pat.length <= 1) return;
+    pushUndo("Shift Pattern");
+    if (dir > 0) {
+      const last = Object.assign({}, pat.steps[pat.length - 1]);
+      for (let i = pat.length - 1; i > 0; i--) pat.steps[i] = Object.assign({}, pat.steps[i - 1]);
+      pat.steps[0] = last;
+      showHint(`▶ Shifted Track ${state.activeTrack + 1} pattern right.`);
+    } else {
+      const first = Object.assign({}, pat.steps[0]);
+      for (let i = 0; i < pat.length - 1; i++) pat.steps[i] = Object.assign({}, pat.steps[i + 1]);
+      pat.steps[pat.length - 1] = first;
+      showHint(`◀ Shifted Track ${state.activeTrack + 1} pattern left.`);
+    }
+  }
+
+  function shiftPatternVertical(semitones) {
+    const trk = state.tracks[state.activeTrack];
+    const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+    pushUndo("Transpose");
+    for (let i = 0; i < pat.length; i++) {
+      let n = pat.steps[i].note + semitones;
+      pat.steps[i].note = Math.max(0, Math.min(127, n));
+    }
+    showHint(`${semitones > 0 ? '▲ Transposed +1' : '▼ Transposed -1'} semitone on Track ${state.activeTrack + 1}.`);
+  }
+
+  function alterPattern() {
+    const trk = state.tracks[state.activeTrack];
+    const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+    pushUndo("Alter Pattern");
+    for (let i = 0; i < pat.length; i++) {
+      if (Math.random() < 0.25 && pat.steps[i].gate > 0) {
+        const delta = Math.random() < 0.5 ? 2 : -2;
+        pat.steps[i].note = Math.max(24, Math.min(100, pat.steps[i].note + delta));
+        pat.steps[i].tie = Math.random() < 0.3 ? 1 : 0;
+      }
+    }
+    showHint(`🎲 Altered groove variations on Track ${state.activeTrack + 1}.`);
+  }
+
+  function randomizePattern() {
+    const trk = state.tracks[state.activeTrack];
+    const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+    pushUndo("Randomize Pattern");
+    const scale = [0, 3, 5, 7, 10, 12, 15];
+    for (let i = 0; i < pat.length; i++) {
+      if (Math.random() < 0.25) {
+        pat.steps[i].gate = 0;
+        pat.steps[i].tie = 0;
+      } else {
+        pat.steps[i].note = 48 + scale[Math.floor(Math.random() * scale.length)];
+        pat.steps[i].gate = 85 + Math.floor(Math.random() * 42);
+        pat.steps[i].tie = Math.random() < 0.2 ? 1 : 0;
+      }
+      pat.steps[i].curve = Math.floor(Math.random() * 127);
+    }
+    showHint(`🎲 Random pattern generated for Track ${state.activeTrack + 1}! (Press Undo or Ctrl+Z to revert)`);
+  }
+
+  function clearPattern() {
+    const trk = state.tracks[state.activeTrack];
+    const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+    pushUndo("Clear Pattern");
+    pat.steps.forEach(st => { st.gate = 0; st.tie = 0; st.curve = 64; });
+    showHint(`🧹 Cleared all notes in Pattern ${String.fromCharCode(65 + trk.curBank)}${trk.curPat + 1}. (Press Undo to revert)`);
+  }
+
+  function executeFxMenuItem(sel) {
+    state.menuMode = 'none';
+    switch (sel) {
+      case 0: undo(); break;
+      case 1: redo(); break;
+      case 2: shiftPatternHorizontal(-1); break;
+      case 3: shiftPatternHorizontal(1); break;
+      case 4: shiftPatternVertical(1); break;
+      case 5: shiftPatternVertical(-1); break;
+      case 6: alterPattern(); break;
+      case 7: randomizePattern(); break;
+      case 8: clearPattern(); break;
+      case 9: showHint("Pattern tools closed."); break;
+    }
   }
 
   function loop() {
@@ -577,7 +812,23 @@
   canvas.addEventListener('mousemove', (e) => {
     const rect = canvas.getBoundingClientRect();
     const scale = 240 / rect.width;
+    const cx = (e.clientX - rect.left) * scale;
     const cy = (e.clientY - rect.top) * scale;
+
+    if (state.menuMode === 'fx') {
+      const menuW = 196;
+      const mx = (240 - menuW) / 2;
+      const my = 38;
+      if (cx >= mx && cx <= mx + menuW && cy >= my + 18 && cy <= my + 18 + 10 * 13) {
+        const itemIdx = Math.floor((cy - (my + 18)) / 13);
+        if (itemIdx >= 0 && itemIdx < FX_MENU_ITEMS.length) {
+          state.menuSel = itemIdx;
+        }
+      }
+      showHint("⚙️ PATTERN TOOLS: Click any option on screen, or use SELECT + HOME. Tap FX to exit.");
+      return;
+    }
+
     if (cy >= 26 && cy <= 146) {
       showHint(state.viewMode === 'keys'
         ? "✏️ NOTE GRID: Click any square on the screen to toggle notes on/off and audition them!"
@@ -597,6 +848,24 @@
     const scale = 240 / rect.width;
     const cx = (e.clientX - rect.left) * scale;
     const cy = (e.clientY - rect.top) * scale;
+
+    // Handle clicks inside FX Modal Menu
+    if (state.menuMode === 'fx') {
+      const menuW = 196;
+      const mx = (240 - menuW) / 2;
+      const my = 38;
+      if (cx >= mx && cx <= mx + menuW && cy >= my + 18 && cy <= my + 18 + 10 * 13) {
+        const itemIdx = Math.floor((cy - (my + 18)) / 13);
+        if (itemIdx >= 0 && itemIdx < FX_MENU_ITEMS.length) {
+          state.menuSel = itemIdx;
+          executeFxMenuItem(itemIdx);
+        }
+      } else {
+        state.menuMode = 'none';
+        showHint("Pattern tools closed.");
+      }
+      return;
+    }
 
     const trk = state.tracks[state.activeTrack];
     const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
@@ -619,6 +888,7 @@
           const noteSemi = 11 - row;
           const targetNote = (state.viewOctave + 1) * 12 + noteSemi;
 
+          pushUndo("Toggle Note");
           if (st.gate > 0 && st.note === targetNote) {
             st.gate = 0; // Toggle off
           } else {
@@ -628,6 +898,7 @@
             play303Note(targetNote, 115, false, st.curve);
           }
         } else {
+          pushUndo("Draw Curve");
           const curveVal = Math.min(127, Math.max(0, Math.round((146 - cy) / 116 * 127)));
           st.curve = curveVal;
         }
@@ -643,6 +914,7 @@
         state.activeStep = actualStep;
         const st = pat.steps[actualStep];
         const vel = Math.min(127, Math.max(0, Math.round((216 - cy) / 58 * 127)));
+        pushUndo("Adjust Velocity");
         st.gate = vel;
         if (vel > 0) {
           play303Note(st.note, vel, false, st.curve);
@@ -858,6 +1130,12 @@
   drawKnob(knobs.MASTER);
 
   bindKnob(knobs.SELECT, (dy) => {
+    if (state.menuMode === 'fx') {
+      state.menuSel = (state.menuSel + (dy > 0 ? 1 : -1) + FX_MENU_ITEMS.length) % FX_MENU_ITEMS.length;
+      knobs.SELECT.angle = (knobs.SELECT.angle + (dy > 0 ? 15 : -15)) % 360;
+      drawKnob(knobs.SELECT);
+      return;
+    }
     state.activeStep = (state.activeStep + (dy > 0 ? 1 : -1) + 32) % 32;
     state.viewPage = state.activeStep >= 16 ? 1 : 0;
     knobs.SELECT.angle = (knobs.SELECT.angle + (dy > 0 ? 15 : -15)) % 360;
@@ -981,24 +1259,18 @@
     }
   });
 
-  function randomizePattern() {
-    const trk = state.tracks[state.activeTrack];
-    const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
-    const scale = [0, 3, 5, 7, 10, 12, 15];
-    for (let i = 0; i < pat.length; i++) {
-      if (Math.random() < 0.25) {
-        pat.steps[i].gate = 0;
-      } else {
-        pat.steps[i].note = 48 + scale[Math.floor(Math.random() * scale.length)];
-        pat.steps[i].gate = 85 + Math.floor(Math.random() * 42);
-        pat.steps[i].tie = Math.random() < 0.2 ? 1 : 0;
-      }
-      pat.steps[i].curve = Math.floor(Math.random() * 127);
+  bindButton(buttons.FX, () => {
+    if (state.shiftMode) {
+      randomizePattern();
+      return;
     }
-    showHint(`🎲 Random pattern generated for Track ${state.activeTrack + 1}!`);
-  }
-
-  bindButton(buttons.FX, randomizePattern);
+    state.menuMode = (state.menuMode === 'fx') ? 'none' : 'fx';
+    if (state.menuMode === 'fx') {
+      showHint("⚙️ PATTERN TOOLS: Click an action on screen or turn SELECT and tap HOME. Tap FX to exit.");
+    } else {
+      showHint("Pattern tools closed.");
+    }
+  });
 
   bindButton(buttons.SEL, () => {
     state.viewPage = state.viewPage === 0 ? 1 : 0;
@@ -1017,7 +1289,7 @@
 
   bindButton(buttons.EDIT, () => {
     state.shiftMode = !state.shiftMode;
-    showHint(state.shiftMode ? "⚡ Shift Active: Knobs and buttons access secondary functions." : "Shift inactive.");
+    showHint(state.shiftMode ? "⚡ Shift Active: Knobs and buttons access secondary functions (HOME: Undo, SAVE: Redo, FX: Randomize)." : "Shift inactive.");
   });
 
   bindButton(buttons.GLO, () => {
@@ -1028,11 +1300,23 @@
   });
 
   bindButton(buttons.HOME, () => {
+    if (state.shiftMode) {
+      undo();
+      return;
+    }
+    if (state.menuMode === 'fx') {
+      executeFxMenuItem(state.menuSel);
+      return;
+    }
     state.activeTrack = (state.activeTrack + 1) % NUM_TRACKS;
     showHint(`🏠 Active Track: T${state.activeTrack + 1} (${state.activeTrack === 3 ? 'Drums' : (state.activeTrack === 0 ? '303 Bass' : 'Synth')})`);
   });
 
   bindButton(buttons.SAVE, () => {
+    if (state.shiftMode) {
+      redo();
+      return;
+    }
     try {
       localStorage.setItem('morpheus_patterns', JSON.stringify(state.tracks));
       showHint('💾 All 4 tracks and 32 patterns saved successfully to browser storage!');
@@ -1074,6 +1358,7 @@
       const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
 
       if (state.recMode) {
+        pushUndo("Record Note");
         pat.steps[state.activeStep].note = midiNote;
         pat.steps[state.activeStep].gate = 115;
         state.activeStep = (state.activeStep + 1) % pat.length;
@@ -1140,6 +1425,7 @@
   // Preset Grooves Selector
   // ===========================================================================
   function loadPreset(style) {
+    pushUndo("Load Groove");
     initTracks();
     if (style === 'acid') {
       state.bpm = 128;
@@ -1259,6 +1545,16 @@
     });
   }
 
+  const btnUndo = document.getElementById("btnUndo");
+  if (btnUndo) {
+    btnUndo.addEventListener("click", undo);
+  }
+
+  const btnRedo = document.getElementById("btnRedo");
+  if (btnRedo) {
+    btnRedo.addEventListener("click", redo);
+  }
+
   const btnPastePat = document.getElementById("btnPastePat");
   if (btnPastePat) {
     btnPastePat.addEventListener("click", () => {
@@ -1266,6 +1562,7 @@
         showHint("⚠️ Clipboard is empty! Click 'Copy' on a pattern first.");
         return;
       }
+      pushUndo("Paste Pattern");
       const trk = state.tracks[state.activeTrack];
       trk.patterns[trk.curBank * 8 + trk.curPat] = JSON.parse(JSON.stringify(state.clipboard));
       showHint(`📋 Pasted into Pattern ${String.fromCharCode(65 + trk.curBank)}${trk.curPat + 1}!`);
@@ -1279,12 +1576,7 @@
 
   const btnClear = document.getElementById("btnClear");
   if (btnClear) {
-    btnClear.addEventListener("click", () => {
-      const trk = state.tracks[state.activeTrack];
-      const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
-      pat.steps.forEach(st => { st.gate = 0; st.tie = 0; });
-      showHint(`🧹 Cleared all notes in Pattern ${String.fromCharCode(65 + trk.curBank)}${trk.curPat + 1}.`);
-    });
+    btnClear.addEventListener("click", clearPattern);
   }
 
   // Kick off screen rendering loop

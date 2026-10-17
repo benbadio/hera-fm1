@@ -365,6 +365,15 @@ a {
   transform: translateY(1px);
 }
 
+.toolbar-box button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: #2b3038;
+  background: #1b1e22;
+  color: #667280;
+  transform: none;
+}
+
 /* Preset Grooves Bar */
 .presets-bar {
   display: flex;
