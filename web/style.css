@@ -1,19 +1,14 @@
-/* MORPHEUS: In-Browser M-VAVE FM-1 Emulator Styles */
+/* MORPHEUS // M-VAVE FM-1 Authentic Web Emulator Styles */
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700;800&display=swap');
+
 :root {
-  --bg-dark: #0f1216;
-  --panel-body: #2c3138;
-  --panel-tray: #1c2024;
-  --key-white: #e4e7eb;
-  --key-black: #2d333b;
-  --knob-body: #181b1f;
-  --knob-cap: #24292e;
-  --accent-orange: #ff4500;
-  --accent-green: #00e676;
-  --accent-blue: #0099ff;
-  --accent-purple: #9933ff;
-  --text-main: #e2e8f0;
-  --text-dim: #94a3b8;
-  --line-rule: #3e4652;
+  --ground: #131518;
+  --ink: #e6e8eb;
+  --muted: #9aa1a9;
+  --rule: #2d3137;
+  --accent: #f0a043;
+  --card: #1a1d21;
+  color-scheme: dark;
 }
 
 * {
@@ -23,346 +18,305 @@
 }
 
 body {
-  background: var(--bg-dark);
-  color: var(--text-main);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 24px 16px 48px;
+  background: var(--ground);
+  color: var(--ink);
+  margin: 0;
+  padding-inline: 16px;
+  padding-block: 24px 48px;
+  font: 400 16px/1.55 "Barlow", "Helvetica Neue", Arial, sans-serif;
   user-select: none;
   -webkit-user-select: none;
 }
 
+main {
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
 header {
-  width: 100%;
-  max-width: 1020px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--line-rule);
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .4rem 1.2rem;
+  margin: 0 0 1rem;
 }
 
-.brand {
+h1 {
+  font: 800 2.2rem/1.1 "Barlow Semi Condensed", "Barlow", sans-serif;
+  margin: 0;
+  letter-spacing: .02em;
+}
+
+header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+header nav {
+  margin-left: auto;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  gap: 1.2rem;
 }
 
-.brand h1 {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  color: #fff;
+header nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color 0.15s ease;
 }
 
-.brand h1 span {
-  color: var(--accent-orange);
+header nav a:hover {
+  color: var(--accent);
 }
 
-.tagline {
-  font-size: 13px;
-  color: var(--text-dim);
+a {
+  color: var(--accent);
 }
 
-.top-actions {
-  display: flex;
-  gap: 12px;
+/* Device Shell and Positioning */
+.devicebox {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  margin-bottom: 1rem;
 }
 
-.btn-header {
-  background: #1e242c;
-  color: var(--text-main);
-  border: 1px solid var(--line-rule);
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn-header:hover {
-  background: #2a333e;
-  border-color: #556070;
-}
-
-/* Device Shell Container */
-.device-shell {
-  width: 100%;
-  max-width: 1020px;
-  background: var(--panel-body);
-  border-radius: 36px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), inset 0 2px 4px rgba(255, 255, 255, 0.1);
-  border: 2px solid #3c434d;
-  padding: 24px;
+.device {
   position: relative;
+  width: 100%;
+  min-width: 560px;
+  aspect-ratio: 1000 / 640;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  border-radius: 4.4% / 6.9%;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.08);
 }
 
-.device-top-section {
-  display: grid;
-  grid-template-columns: 280px 1fr 340px;
-  gap: 20px;
-  align-items: start;
-  margin-bottom: 24px;
+.device svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
-/* Screen Housing */
-.screen-housing {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.screen-bezel {
-  background: #000;
-  padding: 12px;
-  border-radius: 12px;
-  box-shadow: inset 0 3px 10px rgba(0,0,0,0.8), 0 2px 6px rgba(255,255,255,0.05);
-  border: 2px solid #1a1d22;
-}
-
-#matrixCanvas {
-  display: block;
-  width: 280px;
-  height: 280px;
+/* 240x240 LCD Screen sits precisely in the center bezel */
+.device canvas {
+  position: absolute;
+  left: 31.8%;
+  top: 9.6875%;
+  width: 20%;
+  height: 31.25%;
   image-rendering: pixelated;
-  border-radius: 4px;
   background: #080a0c;
+  border-radius: 4px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.9);
 }
 
-/* Encoders & Knobs */
-.knobs-group {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px 20px;
+.controls {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
-.knob-widget {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
+.hit {
+  position: absolute;
+  touch-action: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 12px;
+  pointer-events: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  appearance: none;
+}
+
+.hit.knob {
+  cursor: ns-resize;
+  border-radius: 50%;
+}
+
+.hit:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.device:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 4.4% / 6.9%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ctl {
+  cursor: pointer;
+}
+
+.ctl.knob {
   cursor: ns-resize;
 }
 
-.knob-body {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #323842, #181b1f);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.2);
-  border: 2px solid #3f4752;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.btnface {
+  transition: fill .06s, stroke .06s;
 }
 
-.knob-pointer {
-  position: absolute;
-  top: 6px;
-  width: 4px;
-  height: 16px;
-  background: #fff;
-  border-radius: 2px;
-  box-shadow: 0 0 4px rgba(255,255,255,0.8);
-  transform-origin: 50% 24px;
-  transform: rotate(0deg);
+.lit .btnface {
+  fill: var(--accent);
 }
 
-.knob-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  color: var(--text-dim);
-  text-transform: uppercase;
+.lit text.btn {
+  fill: #1b1205;
 }
 
-/* Master & Aux knobs */
-.master-col {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  align-items: center;
+.held .btnface, .held .keyface {
+  stroke: var(--accent);
+  stroke-width: 3.5;
 }
 
-/* Pushbuttons Panel */
-.buttons-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 12px 14px;
-  margin-bottom: 24px;
-  padding: 16px;
-  background: var(--panel-tray);
-  border-radius: 18px;
-  border: 1px solid #2d333b;
+.latched .btnface {
+  stroke: #6fc3ff;
+  stroke-width: 3.5;
 }
 
-.btn-fm1 {
-  background: #333a44;
-  color: #fff;
-  border: 1px solid #4a5462;
-  border-radius: 10px;
-  padding: 12px 6px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.15);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  transition: all 0.08s ease;
+.keyface {
+  transition: fill .06s, stroke .06s, transform .06s;
 }
 
-.btn-fm1:active, .btn-fm1.active {
-  transform: translateY(2px);
-  background: #252b33;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-  border-color: var(--accent-orange);
+.lit .keyface.white, .held .keyface.white {
+  fill: #f3b25c;
 }
 
-.btn-led {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #444d56;
-  transition: background 0.1s ease, box-shadow 0.1s ease;
+.lit .keyface.black, .held .keyface.black {
+  fill: #e0902c;
 }
 
-.btn-fm1.lit .btn-led {
-  background: var(--accent-orange);
-  box-shadow: 0 0 8px var(--accent-orange);
-}
-
-.btn-fm1.lit-green .btn-led {
-  background: var(--accent-green);
-  box-shadow: 0 0 8px var(--accent-green);
-}
-
-/* 27 Silicone Keyboard Section */
-.keyboard-tray {
-  background: var(--panel-tray);
-  padding: 16px 20px 24px;
-  border-radius: 24px;
-  border: 1px solid #2d333b;
-}
-
-.keyboard-keys {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-}
-
-.key-silicone {
-  position: relative;
-  background: var(--key-white);
-  color: #1a1e24;
-  border-radius: 6px;
-  width: 32px;
-  height: 110px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  padding-bottom: 8px;
-  font-size: 10px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.1);
-  transition: transform 0.06s ease, background 0.08s ease;
-}
-
-.key-silicone.black {
-  background: var(--key-black);
-  color: #fff;
-  height: 72px;
-  margin-left: -14px;
-  margin-right: -14px;
-  z-index: 2;
-  box-shadow: 0 5px 8px rgba(0,0,0,0.6);
-}
-
-.key-silicone:active, .key-silicone.pressed {
-  transform: translateY(3px);
-  background: var(--accent-orange);
-  color: #fff;
-}
-
-.key-silicone.lit {
-  background: var(--accent-orange);
-  color: #fff;
-  box-shadow: 0 0 12px var(--accent-orange);
-}
-
-.key-led {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgba(0,0,0,0.25);
-  margin-bottom: 6px;
-}
-
-.key-silicone.black .key-led {
-  background: rgba(255,255,255,0.3);
-}
-
-.key-silicone.lit .key-led {
-  background: #fff;
-  box-shadow: 0 0 6px #fff;
-}
-
-/* Audio Start Overlay */
-.audio-start-overlay {
+/* Switch On Start Screen Overlay */
+.start {
   position: absolute;
   inset: 0;
-  background: rgba(12, 15, 18, 0.85);
-  backdrop-filter: blur(4px);
-  border-radius: 36px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 11, 13, .55);
+  backdrop-filter: blur(2px);
+  border-radius: 4.4% / 6.9%;
   z-index: 50;
+  transition: opacity 0.2s ease;
 }
 
-.btn-start-audio {
-  background: var(--accent-orange);
-  color: #fff;
-  border: 0;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  padding: 14px 32px;
+.start button {
+  font: 700 1.3rem "Barlow Semi Condensed", "Barlow", sans-serif;
+  letter-spacing: .04em;
+  padding: .75em 1.8em;
   border-radius: 999px;
+  border: 0;
+  background: var(--accent);
+  color: #1b1205;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(255, 69, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(240, 160, 67, 0.4);
   transition: transform 0.1s ease, filter 0.15s ease;
 }
 
-.btn-start-audio:hover {
+.start button:hover {
   filter: brightness(1.1);
   transform: translateY(-2px);
 }
 
-/* Footer & Help */
-footer {
-  width: 100%;
-  max-width: 1020px;
-  margin-top: 24px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  color: var(--text-dim);
+.start[hidden] {
+  display: none;
 }
 
-footer a {
-  color: var(--accent-orange);
-  text-decoration: none;
+/* Bottom Control Bar */
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1.2rem;
+  align-items: center;
+  margin: .9rem 0 0;
+  color: var(--muted);
+  font-size: .92rem;
+}
+
+.bar button {
+  font: inherit;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: .35em .85em;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.bar button:hover {
+  background: #252a30;
+  border-color: #4a525d;
+}
+
+.bar button[aria-pressed="true"] {
+  background: var(--accent);
+  color: #1b1205;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.bar .cpu {
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+}
+
+/* Help & Instructions Section */
+.help {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 1.5rem 2rem;
+  margin: 2rem 0 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rule);
+}
+
+.help h2 {
+  font: 700 1.15rem "Barlow Semi Condensed", "Barlow", sans-serif;
+  margin: 0 0 .4rem;
+  color: var(--ink);
+}
+
+.help p, .help ul {
+  margin: 0;
+  color: var(--muted);
+  font-size: .92rem;
+  line-height: 1.6;
+}
+
+.help ul {
+  padding-left: 1.2rem;
+}
+
+kbd {
+  font: 600 .85em ui-monospace, Menlo, monospace;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: .1em .35em;
+  color: var(--ink);
 }

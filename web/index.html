@@ -1,185 +1,69 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MORPHEUS // M-VAVE FM-1 Reason Matrix Sequencer & Synthesizer</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MORPHEUS // M-VAVE FM-1 Reason Matrix Sequencer & Synth</title>
+  <meta name="description" content="Play MORPHEUS, the Reason Matrix 4-track pattern sequencer & 303 acid synth for the M-VAVE FM-1 in your browser.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎛️</text></svg>">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
+<main>
   <header>
-    <div class="brand">
-      <h1>MORPHEUS <span>FM-1</span></h1>
-      <span class="tagline">Reason Matrix 4-Track Pattern Sequencer & 303 Acid Synth Engine</span>
-    </div>
-    <div class="top-actions">
-      <button class="btn-header" id="btnHelp" onclick="window.open('https://docs.reasonstudios.com/reason13/matrix-pattern-sequencer', '_blank')">Reason Matrix Manual</button>
-      <button class="btn-header" onclick="window.open('https://thefirmwarehub.com/', '_blank')">The Firmware Hub</button>
-    </div>
+    <h1>MORPHEUS</h1>
+    <p>in the browser: Reason Matrix 4-track sequencer & 303 acid synth on the M-VAVE FM-1</p>
+    <nav aria-label="Navigation">
+      <a href="https://docs.reasonstudios.com/reason13/matrix-pattern-sequencer" target="_blank" rel="noreferrer">Matrix Manual</a>
+      <a href="https://thefirmwarehub.com/" target="_blank" rel="noreferrer">Firmware Hub</a>
+      <a href="https://github.com/benbadio/morpheus-fm1" target="_blank" rel="noreferrer">GitHub Source</a>
+    </nav>
   </header>
 
-  <main class="device-shell">
-    <!-- Interactive Audio Start Overlay -->
-    <div class="audio-start-overlay" id="audioOverlay">
-      <h2 style="font-size: 26px; font-weight: 800; letter-spacing: 1.5px; color: #fff;">MORPHEUS 4-TRACK SEQUENCER</h2>
-      <p style="color: #94a3b8; font-size: 14px; text-align: center; max-width: 480px; line-height: 1.5;">
-        Interactive M-VAVE FM-1 Web Audio emulator featuring 4 synced tracks, 303 acid bassline with resonant diode ladder & slide, drum machine, and Reason Matrix UI.
+  <div class="devicebox">
+    <div class="device" id="device" role="group" aria-label="M-VAVE FM-1 Hardware" tabindex="-1">
+      <svg id="panel" viewBox="0 0 1000 640" aria-hidden="true" focusable="false"></svg>
+      <canvas id="matrixCanvas" width="240" height="240" role="img" aria-label="MORPHEUS 240x240 Matrix LCD Screen"></canvas>
+      <div class="controls" id="controls"></div>
+      <div class="start" id="start"><button id="btnStart" type="button">Switch on</button></div>
+      <div hidden id="descs"></div>
+    </div>
+  </div>
+
+  <div class="bar">
+    <span id="status" role="status">Off. Click "Switch on" to initialize Web Audio and start the Matrix sequencer.</span>
+    <button id="muteBtn" type="button" aria-pressed="false">Mute Audio</button>
+    <button id="resetBtn" type="button" title="Reload factory patterns">Factory Reset</button>
+    <span class="cpu" id="statusInfo">128 BPM &bull; 4 Tracks &bull; 303 Bass</span>
+  </div>
+
+  <section class="help">
+    <div>
+      <h2>Hardware Panel Controls</h2>
+      <ul>
+        <li><strong>Left Encoders:</strong> MASTER (volume), SELECT (step scrubber), TEMPO (BPM), TRACK (T1–T4).</li>
+        <li><strong>Right Encoders:</strong> K1 Cutoff, K2 Resonance, K3 Decay, K4 Accent.</li>
+        <li><strong>Left Buttons:</strong> OCT- / OCT+ scroll the active octave window across the Reason grid.</li>
+        <li><strong>12 Function Buttons:</strong> FX (Randomize), SEL (Page 1/2), ENV (Keys/Curve), LFO (Engine: 303/SUB/FM/MUTE), EDIT (Shift), GLO (Settings), HOME (Track), SAVE (Flash), ARP (Bank A–D), SEQ (Pattern 1–8), PLAY/STOP, REC.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>27 Silicone Keys</h2>
+      <ul>
+        <li><strong>Lower 16 Keys:</strong> Step Jump / White keys (audition notes, step record in REC mode).</li>
+        <li><strong>Upper 11 Keys:</strong> Black accidental keys (audition chromatic sharps/flats).</li>
+        <li><strong>Step Record:</strong> Press REC, then press keys to input pitch and automatically step forward!</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Multi-Engine Synthesizer</h2>
+      <p>
+        Features a real-time fixed-point 303 Acid Bassline with diode-ladder filter saturation, portamento slide across tied notes, and accent boost. Cycle engines with <strong>LFO</strong> (or Sound) for Subtractive analog leads, 2-OP FM plucks, or <strong>MUTE</strong> for silent external MIDI sequencing.
       </p>
-      <button class="btn-start-audio" id="btnStart">START EMULATOR</button>
     </div>
+  </section>
+</main>
 
-    <!-- Top Section: Screen & Rotary Encoders -->
-    <div class="device-top-section">
-      <!-- 240x240 LCD Screen Housing -->
-      <div class="screen-housing">
-        <div class="screen-bezel">
-          <canvas id="matrixCanvas" width="240" height="240"></canvas>
-        </div>
-      </div>
-
-      <!-- Parameter Knobs (K1 - K4) -->
-      <div class="knobs-group">
-        <div class="knob-widget" id="knobCutoff" title="Drag up/down to adjust Cutoff frequency">
-          <div class="knob-body">
-            <div class="knob-pointer" id="ptrCutoff"></div>
-          </div>
-          <span class="knob-label">K1 Cutoff</span>
-        </div>
-
-        <div class="knob-widget" id="knobRes" title="Drag up/down to adjust Resonance">
-          <div class="knob-body">
-            <div class="knob-pointer" id="ptrRes"></div>
-          </div>
-          <span class="knob-label">K2 Res</span>
-        </div>
-
-        <div class="knob-widget" id="knobDecay" title="Drag up/down to adjust Envelope Decay">
-          <div class="knob-body">
-            <div class="knob-pointer" id="ptrDecay"></div>
-          </div>
-          <span class="knob-label">K3 Decay</span>
-        </div>
-
-        <div class="knob-widget" id="knobAccent" title="Drag up/down to adjust Accent Amount">
-          <div class="knob-body">
-            <div class="knob-pointer" id="ptrAccent"></div>
-          </div>
-          <span class="knob-label">K4 Accent</span>
-        </div>
-      </div>
-
-      <!-- Master Encoders: BPM & Step Select -->
-      <div class="master-col">
-        <div class="knob-widget" id="knobBpm" title="Drag up/down to adjust Tempo (BPM)">
-          <div class="knob-body" style="width: 72px; height: 72px;">
-            <div class="knob-pointer" id="ptrBpm" style="transform-origin: 50% 30px; height: 20px;"></div>
-          </div>
-          <span class="knob-label">Tempo / BPM</span>
-        </div>
-
-        <div class="knob-widget" id="knobStep" title="Drag up/down to scrub active step">
-          <div class="knob-body" style="width: 72px; height: 72px;">
-            <div class="knob-pointer" id="ptrStep" style="transform-origin: 50% 30px; height: 20px;"></div>
-          </div>
-          <span class="knob-label">Step Select</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pushbuttons Panel (14 buttons) -->
-    <div class="buttons-grid">
-      <button class="btn-fm1" id="btnPlay" title="Start/Stop Sequencer Playback">
-        <div class="btn-led"></div>
-        <span>PLAY</span>
-      </button>
-
-      <button class="btn-fm1" id="btnRec" title="Step Record / Audition mode">
-        <div class="btn-led"></div>
-        <span>REC</span>
-      </button>
-
-      <button class="btn-fm1" id="btnTrack" title="Switch active track (T1 - T4)">
-        <div class="btn-led"></div>
-        <span>TRACK</span>
-      </button>
-
-      <button class="btn-fm1" id="btnMode" title="Toggle Keys (Notes) / Curve (Modulation) View">
-        <div class="btn-led"></div>
-        <span>MODE</span>
-      </button>
-
-      <button class="btn-fm1" id="btnSound" title="Switch Synth Engine: 303 Acid / Subtractive / FM / MUTE">
-        <div class="btn-led"></div>
-        <span>SOUND</span>
-      </button>
-
-      <button class="btn-fm1" id="btnPage" title="Toggle Step Page (1-16 / 17-32)">
-        <div class="btn-led"></div>
-        <span>PAGE</span>
-      </button>
-
-      <button class="btn-fm1" id="btnFX" title="Randomize / Alter Pattern">
-        <div class="btn-led"></div>
-        <span>RANDOM</span>
-      </button>
-
-      <!-- Row 2 -->
-      <button class="btn-fm1" id="btnOctDown" title="Octave Down">
-        <div class="btn-led"></div>
-        <span>OCT -</span>
-      </button>
-
-      <button class="btn-fm1" id="btnOctUp" title="Octave Up">
-        <div class="btn-led"></div>
-        <span>OCT +</span>
-      </button>
-
-      <button class="btn-fm1" id="btnBank" title="Cycle Bank A, B, C, D">
-        <div class="btn-led"></div>
-        <span>BANK</span>
-      </button>
-
-      <button class="btn-fm1" id="btnPat" title="Cycle Pattern 1 to 8">
-        <div class="btn-led"></div>
-        <span>PATTERN</span>
-      </button>
-
-      <button class="btn-fm1" id="btnMute" title="Mute/Unmute Current Track">
-        <div class="btn-led"></div>
-        <span>MUTE TRK</span>
-      </button>
-
-      <button class="btn-fm1" id="btnShift" title="Shift function / Alternate controls">
-        <div class="btn-led"></div>
-        <span>SHIFT</span>
-      </button>
-
-      <button class="btn-fm1" id="btnSave" title="Save All Patterns & Settings to Flash/Storage">
-        <div class="btn-led"></div>
-        <span>SAVE</span>
-      </button>
-    </div>
-
-    <!-- 27 Silicone Keyboard Tray -->
-    <div class="keyboard-tray">
-      <div class="keyboard-keys" id="siliconeKeys">
-        <!-- 27 Silicone Keys dynamically generated by emulator.js -->
-      </div>
-    </div>
-  </main>
-
-  <footer>
-    <div>
-      <span>Firmware: <strong>MORPHEUS v1.0</strong> (FM-1_945 Package)</span> &bull; 
-      <span>Architecture: 4 Sync Tracks &bull; 32 Steps &bull; Reason Matrix UI</span>
-    </div>
-    <div>
-      <span>Hardware: M-VAVE FM-1 (JieLi AC791N RISC-V)</span>
-    </div>
-  </footer>
-
-  <script src="emulator.js"></script>
+<script src="emulator.js"></script>
 </body>
 </html>

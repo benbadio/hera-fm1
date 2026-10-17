@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* MORPHEUS: In-Browser M-VAVE FM-1 Interactive Emulator */
+/* MORPHEUS: Authentic M-VAVE FM-1 In-Browser Emulator */
 
 (() => {
   'use strict';
@@ -15,6 +15,7 @@
   // Global State
   const state = {
     bpm: 128,
+    masterVol: 0.8,
     isRunning: false,
     activeTrack: 0,
     activeStep: 0,
@@ -22,10 +23,8 @@
     viewOctave: 3,    // C3..B3
     viewPage: 0,      // 0 = 1-16, 1 = 17-32
     recMode: false,
+    shiftMode: false,
     soundEngine: 0,   // 0=303, 1=SUB, 2=FM, 3=MUTE
-    menuMode: null,
-    menuSel: 0,
-    clipboard: null,
     tracks: []
   };
 
@@ -47,34 +46,34 @@
 
     if (trackIdx === 0) {
       // Track 1: 303 Acid Bassline
-      const notes = [48, 48, 60, 58, 55, 55, 53, 55, 51, 51, 53, 53, 48, 60, 58, 55];
-      const gates = [110,  0, 127, 95, 115,  0, 100, 120, 90,  0, 105, 115, 120, 127, 95,  0];
-      const ties  = [  0,  0,   1,  0,   0,  0,   0,   1,  0,  0,   0,   1,   0,   1,  0,  0];
+      const notes  = [48, 48, 60, 58, 55, 55, 53, 55, 51, 51, 53, 53, 48, 60, 58, 55];
+      const gates  = [110,  0, 127, 95, 115,  0, 100, 120, 90,  0, 105, 115, 120, 127, 95,  0];
+      const ties   = [  0,  0,   1,  0,   0,  0,   0,   1,  0,  0,   0,   1,   0,   1,  0,  0];
       const curves = [ 30, 45, 120, 80,  60, 40,  75, 110, 35, 20,  70, 100, 115, 125, 80, 40];
       for (let s = 0; s < 16; s++) {
         pat.steps[s] = { note: notes[s], gate: gates[s], tie: ties[s], curve: curves[s] };
       }
     } else if (trackIdx === 1) {
       // Track 2: Lead Synth
-      const notes = [60, 60, 63, 63, 65, 67, 65, 63, 60, 58, 60, 63, 67, 70, 67, 65];
-      const gates = [100, 100, 110, 110, 120, 125, 115, 105, 95, 95, 110, 115, 127, 120, 110, 100];
-      const ties  = [  0,   0,   0,   1,   0,   0,   1,   0,  0,  0,   0,   1,   0,   0,   1,   0];
+      const notes  = [60, 60, 63, 63, 65, 67, 65, 63, 60, 58, 60, 63, 67, 70, 67, 65];
+      const gates  = [100, 100, 110, 110, 120, 125, 115, 105, 95, 95, 110, 115, 127, 120, 110, 100];
+      const ties   = [  0,   0,   0,   1,   0,   0,   1,   0,  0,  0,   0,   1,   0,   0,   1,   0];
       const curves = [ 60,  65,  70,  75,  80,  90, 100,  85, 70, 65,  75,  90, 110, 120,  95,  70];
       for (let s = 0; s < 16; s++) {
         pat.steps[s] = { note: notes[s], gate: gates[s], tie: ties[s], curve: curves[s] };
       }
     } else if (trackIdx === 2) {
       // Track 3: Arpeggiator
-      const notes = [48, 55, 60, 55, 51, 55, 58, 55, 53, 56, 60, 56, 55, 58, 62, 58];
-      const gates = [90, 85, 100, 85, 90, 85, 95, 85, 90, 85, 100, 85, 95, 85, 110, 85];
+      const notes  = [48, 55, 60, 55, 51, 55, 58, 55, 53, 56, 60, 56, 55, 58, 62, 58];
+      const gates  = [90, 85, 100, 85, 90, 85, 95, 85, 90, 85, 100, 85, 95, 85, 110, 85];
       const curves = [40, 50,  60, 70, 80, 90, 80, 70, 60, 50,  60, 70, 80, 90, 100, 80];
       for (let s = 0; s < 16; s++) {
         pat.steps[s] = { note: notes[s], gate: gates[s], tie: 0, curve: curves[s] };
       }
     } else if (trackIdx === 3) {
       // Track 4: Drum triggers (Kick=36, Snare=38, Hat=42, OHat=46)
-      const notes = [36, 42, 38, 42, 36, 42, 38, 46, 36, 42, 38, 42, 36, 42, 38, 46];
-      const gates = [127, 80, 115, 80, 120, 80, 115, 85, 127, 80, 115, 80, 120, 90, 120, 95];
+      const notes  = [36, 42, 38, 42, 36, 42, 38, 46, 36, 42, 38, 42, 36, 42, 38, 46];
+      const gates  = [127, 80, 115, 80, 120, 80, 115, 85, 127, 80, 115, 80, 120, 90, 120, 95];
       const curves = [ 20, 30,  40, 50,  60, 70,  80, 90, 100, 90,  80, 70,  60, 50,  40, 30];
       for (let s = 0; s < 16; s++) {
         pat.steps[s] = { note: notes[s], gate: gates[s], tie: 0, curve: curves[s] };
@@ -84,7 +83,6 @@
     return pat;
   }
 
-  // Initialize all 4 tracks with 32 patterns each
   function initTracks() {
     state.tracks = [];
     for (let t = 0; t < NUM_TRACKS; t++) {
@@ -102,7 +100,6 @@
       state.tracks.push(trk);
     }
 
-    // Try load saved from localStorage
     try {
       const saved = localStorage.getItem('morpheus_patterns');
       if (saved) {
@@ -135,7 +132,7 @@
     audioCtx = new AudioContext({ sampleRate: 44100 });
 
     masterGain = audioCtx.createGain();
-    masterGain.gain.setValueAtTime(0.7, audioCtx.currentTime);
+    masterGain.gain.setValueAtTime(state.masterVol, audioCtx.currentTime);
     masterGain.connect(audioCtx.destination);
   }
 
@@ -156,11 +153,11 @@
     const modOffset = (curveVal - 64) * 20;
     const accentBoost = isAccent ? ((synthAccent / 127) * 4000 + 1000) : 1800;
     const peakFreq = Math.min(12000, Math.max(150, cutoffBase + accentBoost + modOffset));
-    const filterQ = (synthResonance / 127) * 18 + 1; // 1..19 Q
+    const filterQ = (synthResonance / 127) * 18 + 1;
     const decayTime = 0.06 + (synthDecay / 127) * 0.40;
 
     if (isTied && activeVoice) {
-      // ACID SLIDE: smoothly glide pitch without re-triggering attack
+      // Acid portamento glide across tied notes
       activeVoice.osc.frequency.cancelScheduledValues(now);
       activeVoice.osc.frequency.linearRampToValueAtTime(freq, now + 0.06);
 
@@ -170,7 +167,6 @@
       return;
     }
 
-    // Stop previous voice
     if (activeVoice) {
       try {
         activeVoice.gain.gain.cancelScheduledValues(now);
@@ -184,25 +180,20 @@
     const gain = audioCtx.createGain();
 
     if (state.soundEngine === 0) {
-      // 303 Sawtooth
       osc.type = 'sawtooth';
     } else if (state.soundEngine === 1) {
-      // Subtractive Square
       osc.type = 'square';
     } else {
-      // FM-ish triangle
       osc.type = 'triangle';
     }
 
     osc.frequency.setValueAtTime(freq, now);
 
-    // Resonant Filter
     filter.type = 'lowpass';
     filter.Q.setValueAtTime(filterQ, now);
     filter.frequency.setValueAtTime(peakFreq, now);
     filter.frequency.exponentialRampToValueAtTime(Math.max(80, cutoffBase), now + decayTime);
 
-    // VCA Envelope
     const ampVol = (velocity / 127) * (isAccent ? 0.55 : 0.40);
     gain.gain.setValueAtTime(0.001, now);
     gain.gain.linearRampToValueAtTime(ampVol, now + 0.005);
@@ -218,7 +209,7 @@
     activeVoice = { osc, filter, gain };
   }
 
-  // Drum Synthesizer for Track 4
+  // Drum Synth for Track 4
   function playDrumNote(note, velocity) {
     if (!audioCtx || state.soundEngine === 3) return;
     const now = audioCtx.currentTime;
@@ -238,7 +229,7 @@
       osc.start(now);
       osc.stop(now + 0.25);
     } else if (note === 38) {
-      // Snare
+      // 909 Snare
       const osc = audioCtx.createOscillator();
       const oscGain = audioCtx.createGain();
       osc.frequency.setValueAtTime(190, now);
@@ -286,15 +277,12 @@
         } else if (t === 3) {
           playDrumNote(step.note, step.gate);
         } else {
-          // Play secondary synth note
           play303Note(step.note, step.gate * 0.7, step.tie, step.curve);
         }
       }
 
-      // Step advancement
       trk.curStep = (trk.curStep + 1) % pat.length;
 
-      // Downbeat pattern jump
       if (trk.curStep === 0) {
         if (trk.nextPat !== trk.curPat || trk.nextBank !== trk.curBank) {
           trk.curPat = trk.nextPat;
@@ -303,7 +291,6 @@
       }
     }
 
-    // Schedule next 16th step based on BPM
     const stepMs = (60000 / (state.bpm * 4));
     stepTimer = setTimeout(stepSequencer, stepMs);
   }
@@ -318,13 +305,13 @@
       state.tracks[t].curStep = 0;
     }
     stepSequencer();
-    updateUIButtons();
+    updateButtonVisuals();
   }
 
   function stopSequencer() {
     state.isRunning = false;
     clearTimeout(stepTimer);
-    updateUIButtons();
+    updateButtonVisuals();
   }
 
   // ===========================================================================
@@ -344,14 +331,14 @@
     const stepOffset = state.viewPage * 16;
     const curPlayStep = trk.curStep;
 
-    // --- 1. Top Bar (y: 0..25) ---
+    // 1. Top Header Bar (y: 0..25)
     ctx.fillStyle = '#14181c';
     ctx.fillRect(0, 0, 240, 25);
     ctx.fillStyle = '#222830';
     ctx.fillRect(0, 25, 240, 1);
 
     // Track Badge: [T1]
-    ctx.fillStyle = '#ff3700';
+    ctx.fillStyle = '#f0a043';
     ctx.fillRect(4, 4, 20, 17);
     ctx.fillStyle = '#0a0c0e';
     ctx.font = 'bold 10px monospace';
@@ -360,7 +347,7 @@
 
     // Track mini indicators
     for (let t = 0; t < 4; t++) {
-      ctx.fillStyle = (t === trkIdx) ? '#ff3700' : '#444d56';
+      ctx.fillStyle = (t === trkIdx) ? '#f0a043' : '#444d56';
       ctx.fillRect(28 + t * 6, 10, 4, 5);
     }
 
@@ -371,24 +358,23 @@
     ctx.font = 'bold 9px monospace';
     ctx.fillText(`${String.fromCharCode(65 + trk.curBank)}${trk.curPat + 1}`, 63, 16);
 
-    // Sound Badge
-    const snd = SOUND_MODES[state.soundEngine];
-    ctx.fillStyle = snd === 'MUTE' ? '#555555' : '#8833cc';
-    ctx.fillRect(76, 5, 34, 15);
-    ctx.fillStyle = '#ffffff';
+    // Sound Mode badge
+    ctx.fillStyle = '#ff9900';
+    ctx.fillRect(76, 4, 34, 17);
+    ctx.fillStyle = '#000';
     ctx.font = 'bold 8px monospace';
-    ctx.fillText(snd, 93, 15);
+    ctx.fillText(SOUND_MODES[state.soundEngine], 93, 16);
 
-    // Mode Badge
+    // View Mode badge
     ctx.fillStyle = state.viewMode === 'keys' ? '#00cc88' : '#3399ff';
-    ctx.fillRect(114, 5, 42, 15);
+    ctx.fillRect(114, 4, 42, 17);
     ctx.fillStyle = '#0a0c0e';
-    ctx.fillText(state.viewMode === 'keys' ? 'KEYS' : 'CURV', 135, 15);
+    ctx.fillText(state.viewMode === 'keys' ? 'KEYS' : 'CURV', 135, 16);
 
     // MIDI CH
     ctx.fillStyle = '#808b96';
     ctx.font = '8px monospace';
-    ctx.fillText(`CH${pat.midiCh < 10 ? '0' + pat.midiCh : pat.midiCh}`, 174, 15);
+    ctx.fillText(`CH${pat.midiCh < 10 ? '0' + pat.midiCh : pat.midiCh}`, 174, 16);
 
     // Run / Stop
     ctx.fillStyle = state.isRunning ? '#00e676' : '#607080';
@@ -399,7 +385,7 @@
     ctx.textAlign = 'left';
     ctx.fillText(state.isRunning ? 'RUN' : 'STOP', 212, 15);
 
-    // --- 2. Upper Matrix Note Grid (y: 26..148) ---
+    // 2. Upper Matrix Note Grid (y: 26..148)
     const gridX = 22;
     const gridW = 216;
     const rowH = 10;
@@ -428,7 +414,6 @@
     ctx.fillStyle = '#0c0f12';
     ctx.fillRect(gridX, 26, gridW, 120);
 
-    // Grid Lines
     ctx.strokeStyle = '#181d22';
     ctx.lineWidth = 1;
     for (let r = 0; r <= 12; r++) {
@@ -451,112 +436,102 @@
       const actualStep = stepOffset + sIdx;
       if (actualStep >= pat.length) {
         ctx.fillStyle = '#06080a';
-        ctx.fillRect(gridX + sIdx * colW + 1, 27, colW - 1, 118);
+        ctx.fillRect(gridX + sIdx * colW, 26, colW, 120);
         continue;
       }
 
       const st = pat.steps[actualStep];
-      const isPlay = state.isRunning && actualStep === curPlayStep;
-      const isCursor = actualStep === state.activeStep;
 
-      if (isCursor) {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(gridX + sIdx * colW, 26, colW, 1);
-        ctx.fillRect(gridX + sIdx * colW, 145, colW, 1);
+      // Playback Scrubber highlight
+      if (state.isRunning && actualStep === curPlayStep) {
+        ctx.fillStyle = 'rgba(240, 160, 67, 0.15)';
+        ctx.fillRect(gridX + sIdx * colW, 26, colW, 120);
       }
 
-      if (isPlay) {
-        ctx.fillStyle = '#ff3700';
-        ctx.fillRect(gridX + sIdx * colW + 1, 26, colW - 2, 2);
+      // Step cursor
+      if (actualStep === state.activeStep) {
+        ctx.strokeStyle = '#f0a043';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(gridX + sIdx * colW + 1, 27, colW - 2, 118);
       }
 
       if (state.viewMode === 'keys') {
         if (st.gate > 0) {
           const noteOct = Math.floor(st.note / 12) - 1;
-          const noteInOct = st.note % 12;
-          if (noteOct === state.viewOctave) {
-            const noteRow = 11 - noteInOct;
-            const cellY = 26 + noteRow * rowH + 1;
-            ctx.fillStyle = isPlay ? '#ffeedd' : '#ff3700';
-            ctx.shadowColor = isPlay ? '#ffffff' : '#ff4400';
-            ctx.shadowBlur = isPlay ? 6 : 2;
-            ctx.fillRect(gridX + sIdx * colW + 2, cellY + 1, colW - 3, rowH - 2);
-            ctx.shadowBlur = 0;
-          } else if (noteOct > state.viewOctave) {
-            ctx.fillStyle = '#ff7700';
-            ctx.fillRect(gridX + sIdx * colW + 4, 27, colW - 7, 3);
-          } else {
-            ctx.fillStyle = '#ff7700';
-            ctx.fillRect(gridX + sIdx * colW + 4, 142, colW - 7, 3);
+          const noteSemi = st.note % 12;
+          const rowIdx = 11 - noteSemi;
+
+          if (noteOct === state.viewOctave && rowIdx >= 0 && rowIdx < 12) {
+            const ny = 26 + rowIdx * rowH;
+            ctx.fillStyle = (actualStep === state.activeStep) ? '#fff' : (st.gate > 105 ? '#ff9900' : '#f0a043');
+            ctx.fillRect(gridX + sIdx * colW + 2, ny + 2, colW - 3, rowH - 3);
+
+            if (st.tie && sIdx < 15) {
+              ctx.fillStyle = '#ffb366';
+              ctx.fillRect(gridX + sIdx * colW + colW - 2, ny + 4, 3, 3);
+            }
           }
         }
       } else {
-        // Curve mode
-        const barH = (st.curve / 127) * 116;
-        const barY = 146 - barH;
-        ctx.fillStyle = isPlay ? '#ffeedd' : '#0088ff';
-        ctx.shadowColor = '#00aaff';
-        ctx.shadowBlur = isPlay ? 6 : 2;
-        ctx.fillRect(gridX + sIdx * colW + 2, barY, colW - 4, barH);
-        ctx.shadowBlur = 0;
+        // CURVE mode
+        const cvY = 146 - (st.curve / 127) * 116;
+        ctx.fillStyle = '#3399ff';
+        ctx.fillRect(gridX + sIdx * colW + 2, cvY - 2, colW - 3, 5);
       }
     }
 
-    // --- 3. Lower Gate / Velocity Strips (y: 148..208) ---
-    ctx.fillStyle = '#101317';
-    ctx.fillRect(0, 148, 240, 60);
+    // 3. Lower Section: Velocity Bars / Tied Bridges (y: 150..218)
+    ctx.fillStyle = '#101418';
+    ctx.fillRect(0, 148, 240, 72);
     ctx.fillStyle = '#222830';
     ctx.fillRect(0, 148, 240, 1);
 
-    ctx.fillStyle = '#14181c';
-    ctx.fillRect(0, 149, gridX, 59);
-    ctx.fillRect(gridX - 1, 149, 1, 59);
     ctx.fillStyle = '#808b96';
-    ctx.font = 'bold 8px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('GATE', 11, 172);
-    ctx.fillText('VEL', 11, 186);
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('GATE', 2, 160);
+    ctx.fillText('VEL', 4, 170);
 
     for (let sIdx = 0; sIdx < 16; sIdx++) {
       const actualStep = stepOffset + sIdx;
       if (actualStep >= pat.length) continue;
 
       const st = pat.steps[actualStep];
-      const isPlay = state.isRunning && actualStep === curPlayStep;
-      const barX = gridX + sIdx * colW + 2;
+      const bx = gridX + sIdx * colW;
 
       if (st.gate > 0) {
-        const barH = Math.max(4, (st.gate / 127) * 50);
-        const barY = 206 - barH;
-        ctx.fillStyle = isPlay ? '#ffeedd' : '#e64000';
-        ctx.fillRect(barX, barY, colW - 4, barH);
+        const barH = (st.gate / 127) * 58;
+        const by = 216 - barH;
 
+        ctx.fillStyle = (actualStep === state.activeStep) ? '#ffffff' : (st.gate > 105 ? '#ff9900' : '#f0a043');
+        ctx.fillRect(bx + 2, by, colW - 4, barH);
+
+        // Tied step bridge
         if (st.tie && sIdx < 15) {
-          ctx.fillStyle = '#ff7700';
-          ctx.fillRect(barX + (colW - 4), barY + barH - 4, 4, 4);
+          ctx.fillStyle = '#ff6600';
+          ctx.fillRect(bx + colW - 3, by + 4, 5, 4);
         }
       } else {
-        ctx.fillStyle = '#222830';
-        ctx.fillRect(barX + 2, 202, colW - 8, 2);
+        ctx.fillStyle = '#26303c';
+        ctx.fillRect(bx + 2, 214, colW - 4, 2);
       }
     }
 
-    // --- 4. Bottom Status Bar (y: 208..240) ---
+    // 4. Bottom Status Bar (y: 220..240)
     ctx.fillStyle = '#14181c';
-    ctx.fillRect(0, 208, 240, 32);
+    ctx.fillRect(0, 220, 240, 20);
     ctx.fillStyle = '#222830';
-    ctx.fillRect(0, 208, 240, 1);
+    ctx.fillRect(0, 220, 240, 1);
 
-    ctx.font = '8px monospace';
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#ff7700';
-    ctx.fillText(`P${state.viewPage + 1} OCT:${state.viewOctave}`, 6, 226);
+    ctx.fillStyle = '#f0a043';
+    ctx.font = 'bold 9px monospace';
+    ctx.fillText(`P${state.viewPage + 1} OCT:${state.viewOctave}`, 6, 233);
 
     ctx.fillStyle = '#e0e6ed';
-    ctx.fillText(`${state.bpm}BPM`, 82, 226);
+    ctx.fillText(`${state.bpm}BPM`, 82, 233);
 
     ctx.fillStyle = '#808b96';
-    ctx.fillText('K1-4:EDIT', 148, 226);
+    ctx.fillText('K1-4:EDIT', 148, 233);
   }
 
   function loop() {
@@ -565,39 +540,289 @@
   }
 
   // ===========================================================================
-  // Physical Panel & Keyboard Event Handlers
+  // SVG Front Panel & Controls Generation (Faithful to M-VAVE FM-1)
   // ===========================================================================
-  const overlay = document.getElementById('audioOverlay');
-  const btnStart = document.getElementById('btnStart');
+  const NS = "http://www.w3.org/2000/svg";
+  const BODY = "#2e3238", TRAY = "#212428", KEY_W = "#5e636b", KEY_B = "#484d54", KNOB = "#1b1d20", BTNC = "#272a2e", LABEL = "#d0d4da";
+  const WHITE_K = [0, 2, 4, 6, 7, 9, 11, 12, 14, 16, 18, 19, 21, 23, 24, 26];
+  const BLACK_K = [1, 3, 5, 8, 10, 13, 15, 17, 20, 22, 25];
+  const BLACK_AFTER = [0, 1, 2, 4, 5, 7, 8, 9, 11, 12, 14];
 
-  btnStart.addEventListener('click', () => {
-    initAudio();
-    overlay.style.display = 'none';
-    startSequencer();
-  });
+  const svg = document.getElementById("panel");
+  const controls = document.getElementById("controls");
 
-  // Buttons
-  const btnPlay = document.getElementById('btnPlay');
-  const btnRec = document.getElementById('btnRec');
-  const btnTrack = document.getElementById('btnTrack');
-  const btnMode = document.getElementById('btnMode');
-  const btnSound = document.getElementById('btnSound');
-  const btnOctDown = document.getElementById('btnOctDown');
-  const btnOctUp = document.getElementById('btnOctUp');
-  const btnPage = document.getElementById('btnPage');
-  const btnSave = document.getElementById('btnSave');
-  const btnFX = document.getElementById('btnFX');
+  function el(tag, attrs, parent = svg) {
+    const e = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    parent.appendChild(e);
+    return e;
+  }
 
-  function updateUIButtons() {
-    if (btnPlay) {
-      btnPlay.classList.toggle('lit-green', state.isRunning);
+  function text(parent, x, y, s, size, fill = LABEL, weight = 600) {
+    const t = el("text", {
+      x, y, "text-anchor": "middle",
+      "font-family": "'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif",
+      "font-size": size, "font-weight": weight, fill,
+      "letter-spacing": ".05em", class: "btn", "pointer-events": "none"
+    }, parent);
+    t.textContent = s;
+    return t;
+  }
+
+  // 1. Chassis Body
+  el("rect", { x: 4, y: 4, width: 992, height: 632, rx: 44, fill: BODY });
+
+  // 2. Center Screen Bezel
+  el("rect", { x: 300, y: 44, width: 236, height: 236, rx: 26, fill: "#111214" });
+
+  // 3. Knobs Builder
+  const knobs = {};
+  function knob(x, y, r, label, role) {
+    const g = el("g", { class: "ctl knob" });
+    el("circle", { cx: x, cy: y, r: r + 5, fill: TRAY }, g);
+    el("circle", { cx: x, cy: y, r, fill: KNOB, stroke: "#44474c", "stroke-width": 2 }, g);
+    const ind = el("line", { x1: x, y1: y - r + 5, x2: x, y2: y - r + 15, stroke: LABEL, "stroke-width": 3, "stroke-linecap": "round" }, g);
+    text(g, x, y - r - 12, label, 16);
+    el("circle", { cx: x, cy: y, r: r + 14, fill: "transparent" }, g);
+    knobs[label] = { g, ind, x, y, angle: 0, role, label };
+    return knobs[label];
+  }
+
+  // Left knobs (2x2 grid)
+  knob(105, 100, 24, "MASTER", "master");
+  knob(215, 100, 24, "SELECT", "select");
+  knob(105, 205, 24, "TEMPO", "tempo");
+  knob(215, 205, 24, "TRACK", "track");
+
+  // Right knobs (4 in a row)
+  knob(610, 100, 22, "KNOB1", "k1");
+  knob(714, 100, 22, "KNOB2", "k2");
+  knob(818, 100, 22, "KNOB3", "k3");
+  knob(922, 100, 22, "KNOB4", "k4");
+
+  // 4. Buttons Builder
+  const buttons = {};
+  function button(x, y, w, h, label, two) {
+    const g = el("g", { class: "ctl" });
+    el("rect", { x, y, width: w, height: h, rx: 9, fill: BTNC, stroke: "#4a4d52", "stroke-width": 1.5, class: "btnface" }, g);
+    if (two) {
+      text(g, x + w / 2, y + h / 2 - 1, label, 12);
+      text(g, x + w / 2, y + h / 2 + 12, two, 12);
+    } else {
+      text(g, x + w / 2, y + h / 2 + 5, label, 15);
     }
-    if (btnRec) {
-      btnRec.classList.toggle('lit', state.recMode);
+    buttons[label] = { g, label, x, y, w, h };
+  }
+
+  // Left 2 buttons under left knobs
+  el("rect", { x: 58, y: 258, width: 210, height: 58, rx: 14, fill: TRAY });
+  button(72, 268, 82, 38, "OCT-");
+  button(170, 268, 82, 38, "OCT+");
+
+  // Right 12 buttons (6x2 grid)
+  el("rect", { x: 568, y: 160, width: 400, height: 140, rx: 18, fill: TRAY });
+  const ROW1 = ["FX", "SEL", "ENV", "LFO", "EDIT", "GLO"];
+  const ROW2 = ["HOME", "SAVE", "ARP", "SEQ", "PLAY", "REC"];
+  for (let i = 0; i < 6; i++) {
+    button(582 + i * 63, 174, 54, 48, ROW1[i]);
+    if (ROW2[i] === "PLAY") {
+      button(582 + i * 63, 236, 54, 48, "PLAY", "STOP");
+    } else {
+      button(582 + i * 63, 236, 54, 48, ROW2[i]);
     }
   }
 
-  btnPlay.addEventListener('click', () => {
+  // 5. 27 Silicone Keys
+  const keys = [];
+  (function buildKeybed(x0, y0, w, h) {
+    el("rect", { x: x0, y: y0, width: w, height: h, rx: 18, fill: TRAY });
+    const pitch = (w - 24) / 16;
+    const kw = pitch * 0.78;
+
+    // 16 White keys (lower row)
+    for (let i = 0; i < 16; i++) {
+      const g = el("g", { class: "ctl" });
+      const kx = x0 + 12 + i * pitch + (pitch - kw) / 2;
+      const ky = y0 + h * 0.43;
+      const kh = h * 0.52;
+      el("rect", { x: kx, y: ky, width: kw, height: kh, rx: kw / 2, fill: KEY_W, class: "keyface white" }, g);
+      keys[WHITE_K[i]] = { g, idx: WHITE_K[i], isBlack: false, x: kx, y: ky, w: kw, h: kh };
+    }
+
+    // 11 Black keys (upper row)
+    BLACK_AFTER.forEach((a, k) => {
+      const g = el("g", { class: "ctl" });
+      const kx = x0 + 12 + (a + 1) * pitch - kw / 2;
+      const ky = y0 + h * 0.06;
+      const kh = h * 0.33;
+      el("rect", { x: kx, y: ky, width: kw, height: kh, rx: kw / 2, fill: KEY_B, class: "keyface black" }, g);
+      keys[BLACK_K[k]] = { g, idx: BLACK_K[k], isBlack: true, x: kx, y: ky, w: kw, h: kh };
+    });
+  })(36, 340, 928, 270);
+
+  // 6. Interactive Transparent Hit-Target Layer
+  function createHit(c, kind) {
+    const d = document.createElement(kind === "knob" ? "div" : "button");
+    d.className = "hit" + (kind === "knob" ? " knob" : "");
+    if (kind !== "knob") d.type = "button";
+
+    const b = c.g.getBBox();
+    Object.assign(d.style, {
+      left: `${(b.x / 10)}%`,
+      top: `${(b.y / 6.4)}%`,
+      width: `${(b.width / 10)}%`,
+      height: `${(b.height / 6.4)}%`
+    });
+
+    d.setAttribute("aria-label", c.label || "Control");
+    d.addEventListener("touchstart", (e) => e.preventDefault(), { passive: false });
+    controls.appendChild(d);
+    c.hit = d;
+  }
+
+  Object.values(knobs).forEach(k => createHit(k, "knob"));
+  Object.values(buttons).forEach(b => createHit(b, "button"));
+  keys.forEach(k => { if (k) createHit(k, "key"); });
+
+  // Update knob indicator angle
+  function drawKnob(k) {
+    k.ind.setAttribute("transform", `rotate(${k.angle} ${k.x} ${k.y})`);
+  }
+
+  // Setup knob dragging
+  function bindKnob(k, onTurn) {
+    let drag = null;
+    k.hit.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      k.hit.setPointerCapture(e.pointerId);
+      drag = { y: e.clientY };
+    });
+
+    k.hit.addEventListener("pointermove", (e) => {
+      if (!drag) return;
+      const dy = drag.y - e.clientY;
+      drag.y = e.clientY;
+      onTurn(dy);
+    });
+
+    k.hit.addEventListener("pointerup", (e) => {
+      drag = null;
+      try { k.hit.releasePointerCapture(e.pointerId); } catch (err) {}
+    });
+
+    k.hit.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      onTurn(e.deltaY < 0 ? 3 : -3);
+    }, { passive: false });
+  }
+
+  // Initialize Knobs
+  bindKnob(knobs.MASTER, (dy) => {
+    state.masterVol = Math.max(0, Math.min(1.0, state.masterVol + dy * 0.01));
+    knobs.MASTER.angle = -135 + state.masterVol * 270;
+    drawKnob(knobs.MASTER);
+    if (masterGain && audioCtx) {
+      masterGain.gain.setValueAtTime(state.masterVol, audioCtx.currentTime);
+    }
+  });
+  knobs.MASTER.angle = -135 + state.masterVol * 270;
+  drawKnob(knobs.MASTER);
+
+  bindKnob(knobs.SELECT, (dy) => {
+    state.activeStep = (state.activeStep + (dy > 0 ? 1 : -1) + 32) % 32;
+    state.viewPage = state.activeStep >= 16 ? 1 : 0;
+    knobs.SELECT.angle = (knobs.SELECT.angle + (dy > 0 ? 15 : -15)) % 360;
+    drawKnob(knobs.SELECT);
+  });
+
+  bindKnob(knobs.TEMPO, (dy) => {
+    state.bpm = Math.min(240, Math.max(50, state.bpm + dy));
+    knobs.TEMPO.angle = ((state.bpm - 50) / 190) * 270 - 135;
+    drawKnob(knobs.TEMPO);
+  });
+  knobs.TEMPO.angle = ((state.bpm - 50) / 190) * 270 - 135;
+  drawKnob(knobs.TEMPO);
+
+  bindKnob(knobs.TRACK, (dy) => {
+    if (Math.abs(dy) >= 1) {
+      state.activeTrack = (state.activeTrack + (dy > 0 ? 1 : -1) + 4) % 4;
+      knobs.TRACK.angle = (state.activeTrack / 3) * 180 - 90;
+      drawKnob(knobs.TRACK);
+    }
+  });
+
+  bindKnob(knobs.KNOB1, (dy) => {
+    synthCutoff = Math.min(127, Math.max(0, synthCutoff + dy));
+    knobs.KNOB1.angle = (synthCutoff / 127) * 270 - 135;
+    drawKnob(knobs.KNOB1);
+  });
+  knobs.KNOB1.angle = (synthCutoff / 127) * 270 - 135;
+  drawKnob(knobs.KNOB1);
+
+  bindKnob(knobs.KNOB2, (dy) => {
+    synthResonance = Math.min(127, Math.max(0, synthResonance + dy));
+    knobs.KNOB2.angle = (synthResonance / 127) * 270 - 135;
+    drawKnob(knobs.KNOB2);
+  });
+  knobs.KNOB2.angle = (synthResonance / 127) * 270 - 135;
+  drawKnob(knobs.KNOB2);
+
+  bindKnob(knobs.KNOB3, (dy) => {
+    synthDecay = Math.min(127, Math.max(0, synthDecay + dy));
+    knobs.KNOB3.angle = (synthDecay / 127) * 270 - 135;
+    drawKnob(knobs.KNOB3);
+  });
+  knobs.KNOB3.angle = (synthDecay / 127) * 270 - 135;
+  drawKnob(knobs.KNOB3);
+
+  bindKnob(knobs.KNOB4, (dy) => {
+    synthAccent = Math.min(127, Math.max(0, synthAccent + dy));
+    knobs.KNOB4.angle = (synthAccent / 127) * 270 - 135;
+    drawKnob(knobs.KNOB4);
+  });
+  knobs.KNOB4.angle = (synthAccent / 127) * 270 - 135;
+  drawKnob(knobs.KNOB4);
+
+  // Button Actions & Visual State
+  function updateButtonVisuals() {
+    if (buttons.PLAY) {
+      buttons.PLAY.g.classList.toggle("lit", state.isRunning);
+    }
+    if (buttons.REC) {
+      buttons.REC.g.classList.toggle("lit", state.recMode);
+    }
+    if (buttons.EDIT) {
+      buttons.EDIT.g.classList.toggle("lit", state.shiftMode);
+    }
+    const info = document.getElementById("statusInfo");
+    if (info) {
+      info.textContent = `${state.bpm} BPM • T${state.activeTrack + 1} (${SOUND_MODES[state.soundEngine]}) • ${state.isRunning ? 'RUNNING' : 'STOPPED'}`;
+    }
+  }
+
+  function bindButton(b, onClick) {
+    b.hit.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      b.g.classList.add("held");
+    });
+    b.hit.addEventListener("pointerup", (e) => {
+      b.g.classList.remove("held");
+    });
+    b.hit.addEventListener("click", () => {
+      onClick();
+      updateButtonVisuals();
+    });
+  }
+
+  bindButton(buttons["OCT-"], () => {
+    if (state.viewOctave > 1) state.viewOctave--;
+  });
+
+  bindButton(buttons["OCT+"], () => {
+    if (state.viewOctave < 5) state.viewOctave++;
+  });
+
+  bindButton(buttons.PLAY, () => {
     if (state.isRunning) {
       stopSequencer();
     } else {
@@ -605,46 +830,12 @@
     }
   });
 
-  btnRec.addEventListener('click', () => {
+  bindButton(buttons.REC, () => {
     state.recMode = !state.recMode;
-    updateUIButtons();
   });
 
-  btnTrack.addEventListener('click', () => {
-    state.activeTrack = (state.activeTrack + 1) % NUM_TRACKS;
-  });
-
-  btnMode.addEventListener('click', () => {
-    state.viewMode = (state.viewMode === 'keys') ? 'curve' : 'keys';
-  });
-
-  btnSound.addEventListener('click', () => {
-    state.soundEngine = (state.soundEngine + 1) % SOUND_MODES.length;
-  });
-
-  btnOctDown.addEventListener('click', () => {
-    if (state.viewOctave > 1) state.viewOctave--;
-  });
-
-  btnOctUp.addEventListener('click', () => {
-    if (state.viewOctave < 5) state.viewOctave++;
-  });
-
-  btnPage.addEventListener('click', () => {
-    state.viewPage = state.viewPage === 0 ? 1 : 0;
-  });
-
-  btnSave.addEventListener('click', () => {
-    try {
-      localStorage.setItem('morpheus_patterns', JSON.stringify(state.tracks));
-      alert('MORPHEUS: Patterns and settings saved successfully to browser storage!');
-    } catch (e) {
-      alert('Could not save to localStorage: ' + e);
-    }
-  });
-
-  btnFX.addEventListener('click', () => {
-    // Quick randomizer demo
+  bindButton(buttons.FX, () => {
+    // Randomize pattern
     const trk = state.tracks[state.activeTrack];
     const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
     const scale = [0, 3, 5, 7, 10, 12, 15];
@@ -660,150 +851,68 @@
     }
   });
 
-  // Knobs: drag up/down
-  function setupKnob(el, onChange) {
-    let startY = 0;
-    let dragging = false;
+  bindButton(buttons.SEL, () => {
+    state.viewPage = state.viewPage === 0 ? 1 : 0;
+  });
 
-    el.addEventListener('mousedown', (e) => {
-      startY = e.clientY;
-      dragging = true;
-      e.preventDefault();
-    });
+  bindButton(buttons.ENV, () => {
+    state.viewMode = state.viewMode === 'keys' ? 'curve' : 'keys';
+  });
 
-    window.addEventListener('mousemove', (e) => {
-      if (!dragging) return;
-      const dy = startY - e.clientY;
-      startY = e.clientY;
-      onChange(dy);
-    });
+  bindButton(buttons.LFO, () => {
+    state.soundEngine = (state.soundEngine + 1) % SOUND_MODES.length;
+  });
 
-    window.addEventListener('mouseup', () => {
-      dragging = false;
-    });
-  }
+  bindButton(buttons.EDIT, () => {
+    state.shiftMode = !state.shiftMode;
+  });
 
-  const btnBank = document.getElementById('btnBank');
-  if (btnBank) {
-    btnBank.addEventListener('click', () => {
-      const trk = state.tracks[state.activeTrack];
-      trk.nextBank = (trk.curBank + 1) % 4;
-      trk.curBank = trk.nextBank;
-    });
-  }
+  bindButton(buttons.GLO, () => {
+    const trk = state.tracks[state.activeTrack];
+    const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+    pat.length = pat.length === 16 ? 32 : (pat.length === 32 ? 24 : 16);
+  });
 
-  const btnPat = document.getElementById('btnPat');
-  if (btnPat) {
-    btnPat.addEventListener('click', () => {
-      const trk = state.tracks[state.activeTrack];
-      trk.nextPat = (trk.curPat + 1) % 8;
-      trk.curPat = trk.nextPat;
-    });
-  }
+  bindButton(buttons.HOME, () => {
+    state.activeTrack = (state.activeTrack + 1) % NUM_TRACKS;
+  });
 
-  const btnMute = document.getElementById('btnMute');
-  if (btnMute) {
-    btnMute.addEventListener('click', () => {
-      const trk = state.tracks[state.activeTrack];
-      const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
-      pat.mute = !pat.mute;
-      btnMute.classList.toggle('lit', pat.mute);
-    });
-  }
+  bindButton(buttons.SAVE, () => {
+    try {
+      localStorage.setItem('morpheus_patterns', JSON.stringify(state.tracks));
+      alert('MORPHEUS: Patterns & settings saved to browser storage!');
+    } catch (e) {
+      alert('Could not save to localStorage: ' + e);
+    }
+  });
 
-  const btnShift = document.getElementById('btnShift');
-  if (btnShift) {
-    btnShift.addEventListener('click', () => {
-      state.shiftMode = !state.shiftMode;
-      btnShift.classList.toggle('lit', state.shiftMode);
-    });
-  }
+  bindButton(buttons.ARP, () => {
+    const trk = state.tracks[state.activeTrack];
+    trk.nextBank = (trk.curBank + 1) % 4;
+    trk.curBank = trk.nextBank;
+  });
 
-  const kCutoff = document.getElementById('knobCutoff');
-  const pCutoff = document.getElementById('ptrCutoff');
-  if (kCutoff && pCutoff) {
-    pCutoff.style.transform = `rotate(${(synthCutoff / 127) * 270 - 135}deg)`;
-    setupKnob(kCutoff, (dy) => {
-      synthCutoff = Math.min(127, Math.max(0, synthCutoff + dy));
-      const deg = (synthCutoff / 127) * 270 - 135;
-      pCutoff.style.transform = `rotate(${deg}deg)`;
-    });
-  }
+  bindButton(buttons.SEQ, () => {
+    const trk = state.tracks[state.activeTrack];
+    trk.nextPat = (trk.curPat + 1) % 8;
+    trk.curPat = trk.nextPat;
+  });
 
-  const kRes = document.getElementById('knobRes');
-  const pRes = document.getElementById('ptrRes');
-  if (kRes && pRes) {
-    pRes.style.transform = `rotate(${(synthResonance / 127) * 270 - 135}deg)`;
-    setupKnob(kRes, (dy) => {
-      synthResonance = Math.min(127, Math.max(0, synthResonance + dy));
-      const deg = (synthResonance / 127) * 270 - 135;
-      pRes.style.transform = `rotate(${deg}deg)`;
-    });
-  }
-
-  const kDecay = document.getElementById('knobDecay');
-  const pDecay = document.getElementById('ptrDecay');
-  if (kDecay && pDecay) {
-    pDecay.style.transform = `rotate(${(synthDecay / 127) * 270 - 135}deg)`;
-    setupKnob(kDecay, (dy) => {
-      synthDecay = Math.min(127, Math.max(0, synthDecay + dy));
-      const deg = (synthDecay / 127) * 270 - 135;
-      pDecay.style.transform = `rotate(${deg}deg)`;
-    });
-  }
-
-  const kAccent = document.getElementById('knobAccent');
-  const pAccent = document.getElementById('ptrAccent');
-  if (kAccent && pAccent) {
-    pAccent.style.transform = `rotate(${(synthAccent / 127) * 270 - 135}deg)`;
-    setupKnob(kAccent, (dy) => {
-      synthAccent = Math.min(127, Math.max(0, synthAccent + dy));
-      const deg = (synthAccent / 127) * 270 - 135;
-      pAccent.style.transform = `rotate(${deg}deg)`;
-    });
-  }
-
-  const kBpm = document.getElementById('knobBpm');
-  const pBpm = document.getElementById('ptrBpm');
-  if (kBpm && pBpm) {
-    pBpm.style.transform = `rotate(${((state.bpm - 50) / 190) * 270 - 135}deg)`;
-    setupKnob(kBpm, (dy) => {
-      state.bpm = Math.min(240, Math.max(50, state.bpm + dy));
-      const deg = ((state.bpm - 50) / 190) * 270 - 135;
-      pBpm.style.transform = `rotate(${deg}deg)`;
-    });
-  }
-
-  const kStep = document.getElementById('knobStep');
-  const pStep = document.getElementById('ptrStep');
-  if (kStep && pStep) {
-    pStep.style.transform = `rotate(${(state.activeStep / 31) * 270 - 135}deg)`;
-    setupKnob(kStep, (dy) => {
-      state.activeStep = (state.activeStep + (dy > 0 ? 1 : -1) + 32) % 32;
-      state.viewPage = state.activeStep >= 16 ? 1 : 0;
-      const deg = (state.activeStep / 31) * 270 - 135;
-      pStep.style.transform = `rotate(${deg}deg)`;
-    });
-  }
-
-  // 27 Silicone Keys
-  const keysContainer = document.getElementById('siliconeKeys');
-  const keyNotes = [
+  // 27 Silicone Keys Handling
+  const KEY_NOTES = [
     53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65,
     66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79
   ];
 
-  keyNotes.forEach((midiNote, idx) => {
-    const isBlack = [1, 3, 6, 8, 10, 13, 15, 18, 20, 22, 25].includes(idx);
-    const keyEl = document.createElement('div');
-    keyEl.className = `key-silicone ${isBlack ? 'black' : 'white'}`;
-    keyEl.innerHTML = `<div class="key-led"></div><span>${idx + 1}</span>`;
+  keys.forEach((k, idx) => {
+    if (!k) return;
+    const midiNote = KEY_NOTES[idx];
 
-    keyEl.addEventListener('mousedown', () => {
+    k.hit.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
       initAudio();
-      keyEl.classList.add('pressed');
+      k.g.classList.add("held");
 
-      // Record or audition
       const trk = state.tracks[state.activeTrack];
       const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
 
@@ -813,19 +922,59 @@
         state.activeStep = (state.activeStep + 1) % pat.length;
         state.viewPage = state.activeStep >= 16 ? 1 : 0;
       } else if (idx < 16) {
-        // Direct step jump on current page
         state.activeStep = (state.viewPage * 16) + idx;
       }
 
       play303Note(midiNote, 110, false, 64);
     });
 
-    window.addEventListener('mouseup', () => {
-      keyEl.classList.remove('pressed');
+    k.hit.addEventListener("pointerup", () => {
+      k.g.classList.remove("held");
     });
 
-    keysContainer.appendChild(keyEl);
+    k.hit.addEventListener("pointercancel", () => {
+      k.g.classList.remove("held");
+    });
   });
 
+  // Start Overlay Switch On Button
+  const btnStart = document.getElementById("btnStart");
+  const startOverlay = document.getElementById("start");
+  const statusEl = document.getElementById("status");
+
+  btnStart.addEventListener("click", () => {
+    initAudio();
+    startOverlay.hidden = true;
+    startSequencer();
+    if (statusEl) {
+      statusEl.textContent = "Running. 4-Track Reason Matrix Sequencer & 303 Acid Synth active.";
+    }
+  });
+
+  // Bottom bar buttons
+  const muteBtn = document.getElementById("muteBtn");
+  if (muteBtn) {
+    muteBtn.addEventListener("click", () => {
+      const isMuted = muteBtn.getAttribute("aria-pressed") === "true";
+      muteBtn.setAttribute("aria-pressed", String(!isMuted));
+      if (masterGain && audioCtx) {
+        masterGain.gain.setValueAtTime(!isMuted ? 0 : state.masterVol, audioCtx.currentTime);
+      }
+      muteBtn.textContent = !isMuted ? "Unmute Audio" : "Mute Audio";
+    });
+  }
+
+  const resetBtn = document.getElementById("resetBtn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      if (confirm("Reset patterns to factory default?")) {
+        localStorage.removeItem("morpheus_patterns");
+        initTracks();
+      }
+    });
+  }
+
+  // Kick off screen rendering loop
   loop();
+  updateButtonVisuals();
 })();
