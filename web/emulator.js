@@ -115,6 +115,45 @@
   initTracks();
 
   // ===========================================================================
+  // Live Hint System
+  // ===========================================================================
+  const hintText = document.getElementById("hintText");
+  const DEFAULT_HINT = '💡 Click "Switch on" then tap PLAY. Drag K1 Cutoff and K2 Res, or click the screen grid to add notes!';
+
+  function showHint(txt) {
+    if (hintText) hintText.textContent = txt;
+  }
+
+  function resetHint() {
+    if (hintText) hintText.textContent = DEFAULT_HINT;
+  }
+
+  const HINTS = {
+    MASTER: "🔊 MASTER: Adjusts hardware audio volume (0–100%).",
+    SELECT: "📍 SELECT: Scrubs the active step cursor across the 32-step sequence. With EDIT: Transpose ±12 semitones.",
+    TEMPO: "⏱️ TEMPO: Adjusts sequencer tempo from 50 to 240 BPM. With EDIT: Swing / Shuffle (0–75%).",
+    TRACK: "🔀 TRACK: Switches between the 4 independent sequencer tracks (T1: Bass, T2: Lead, T3: Arp, T4: Drums).",
+    KNOB1: "🎛️ KNOB 1 (Cutoff): Shapes 303 lowpass filter cutoff. In EDIT mode: Changes active step note pitch.",
+    KNOB2: "🎛️ KNOB 2 (Resonance): Diode ladder resonance squelch. In EDIT mode: Toggles tied note portamento slide.",
+    KNOB3: "🎛️ KNOB 3 (Decay): Envelope decay time. In CURVE mode: Adjusts CC modulation depth.",
+    KNOB4: "🎛️ KNOB 4 (Accent): 303 accent overdrive amount. In EDIT mode: Adjusts track length (1–32 steps).",
+    "OCT-": "🎹 OCTAVE DOWN: Scrolls the 12-semitone grid octave window downward (C1 to B5).",
+    "OCT+": "🎹 OCTAVE UP: Scrolls the 12-semitone grid octave window upward (C1 to B5).",
+    PLAY: "▶️ PLAY / STOP: Starts or pauses sequencer playback across all 4 synced tracks.",
+    REC: "🔴 REC (Step Record): Tap REC, then press silicone keys to punch in notes step-by-step and auto-advance!",
+    FX: "🎲 FX (Randomize): Generates a fresh musical acid bassline using a minor pentatonic scale.",
+    SEL: "📄 SEL (Page): Toggles between Page 1 (Steps 1–16) and Page 2 (Steps 17–32).",
+    ENV: "📈 ENV (Mode): Switches between KEYS view (note pitches) and CURVE view (filter modulation curves).",
+    LFO: "🔊 LFO (Engine): Cycles sound engines: 303 Acid Bass, Subtractive Lead, 2-OP FM, or silent MUTE mode.",
+    EDIT: "⚡ EDIT (Shift): Secondary modifier button for track transpose, swing, and loop lengths.",
+    GLO: "📏 GLO (Length): Cycles track sequence length (16, 24, or 32 steps) for polymetric grooves.",
+    HOME: "🏠 HOME (Track): Cycles through Track 1 (Bass), Track 2 (Lead), Track 3 (Arp), and Track 4 (Drums).",
+    SAVE: "💾 SAVE: Writes all 4 tracks, banks, and patterns to persistent storage.",
+    ARP: "📚 ARP (Bank): Cycles between Banks A, B, C, and D (each bank holds 8 patterns).",
+    SEQ: "🔢 SEQ (Pattern): Cycles through patterns 1 to 8 in the active bank."
+  };
+
+  // ===========================================================================
   // Web Audio Synthesizer Engine
   // ===========================================================================
   let audioCtx = null;
@@ -533,8 +572,25 @@
   }
 
   // ===========================================================================
-  // Interactive Direct Grid Editing on Canvas
+  // Interactive Direct Grid Editing on Canvas & Hint Hover
   // ===========================================================================
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const scale = 240 / rect.width;
+    const cy = (e.clientY - rect.top) * scale;
+    if (cy >= 26 && cy <= 146) {
+      showHint(state.viewMode === 'keys'
+        ? "✏️ NOTE GRID: Click any square on the screen to toggle notes on/off and audition them!"
+        : "📈 MODULATION CURVE: Click or drag in the grid to draw filter cutoff automation curves!");
+    } else if (cy >= 150 && cy <= 218) {
+      showHint("📊 VELOCITY BARS: Click or drag in the lower bars to set loudness. Velocity ≥ 105 triggers 303 accent!");
+    } else {
+      showHint("🖥️ 240x240 LCD DISPLAY: Header shows active Track, Bank/Pattern, Engine, Mode, and Tempo.");
+    }
+  });
+
+  canvas.addEventListener('mouseleave', resetHint);
+
   canvas.addEventListener('click', (e) => {
     initAudio();
     const rect = canvas.getBoundingClientRect();
@@ -572,7 +628,6 @@
             play303Note(targetNote, 115, false, st.curve);
           }
         } else {
-          // Curve view
           const curveVal = Math.min(127, Math.max(0, Math.round((146 - cy) / 116 * 127)));
           st.curve = curveVal;
         }
@@ -715,7 +770,7 @@
   })(36, 340, 928, 270);
 
   // 6. Interactive Transparent Hit-Target Layer (With foolproof bounding box fallback)
-  function createHit(c, kind) {
+  function createHit(c, kind, hintKey) {
     const d = document.createElement(kind === "knob" ? "div" : "button");
     d.className = "hit" + (kind === "knob" ? " knob" : "");
     if (kind !== "knob") d.type = "button";
@@ -737,13 +792,28 @@
 
     d.setAttribute("aria-label", c.label || "Control");
     d.addEventListener("touchstart", (e) => e.preventDefault(), { passive: false });
+
+    // Live Hover & Focus Hints
+    if (hintKey && HINTS[hintKey]) {
+      d.addEventListener("pointerenter", () => showHint(HINTS[hintKey]));
+      d.addEventListener("pointerleave", resetHint);
+      d.addEventListener("focus", () => showHint(HINTS[hintKey]));
+      d.addEventListener("blur", resetHint);
+    }
+
     controls.appendChild(d);
     c.hit = d;
   }
 
-  Object.values(knobs).forEach(k => createHit(k, "knob"));
-  Object.values(buttons).forEach(b => createHit(b, "button"));
-  keys.forEach(k => { if (k) createHit(k, "key"); });
+  Object.values(knobs).forEach(k => createHit(k, "knob", k.label));
+  Object.values(buttons).forEach(b => createHit(b, "button", b.label));
+  keys.forEach(k => {
+    if (k) {
+      createHit(k, "key");
+      k.hit.addEventListener("pointerenter", () => showHint("🎹 SILICONE KEY: Click to audition note pitch. In REC mode, writes note into active step!"));
+      k.hit.addEventListener("pointerleave", resetHint);
+    }
+  });
 
   function drawKnob(k) {
     k.ind.setAttribute("transform", `rotate(${k.angle} ${k.x} ${k.y})`);
@@ -807,6 +877,7 @@
       state.activeTrack = (state.activeTrack + (dy > 0 ? 1 : -1) + 4) % 4;
       knobs.TRACK.angle = (state.activeTrack / 3) * 180 - 90;
       drawKnob(knobs.TRACK);
+      showHint(`🔀 Switched to Track ${state.activeTrack + 1} (${state.activeTrack === 3 ? 'Drums' : (state.activeTrack === 0 ? '303 Bass' : 'Synth')})`);
     }
   });
 
@@ -814,6 +885,7 @@
     synthCutoff = Math.min(127, Math.max(0, synthCutoff + dy));
     knobs.KNOB1.angle = (synthCutoff / 127) * 270 - 135;
     drawKnob(knobs.KNOB1);
+    showHint(`🎛️ Cutoff: ${synthCutoff}/127 (${Math.round((synthCutoff / 127) * 100)}%)`);
   });
   knobs.KNOB1.angle = (synthCutoff / 127) * 270 - 135;
   drawKnob(knobs.KNOB1);
@@ -822,6 +894,7 @@
     synthResonance = Math.min(127, Math.max(0, synthResonance + dy));
     knobs.KNOB2.angle = (synthResonance / 127) * 270 - 135;
     drawKnob(knobs.KNOB2);
+    showHint(`🎛️ Resonance: ${synthResonance}/127 (${Math.round((synthResonance / 127) * 100)}%)`);
   });
   knobs.KNOB2.angle = (synthResonance / 127) * 270 - 135;
   drawKnob(knobs.KNOB2);
@@ -830,6 +903,7 @@
     synthDecay = Math.min(127, Math.max(0, synthDecay + dy));
     knobs.KNOB3.angle = (synthDecay / 127) * 270 - 135;
     drawKnob(knobs.KNOB3);
+    showHint(`🎛️ Decay: ${synthDecay}/127 (${Math.round((synthDecay / 127) * 100)}%)`);
   });
   knobs.KNOB3.angle = (synthDecay / 127) * 270 - 135;
   drawKnob(knobs.KNOB3);
@@ -838,6 +912,7 @@
     synthAccent = Math.min(127, Math.max(0, synthAccent + dy));
     knobs.KNOB4.angle = (synthAccent / 127) * 270 - 135;
     drawKnob(knobs.KNOB4);
+    showHint(`🎛️ Accent Intensity: ${synthAccent}/127`);
   });
   knobs.KNOB4.angle = (synthAccent / 127) * 270 - 135;
   drawKnob(knobs.KNOB4);
@@ -874,23 +949,36 @@
   }
 
   bindButton(buttons["OCT-"], () => {
-    if (state.viewOctave > 1) state.viewOctave--;
+    if (state.viewOctave > 1) {
+      state.viewOctave--;
+      showHint(`🎹 Octave shifted down to Octave ${state.viewOctave} (C${state.viewOctave}..B${state.viewOctave})`);
+    }
   });
 
   bindButton(buttons["OCT+"], () => {
-    if (state.viewOctave < 5) state.viewOctave++;
+    if (state.viewOctave < 5) {
+      state.viewOctave++;
+      showHint(`🎹 Octave shifted up to Octave ${state.viewOctave} (C${state.viewOctave}..B${state.viewOctave})`);
+    }
   });
 
   bindButton(buttons.PLAY, () => {
     if (state.isRunning) {
       stopSequencer();
+      showHint("⏹️ Sequencer Paused. Click PLAY to resume.");
     } else {
       startSequencer();
+      showHint("▶️ Sequencer Running! Jamming all 4 synced tracks.");
     }
   });
 
   bindButton(buttons.REC, () => {
     state.recMode = !state.recMode;
+    if (state.recMode) {
+      showHint("🔴 REC MODE ACTIVE: Tap any silicone key to punch in note pitch and auto-advance to next step!");
+    } else {
+      showHint("REC mode off.");
+    }
   });
 
   function randomizePattern() {
@@ -907,40 +995,47 @@
       }
       pat.steps[i].curve = Math.floor(Math.random() * 127);
     }
+    showHint(`🎲 Random pattern generated for Track ${state.activeTrack + 1}!`);
   }
 
   bindButton(buttons.FX, randomizePattern);
 
   bindButton(buttons.SEL, () => {
     state.viewPage = state.viewPage === 0 ? 1 : 0;
+    showHint(`📄 Viewing Step Page ${state.viewPage + 1} (${state.viewPage === 0 ? 'Steps 1–16' : 'Steps 17–32'})`);
   });
 
   bindButton(buttons.ENV, () => {
     state.viewMode = state.viewMode === 'keys' ? 'curve' : 'keys';
+    showHint(state.viewMode === 'keys' ? "🎹 Display: Note Pitch Grid (KEYS)" : "📈 Display: CC Modulation Curves (CURV)");
   });
 
   bindButton(buttons.LFO, () => {
     state.soundEngine = (state.soundEngine + 1) % SOUND_MODES.length;
+    showHint(`🔊 Sound Engine switched to: ${SOUND_MODES[state.soundEngine]}`);
   });
 
   bindButton(buttons.EDIT, () => {
     state.shiftMode = !state.shiftMode;
+    showHint(state.shiftMode ? "⚡ Shift Active: Knobs and buttons access secondary functions." : "Shift inactive.");
   });
 
   bindButton(buttons.GLO, () => {
     const trk = state.tracks[state.activeTrack];
     const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
     pat.length = pat.length === 16 ? 32 : (pat.length === 32 ? 24 : 16);
+    showHint(`📏 Sequence Length for Track ${state.activeTrack + 1} set to ${pat.length} steps.`);
   });
 
   bindButton(buttons.HOME, () => {
     state.activeTrack = (state.activeTrack + 1) % NUM_TRACKS;
+    showHint(`🏠 Active Track: T${state.activeTrack + 1} (${state.activeTrack === 3 ? 'Drums' : (state.activeTrack === 0 ? '303 Bass' : 'Synth')})`);
   });
 
   bindButton(buttons.SAVE, () => {
     try {
       localStorage.setItem('morpheus_patterns', JSON.stringify(state.tracks));
-      alert('MORPHEUS: Patterns & settings saved to browser storage!');
+      showHint('💾 All 4 tracks and 32 patterns saved successfully to browser storage!');
     } catch (e) {
       alert('Could not save to localStorage: ' + e);
     }
@@ -950,12 +1045,14 @@
     const trk = state.tracks[state.activeTrack];
     trk.nextBank = (trk.curBank + 1) % 4;
     trk.curBank = trk.nextBank;
+    showHint(`📚 Bank switched to Bank ${String.fromCharCode(65 + trk.curBank)}`);
   });
 
   bindButton(buttons.SEQ, () => {
     const trk = state.tracks[state.activeTrack];
     trk.nextPat = (trk.curPat + 1) % 8;
     trk.curPat = trk.nextPat;
+    showHint(`🔢 Switched to Pattern ${trk.curPat + 1} in Bank ${String.fromCharCode(65 + trk.curBank)}`);
   });
 
   // 27 Silicone Keys Handling
@@ -981,6 +1078,7 @@
         pat.steps[state.activeStep].gate = 115;
         state.activeStep = (state.activeStep + 1) % pat.length;
         state.viewPage = state.activeStep >= 16 ? 1 : 0;
+        showHint(`🔴 Step ${state.activeStep}: Recorded Note ${midiNote}`);
       } else if (idx < 16) {
         state.activeStep = (state.viewPage * 16) + idx;
       }
@@ -1010,6 +1108,7 @@
     if (statusEl) {
       statusEl.textContent = "Running. 4-Track Pattern Sequencer & 303 Acid Synth active.";
     }
+    showHint("▶️ Sequencer running! Click any square on the screen to add notes, or twist K1 Cutoff.");
   });
 
   // Bottom bar buttons
@@ -1022,6 +1121,7 @@
         masterGain.gain.setValueAtTime(!isMuted ? 0 : state.masterVol, audioCtx.currentTime);
       }
       muteBtn.textContent = !isMuted ? "Unmute Audio" : "Mute Audio";
+      showHint(!isMuted ? "🔇 Audio Muted" : "🔊 Audio Unmuted");
     });
   }
 
@@ -1031,9 +1131,80 @@
       if (confirm("Reset patterns to factory default?")) {
         localStorage.removeItem("morpheus_patterns");
         initTracks();
+        showHint("Factory patterns reloaded.");
       }
     });
   }
+
+  // ===========================================================================
+  // Preset Grooves Selector
+  // ===========================================================================
+  function loadPreset(style) {
+    initTracks();
+    if (style === 'acid') {
+      state.bpm = 128;
+      synthCutoff = 80;
+      synthResonance = 100;
+      synthDecay = 70;
+      synthAccent = 95;
+      state.activeTrack = 0;
+      state.soundEngine = 0; // 303
+      showHint("⚡ Loaded Acid Techno Groove: 128 BPM, 303 Acid Bass, and 909 Drums.");
+    } else if (style === 'electro') {
+      state.bpm = 135;
+      synthCutoff = 105;
+      synthResonance = 80;
+      synthDecay = 45;
+      synthAccent = 90;
+      state.activeTrack = 1;
+      state.soundEngine = 1; // Sub
+      showHint("🏙️ Loaded Detroit Electro Groove: 135 BPM, Subtractive Lead & punchy rhythm.");
+    } else if (style === 'dub') {
+      state.bpm = 114;
+      synthCutoff = 40;
+      synthResonance = 70;
+      synthDecay = 115;
+      synthAccent = 85;
+      state.activeTrack = 2;
+      state.soundEngine = 2; // FM
+      showHint("🌌 Loaded Ambient Dub Groove: 114 BPM, 2-OP FM metallic chimes & deep bass.");
+    } else if (style === 'polymetric') {
+      state.bpm = 126;
+      synthCutoff = 90;
+      synthResonance = 95;
+      synthDecay = 65;
+      synthAccent = 100;
+      state.activeTrack = 0;
+      state.soundEngine = 0;
+      state.tracks[0].patterns[0].length = 7; // 7 steps polyrhythm
+      showHint("🌀 Loaded Polymetric 7/8 Groove: 7-step acid bass against 16-step drums!");
+    }
+
+    knobs.KNOB1.angle = (synthCutoff / 127) * 270 - 135;
+    drawKnob(knobs.KNOB1);
+    knobs.KNOB2.angle = (synthResonance / 127) * 270 - 135;
+    drawKnob(knobs.KNOB2);
+    knobs.KNOB3.angle = (synthDecay / 127) * 270 - 135;
+    drawKnob(knobs.KNOB3);
+    knobs.KNOB4.angle = (synthAccent / 127) * 270 - 135;
+    drawKnob(knobs.KNOB4);
+    knobs.TEMPO.angle = ((state.bpm - 50) / 190) * 270 - 135;
+    drawKnob(knobs.TEMPO);
+
+    document.querySelectorAll(".preset-btn").forEach(btn => btn.classList.remove("active"));
+    const activeBtn = document.getElementById("preset" + style.charAt(0).toUpperCase() + style.slice(1));
+    if (activeBtn) activeBtn.classList.add("active");
+    updateButtonVisuals();
+  }
+
+  const pAcid = document.getElementById("presetAcid");
+  if (pAcid) pAcid.addEventListener("click", () => loadPreset('acid'));
+  const pElectro = document.getElementById("presetElectro");
+  if (pElectro) pElectro.addEventListener("click", () => loadPreset('electro'));
+  const pDub = document.getElementById("presetDub");
+  if (pDub) pDub.addEventListener("click", () => loadPreset('dub'));
+  const pPolymetric = document.getElementById("presetPolymetric");
+  if (pPolymetric) pPolymetric.addEventListener("click", () => loadPreset('polymetric'));
 
   // ===========================================================================
   // Pattern Management Toolbar Handlers (Import / Export / Copy / Paste)
@@ -1048,6 +1219,7 @@
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
+      showHint("💾 Patterns downloaded to JSON file.");
     });
   }
 
@@ -1065,7 +1237,7 @@
           if (Array.isArray(parsed) && parsed.length === NUM_TRACKS) {
             state.tracks = parsed;
             localStorage.setItem("morpheus_patterns", JSON.stringify(state.tracks));
-            alert("MORPHEUS: Successfully imported patterns!");
+            showHint("✅ Successfully imported custom patterns into MORPHEUS!");
           } else {
             alert("Error: Invalid MORPHEUS pattern file structure.");
           }
@@ -1083,7 +1255,7 @@
       const trk = state.tracks[state.activeTrack];
       const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
       state.clipboard = JSON.parse(JSON.stringify(pat));
-      alert(`Pattern ${String.fromCharCode(65 + trk.curBank)}${trk.curPat + 1} copied!`);
+      showHint(`📋 Copied Pattern ${String.fromCharCode(65 + trk.curBank)}${trk.curPat + 1} to clipboard.`);
     });
   }
 
@@ -1091,12 +1263,12 @@
   if (btnPastePat) {
     btnPastePat.addEventListener("click", () => {
       if (!state.clipboard) {
-        alert("Clipboard is empty! Copy a pattern first.");
+        showHint("⚠️ Clipboard is empty! Click 'Copy' on a pattern first.");
         return;
       }
       const trk = state.tracks[state.activeTrack];
       trk.patterns[trk.curBank * 8 + trk.curPat] = JSON.parse(JSON.stringify(state.clipboard));
-      alert(`Pasted into Pattern ${String.fromCharCode(65 + trk.curBank)}${trk.curPat + 1}!`);
+      showHint(`📋 Pasted into Pattern ${String.fromCharCode(65 + trk.curBank)}${trk.curPat + 1}!`);
     });
   }
 
@@ -1111,6 +1283,7 @@
       const trk = state.tracks[state.activeTrack];
       const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
       pat.steps.forEach(st => { st.gate = 0; st.tie = 0; });
+      showHint(`🧹 Cleared all notes in Pattern ${String.fromCharCode(65 + trk.curBank)}${trk.curPat + 1}.`);
     });
   }
 

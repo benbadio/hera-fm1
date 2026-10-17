@@ -205,7 +205,7 @@ a {
 }
 
 .keyface {
-  transition: fill .06s, stroke .06s;
+  transition: fill .06s, stroke .06s, transform .06s;
 }
 
 .lit .keyface.white, .held .keyface.white {
@@ -249,6 +249,32 @@ a {
 
 .start[hidden] {
   display: none !important;
+}
+
+/* Live Dynamic Hint Banner */
+.hint-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: #182029;
+  border: 1px solid #2e3a48;
+  border-left: 4px solid var(--accent);
+  border-radius: 10px;
+  padding: 11px 16px;
+  margin: 0.8rem 0;
+  font-size: 0.95rem;
+  color: #e2e8f0;
+  transition: all 0.12s ease;
+}
+
+.hint-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.hint-text {
+  line-height: 1.45;
+  font-weight: 500;
 }
 
 /* Bottom Control Bar */
@@ -337,6 +363,104 @@ a {
 
 .toolbar-box button:active {
   transform: translateY(1px);
+}
+
+/* Preset Grooves Bar */
+.presets-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.8rem;
+  margin: 0.8rem 0 0;
+  padding: 0.8rem 1rem;
+  background: #171a1e;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  font-size: 0.9rem;
+}
+
+.presets-label {
+  color: var(--muted);
+  font-weight: 600;
+  margin-right: 0.4rem;
+}
+
+.preset-btn {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #d0d7de;
+  background: #22262c;
+  border: 1px solid #363d47;
+  border-radius: 6px;
+  padding: 0.35em 0.85em;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.preset-btn:hover {
+  background: #2f3640;
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.preset-btn.active {
+  background: var(--accent);
+  color: #1b1205;
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+/* 4-Card Quick Start Guide */
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.2rem;
+  margin: 1.6rem 0 0;
+}
+
+.guide-card {
+  background: #171a1f;
+  border: 1px solid #282d35;
+  border-radius: 12px;
+  padding: 16px 18px;
+  transition: border-color 0.15s ease;
+}
+
+.guide-card:hover {
+  border-color: #444e5c;
+}
+
+.guide-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.guide-badge {
+  background: #262e38;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.guide-card h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #fff;
+  font-family: "Barlow Semi Condensed", sans-serif;
+}
+
+.guide-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
 }
 
 /* Help & Instructions Section */
