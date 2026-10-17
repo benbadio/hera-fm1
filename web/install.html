@@ -1,75 +1,537 @@
 <!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-only
+     Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
+     MORPHEUS: in-browser Web MIDI installer modeled after Felucca & X0X installer. -->
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Install Guide // MORPHEUS FM-1</title>
-  <meta name="description" content="How to install MORPHEUS firmware on the M-VAVE FM-1 via Web MIDI or USB.">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎛️</text></svg>">
-  <link rel="stylesheet" href="style.css?v=3">
-  <style>
-    .doc { max-width: 860px; margin: 0 auto; line-height: 1.7; font-size: 1rem; color: #d0d4da; }
-    .doc h1 { font: 800 2.5rem/1.1 "Barlow Semi Condensed", sans-serif; color: #fff; margin: 1.5rem 0 0.5rem; }
-    .doc h2 { font: 700 1.6rem/1.2 "Barlow Semi Condensed", sans-serif; color: #f0a043; margin: 2rem 0 0.8rem; border-bottom: 1px solid #2d3137; padding-bottom: 0.4rem; }
-    .doc p { margin-bottom: 1rem; }
-    .step-box { background: #1a1d22; border: 1px solid #2d3137; border-radius: 12px; padding: 20px; margin: 1.5rem 0; }
-    .step-box h3 { color: #fff; margin-top: 0; font-size: 1.25rem; font-family: "Barlow Semi Condensed", sans-serif; }
-    .callout { background: #1c2026; border-left: 4px solid #f0a043; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 1.2rem 0; }
-    code, pre { font-family: ui-monospace, Menlo, monospace; background: #111316; border-radius: 6px; }
-    pre { padding: 14px; overflow-x: auto; border: 1px solid #282d34; color: #e6e8eb; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Install · MORPHEUS</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎛️</text></svg>">
+<style>
+  :root { --bg: #fff; --fg: #000; --dim: #6b6b6b; --accent: #f0a043; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #000; --fg: #fff; --dim: #888; }
+  }
+  :root[data-theme="dark"] { --bg: #000; --fg: #fff; --dim: #888; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 520px; margin: 0 auto; padding: 48px 16px; }
+  h1 { font-size: 24px; font-weight: 600; margin: 0 0 24px; }
+  .lang { float: right; font-size: 13px; color: var(--dim); cursor: pointer; text-decoration: underline; background: none; padding: 0; border: 0; }
+  p { margin: 0 0 16px; }
+  button { font: inherit; background: var(--fg); color: var(--bg); border: 0; padding: 8px 20px; cursor: pointer; border-radius: 2px; }
+  button:disabled { opacity: .3; cursor: default; }
+  #status { margin-top: 16px; min-height: 1.6em; }
+  .small { color: var(--dim); font-size: 13px; }
+  progress { width: 100%; height: 4px; margin-top: 16px; accent-color: var(--fg); }
+  pre { color: var(--dim); font-size: 12px; white-space: pre-wrap; margin-top: 16px; max-height: 160px; overflow-y: auto; background: rgba(127,127,127,.08); padding: 8px; border-radius: 4px; }
+  pre:empty { display: none; }
+  h2 { font-size: 18px; font-weight: 600; margin: 40px 0 12px; }
+  ol { margin: 0 0 16px; padding-left: 20px; }
+  input[type=file] { font: inherit; font-size: 13px; color: var(--dim); max-width: 100%; }
+  .home { display: inline-block; font-weight: 700; letter-spacing: .03em; color: var(--dim); text-decoration: none; margin: 0 0 12px; }
+  .home:hover, .home:focus-visible { color: var(--fg); }
+  :focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  #alert { font-weight: 600; color: #e65100; }
+  #alert:empty { display: none; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+  .nav-strip { display: flex; gap: 16px; margin-bottom: 20px; font-size: 14px; }
+  .nav-strip a { color: var(--dim); text-decoration: none; font-weight: 600; }
+  .nav-strip a:hover { color: var(--fg); }
+</style>
 </head>
 <body>
-<main class="doc">
-  <header>
-    <h1>INSTALL MORPHEUS</h1>
-    <p>How to flash the M-VAVE FM-1 groovebox hardware</p>
-    <nav aria-label="Navigation">
-      <a href="index.html">Emulator</a>
-      <a href="manual.html">Manual</a>
-      <a href="https://github.com/benbadio/morpheus-fm1" target="_blank" rel="noreferrer">Source</a>
-    </nav>
-  </header>
+<main>
+  <button class="lang" id="lang" type="button"></button>
+  <div class="nav-strip">
+    <a class="home" href="index.html">MORPHEUS</a>
+    <a href="manual.html">Manual</a>
+    <a href="https://github.com/benbadio/morpheus-fm1" target="_blank" rel="noopener">Source</a>
+  </div>
+  <h1>Install MORPHEUS</h1>
+  <p data-t="intro"></p>
+  <p data-t="warn"></p>
+  <p class="small" data-t="direct"></p>
+  <p class="small" data-t="untested"></p>
+  <p class="small" data-t="beta"></p>
+  <p class="small"><span data-t="brick"></span>
+    <a href="manual.html#usb-rescue" style="color:inherit" data-t="bricklink"></a></p>
+  <p class="small" data-t="back"></p>
+  <p class="small"><a href="https://www.m-vave.com/download" target="_blank" rel="noopener" style="color:inherit">www.m-vave.com/download<span class="sr" data-t="newtab"></span></a></p>
+  
+  <p><button id="go" disabled data-t="install"></button></p>
+  
+  <p class="small" id="pkgchoice">
+    <label for="pkgfile" data-t="custompkg"></label><br>
+    <input type="file" id="pkgfile" accept=".fwsc">
+  </p>
 
-  <section>
-    <div class="step-box">
-      <h3>Method 1: Web MIDI Browser Install</h3>
-      <p>
-        The simplest and safest way to flash MORPHEUS onto your M-VAVE FM-1 without installing command-line tools:
-      </p>
-      <ol>
-        <li>Connect your M-VAVE FM-1 to your computer using the USB-C cable and turn it on.</li>
-        <li>Open <strong>Google Chrome</strong>, <strong>Opera</strong>, or <strong>Microsoft Edge</strong> (browsers with native Web MIDI support).</li>
-        <li>Select <strong>MORPHEUS</strong> (Package ID: <code>FM-1_945</code>).</li>
-        <li>Click <strong>Install Firmware</strong> and confirm the Web MIDI permission. The device will be safely updated in under 30 seconds and reboot into MORPHEUS!</li>
-      </ol>
-    </div>
+  <progress id="bar" max="100" value="0" data-t-label="progress"></progress>
+  <p id="status" role="status"></p>
+  <p id="alert" role="alert"></p>
+  <pre id="log"></pre>
 
-    <div class="step-box">
-      <h3>Method 2: Command Line USB Install (Python)</h3>
-      <p>
-        If you downloaded the <code>morpheus.fwsc</code> package directly from GitHub Releases or built it locally:
-      </p>
-      <pre><code># 1. Install required python libraries
-pip3 install mido python-rtmidi
+  <h2 data-t="stockh"></h2>
+  <p class="small" data-t="stockwhy"></p>
+  <p class="small"><span data-t="keep"></span> <a href="index.html" style="color:inherit" data-t="keeplink"></a></p>
+  <ol class="small">
+    <li><span data-t="stock1"></span> <a id="stocklink" href="https://yms-file-store.oss-cn-hongkong.aliyuncs.com/software/firmware/FM-1.fwsc" style="color:inherit">FM-1.fwsc</a></li>
+    <li><label for="stockfile" data-t="stock2"></label><br><input type="file" id="stockfile" accept=".fwsc"></li>
+    <li data-t="stock3"></li>
+  </ol>
+  <p><button id="stockgo" disabled data-t="stockinstall"></button></p>
 
-# 2. Flash the firmware package over USB
-python3 tools/fm1_install.py build/morpheus.fwsc
-
-# 3. Check installed firmware on the FM-1
-python3 tools/fm1_install.py --info</code></pre>
-    </div>
-
-    <div class="step-box">
-      <h3>USB Rescue Mode (Safe Recovery)</h3>
-      <p>
-        If an install is ever interrupted or you wish to revert to stock firmware:
-      </p>
-      <div class="callout">
-        Hold the <strong>OCT-</strong> button on the FM-1 while turning on the power switch. The screen will remain dark and the device will boot into the hardware bootloader rescue mode. You can immediately reinstall any firmware or stock build via USB or Web MIDI.
-      </div>
-    </div>
-  </section>
+  <p><a href="manual.html" style="color:inherit" data-t="manual"></a></p>
+  <p class="small">MORPHEUS is built on the SLOOP / Felucca platform by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener" style="color:inherit">Hügelton Instruments<span class="sr" data-t="newtab"></span></a>.<br>
+    M-VAVE and FM-1 are trademarks of their respective owners.<br>
+    <span data-t="license"></span> <a href="https://github.com/benbadio/morpheus-fm1" target="_blank" rel="noopener" style="color:inherit">github.com/benbadio/morpheus-fm1<span class="sr" data-t="newtab"></span></a></p>
 </main>
+
+<script type="module">
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
+// FM-1 .fwsc package reader & SysEx Web MIDI updater for MORPHEUS
+
+const BLOCKS = 20, BLK = 0x30, KEEP = 0x2F;
+
+// extract package identity ("FM-1_945") from the 20 marker bytes
+function productOf(fwsc) {
+  if (fwsc.length < BLOCKS * BLK) throw new Error("not an FM-1 package (too short)");
+  let s = "";
+  for (let i = 0; i < BLOCKS; i++) {
+    const m = fwsc[i * BLK + KEEP];
+    if (m !== 0x7D) s += String.fromCharCode((m - i - 1) & 0xFF);
+  }
+  return s;
+}
+
+// logical image the FM-1 addresses during flash update (without marker bytes)
+function logicalImage(fwsc) {
+  const out = new Uint8Array(fwsc.length - BLOCKS);
+  for (let i = 0; i < BLOCKS; i++) out.set(fwsc.subarray(i * BLK, i * BLK + KEEP), i * KEEP);
+  out.set(fwsc.subarray(BLOCKS * BLK), BLOCKS * KEEP);
+  return out;
+}
+
+const HS_QUERY = [0xF0, 0x00, 0x32, 0x45, 0x00, 0x00, 0x00, 0x40, 0x7F, 0xF7];
+const UPGRADE = [0xF0, 0x22, 0x24, 0x35, 0x7F, 0xF7];
+const MAXDATA = 512;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const IS_OTA = (id) => /^ota-/i.test(id.model);
+
+function fail(code, msg, detail = "") { const e = new Error(msg); e.code = code; e.detail = detail; return e; }
+
+function pack7(data) {
+  const out = []; let acc = 0, nb = 0;
+  for (const b of data) {
+    acc |= b << nb; nb += 8;
+    while (nb >= 7) { out.push(acc & 0x7F); acc >>>= 7; nb -= 7; }
+  }
+  if (nb) out.push(acc & 0x7F);
+  return out;
+}
+
+function unpack7(s) {
+  const out = []; let acc = 0, nb = 0;
+  for (const b of s) {
+    acc |= (b & 0x7F) << nb; nb += 7;
+    while (nb >= 8) { out.push(acc & 0xFF); acc >>>= 8; nb -= 8; }
+  }
+  return out;
+}
+
+function response(addr, data, fl = 0) {
+  const len = data.length;
+  const body = [0x00, 0x59, 0x30, (len + 8) & 0xFF, ((len + 8) >> 8) & 0xFF, 0, fl,
+    addr & 0xFF, (addr >>> 8) & 0xFF, (addr >>> 16) & 0xFF, (addr >>> 24) & 0xFF,
+    len & 0xFF, (len >> 8) & 0xFF, 0, ...data];
+  let s = 0;
+  for (let i = 6; i < body.length; i++) s += body[i];
+  body.push(~s & 0xFF);
+  return [0xF0, ...pack7(body), 0xF7];
+}
+
+function parseRequest(pkt) {
+  if (pkt[0] !== 0xF0 || pkt[pkt.length - 1] !== 0xF7) return null;
+  const u = unpack7(pkt.slice(1, -1));
+  if (u.length !== 15 || u[0] !== 0 || u[1] !== 0x59 || u[2] !== 0x30) return null;
+  let s = 0;
+  for (let i = 6; i < 14; i++) s += u[i];
+  if ((~s & 0xFF) !== u[14]) return null;
+  return { fl: u[6], addr: (u[7] | (u[8] << 8) | (u[9] << 16) | (u[10] << 24)) >>> 0, len: u[11] | (u[12] << 8) | (u[13] << 16) };
+}
+
+function parseIdentity(pkt) {
+  const d = unpack7(pkt.slice(1, -1));
+  if (d.length !== 34 || d[0] !== 0 || d[1] !== 0x59 || d[2] !== 0x11) return null;
+  const txt = String.fromCharCode(...d.slice(6, 33)).replace(/\0+$/, "");
+  const m = /^([^_]+)_(\d+)$/.exec(txt);
+  return m ? { text: txt, model: m[1], version: parseInt(m[2], 10) } : null;
+}
+
+class Link {
+  constructor(input, output) {
+    this.input = input; this.output = output; this.q = []; this.waiter = null;
+    input.onmidimessage = (ev) => {
+      if (ev.data[0] !== 0xF0) return;
+      this.q.push(Array.from(ev.data));
+      if (this.waiter) { const w = this.waiter; this.waiter = null; w(); }
+    };
+  }
+  get lost() { return this.input.state === "disconnected" || this.output.state === "disconnected"; }
+  send(bytes) {
+    try { this.output.send(bytes); return true; } catch (_) { return false; }
+  }
+  drain() { this.q.length = 0; }
+  async read(ms) {
+    if (!this.q.length) {
+      let tm;
+      await Promise.race([new Promise((r) => { this.waiter = r; }), new Promise((r) => { tm = setTimeout(r, ms); })]);
+      clearTimeout(tm);
+      this.waiter = null;
+    }
+    return this.q.shift() || null;
+  }
+  close() { this.input.onmidimessage = null; }
+}
+
+async function handshake(link, tries = 3) {
+  link.drain();
+  for (let t = 0; t < tries; t++) {
+    if (!link.send(HS_QUERY)) return null;
+    const end = Date.now() + 1000;
+    while (Date.now() < end) {
+      const p = await link.read(end - Date.now());
+      if (!p) break;
+      const id = parseIdentity(p);
+      if (id) return id;
+    }
+  }
+  return null;
+}
+
+class Updater {
+  constructor(access, log) {
+    this.access = access;
+    this.log = log || (() => {});
+  }
+
+  async find(filter) {
+    const outs = Array.from(this.access.outputs.values()).filter((o) => o.state !== "disconnected");
+    for (const input of this.access.inputs.values()) {
+      if (input.state === "disconnected") continue;
+      if (!/fm-1|felucca|ota|composite|sinco|usb-midi/i.test(input.name || "")) continue;
+      const output = outs.find((o) => o.name === input.name) || (outs.length === 1 ? outs[0] : null);
+      if (!output) continue;
+      try { await input.open(); await output.open(); } catch (_) { continue; }
+      const link = new Link(input, output);
+      const id = await handshake(link, 2);
+      if (id && (!filter || filter(id))) return { link, id, name: input.name };
+      link.close();
+    }
+    return null;
+  }
+
+  async waitFor(filter, ms) {
+    const end = Date.now() + ms;
+    while (Date.now() < end) {
+      const dev = await this.find(filter);
+      if (dev) return dev;
+      await sleep(1000);
+    }
+    return null;
+  }
+
+  async serve(link, image, finishAddr, idleMs, onProgress) {
+    let served = 0, last = Date.now();
+    for (;;) {
+      const pkt = await link.read(1000);
+      if (!pkt) {
+        if (link.lost) return { served, finished: false, lost: true };
+        if (Date.now() - last > idleMs) return { served, finished: false };
+        continue;
+      }
+      const r = parseRequest(pkt);
+      if (!r) continue;
+      last = Date.now();
+      if (r.addr === 0xE0000000 || r.addr === 0xF0000000) {
+        link.send(response(r.addr, [...new TextEncoder().encode("success"), 0]));
+        if (r.addr === finishAddr) return { served, finished: true };
+        continue;
+      }
+      if (r.len > MAXDATA || r.addr + r.len > image.length) throw fail("badreq", `bad request ${r.addr.toString(16)}+${r.len}`);
+      await sleep(10);
+      if (!link.send(response(r.addr, Array.from(image.subarray(r.addr, r.addr + r.len)), r.fl))) {
+        return { served, finished: false, lost: true };
+      }
+      served++;
+      if (onProgress) onProgress(served, r.addr);
+    }
+  }
+
+  async install(image, product, onStep) {
+    const step = onStep || (() => {});
+    const dev = await this.find((id) => !IS_OTA(id));
+    if (!dev) throw fail("notfound", "FM-1 not found (USB cable connected, and no other app using MIDI?)");
+    const [model] = product.split("_");
+    if (dev.id.model !== model) { dev.link.close(); throw fail("model", `the device is ${dev.id.text}, the package is for ${product}`); }
+    step("start", dev.id.text);
+    dev.link.send(UPGRADE);
+    await sleep(2000);
+    const s1 = await this.serve(dev.link, image, 0xE0000000, 8000, (n) => step("verify", n));
+    dev.link.close();
+    if (!s1.finished) throw fail(s1.lost ? "lost" : "stopped", `the device ${s1.lost ? "was disconnected" : "stopped"} after ${s1.served} requests`);
+    step("loader");
+    await sleep(3000);
+    const ota = await this.waitFor(IS_OTA, 30000);
+    if (!ota) throw fail("noloader", "update loader did not appear. Replug USB and click Install again.");
+    const s2 = await this.write(ota, image, step);
+    if (!s2.finished) throw fail(s2.lost ? "lost" : "stopped", `loader ${s2.lost ? "disconnected" : "stopped"} after ${s2.served} requests.`);
+    step("reboot");
+    await sleep(3000);
+    const back = await this.waitFor((id) => !IS_OTA(id), 40000);
+    if (!back) throw fail("noreturn", "the device did not restart: power-cycle it");
+    back.link.close();
+    if (back.id.text !== product) throw fail("mismatch", `installed, but device reports ${back.id.text}`, back.id.text);
+    step("done", back.id.text);
+    return back.id.text;
+  }
+
+  async write(ota, image, step) {
+    ota.link.send(UPGRADE);
+    await sleep(2000);
+    const s2 = await this.serve(ota.link, image, 0xF0000000, 180000, (n) => step("write", n));
+    ota.link.close();
+    return s2;
+  }
+
+  async resume(image, onStep) {
+    const ota = await this.find(IS_OTA);
+    if (!ota) return false;
+    return (await this.write(ota, image, onStep || (() => {}))).finished;
+  }
+}
+
+const $ = (id) => document.getElementById(id);
+const TEXT = {
+  ja: {
+    intro: "FM-1 を USB で接続してください。（Chrome か Edge で使えます）",
+    warn: "書き込み中は USB を抜かないでください。",
+    install: "MORPHEUS をインストール", other: "English",
+    manual: "マニュアル",
+    untested: "MORPHEUS は 4 トラックのパターンシーケンサー & 303 アシッドシンセです。",
+    direct: "USB ケーブルはパソコンに直接つないでください。ハブや変換機を介さず直接接続を推奨します。",
+    brick: "万一 FM-1 が起動しなくなった場合は、USB 経由で復旧できます:",
+    bricklink: "起動しない FM-1 の復旧（マニュアル）",
+    beta: "このカスタムファームウェアの使用は自己責任でお願いします。",
+    back: "公式ファームウェアに戻すには、このページ下の「純正ファームウェアに戻す」か、M-VAVE 公式のアップデーター M-UPGRADE を使います。",
+    stockh: "純正ファームウェアに戻す",
+    stockwhy: "M-VAVE の FM-1 V15 を、MORPHEUS（またはそのセーフモード）から同じ USB ケーブルで書き込みます。保存したパターンは初期化されることがあります。",
+    keep: "他のファームウェアを入れると、MORPHEUS のパターンは上書きされます。先にエミュレーターから JSON に保存しておけます:",
+    keeplink: "エミュレーターで JSON 保存",
+    stock1: "M-VAVE の FM-1 V15 をダウンロード:",
+    stock2: "ダウンロードしたファイルを選ぶ:",
+    stock3: "FM-1 を USB で接続し、下のボタンを押す。",
+    stockinstall: "純正ファームウェアを書き込む",
+    stockok: "M-VAVE の FM-1 V15 です。ボタンを押してください。",
+    stockbad: "これは M-VAVE の FM-1 V15 のファイルではありません。上のリンクのファイルを選んでください。",
+    stockdone: "完了。FM-1 は純正ファームウェアで起動しました。",
+    nomidi: "このブラウザでは使えません。Chrome か Edge で開いてください。",
+    loadfail: "読み込めませんでした: ",
+    loadfilehint: "ダウンロードした morpheus.fwsc を下のファイル選択で指定するか、USB 接続後に選択してください。",
+    custompkg: "またはダウンロードした morpheus.fwsc ファイルを選択:",
+    start: "開始します", verify: "確認中", loader: "書き込みモードに切り替え中", write: "書き込み中",
+    reboot: "再起動中", done: "完了しました", stopped: "途中で止まりました。USB を挿し直してもう一度押してください。",
+    error: "エラー: ",
+    denied: "MIDI（SysEx）の使用が許可されませんでした。アドレスバーのサイト設定で MIDI を許可して、もう一度押してください。",
+    notfound: "FM-1 が見つかりません。USB ケーブル（データ通信用か）を確かめ、MIDI を使う他のアプリを閉じてから、もう一度押してください。",
+    model: "接続されている機器は FM-1 ではありません。",
+    lost: "USB の接続が切れました。挿し直してもう一度押してください。",
+    noloader: "書き込みモードの FM-1 が見つかりません。USB を挿し直してもう一度押してください（終わるまで書き込みモードのままです）。",
+    noreturn: "FM-1 が戻ってきません。電源を入れ直してください。",
+    mismatch: "書き込みは終わりましたが、FM-1 が別のバージョンを報告しています: ",
+    badpkg: "インストールするファイルが壊れています。正しい .fwsc ファイルを選んでください。",
+    leave: "書き込み中です。ページを閉じないでください。",
+    license: "GPL-3.0、無保証。ソース:",
+    newtab: "（新しいタブで開きます）", progress: "書き込みの進み具合", percent: "%",
+  },
+  en: {
+    intro: "Connect the FM-1 by USB. (Works in Chrome or Edge.)",
+    warn: "Do not unplug the USB cable while writing.",
+    install: "Install MORPHEUS", other: "日本語",
+    manual: "The manual",
+    untested: "MORPHEUS is a 4-track matrix pattern sequencer and 303 acid synth workstation.",
+    direct: "Connect the USB cable directly to the computer. No probe or Transporter is needed.",
+    brick: "If the FM-1 no longer starts, you can recover it over USB:",
+    bricklink: "recovering an FM-1 that won't start (manual)",
+    beta: "This is custom open-source firmware. The author accepts no responsibility for device damage. Use at your own risk.",
+    back: "To go back to the official firmware, use \"Back to the stock firmware\" below, or M-VAVE's own updater, M-UPGRADE (Downloads → PC Software → M-UPGRADE).",
+    stockh: "Back to the stock firmware",
+    stockwhy: "This writes M-VAVE's own FM-1 V15 back, from MORPHEUS (or its safe mode) over the same USB cable. Patterns saved in MORPHEUS may be lost.",
+    keep: "Installing other firmware replaces MORPHEUS's patterns. To keep them, save them to a file first in the emulator:",
+    keeplink: "back up your patterns (JSON)",
+    stock1: "Download M-VAVE's FM-1 V15:",
+    stock2: "Choose the file you downloaded:",
+    stock3: "Connect the FM-1 by USB and press the button below.",
+    stockinstall: "Install the stock firmware",
+    stockok: "That is M-VAVE's FM-1 V15. Press the button to install it.",
+    stockbad: "That is not M-VAVE's FM-1 V15 file. Choose the file from the link above.",
+    stockdone: "Done. The FM-1 has restarted with its original firmware.",
+    nomidi: "This browser cannot do it. Open the page in Chrome or Edge.",
+    loadfail: "Could not load: ",
+    loadfilehint: "Choose a downloaded or custom morpheus.fwsc file below to install.",
+    custompkg: "Or choose a downloaded / custom morpheus.fwsc file:",
+    start: "Starting", verify: "Verifying", loader: "Switching to update mode", write: "Writing",
+    reboot: "Restarting", done: "Done", stopped: "Stopped. Replug the USB cable and press Install again.",
+    error: "Error: ",
+    denied: "MIDI (SysEx) access was not allowed. Allow MIDI in the site settings (address bar) and press Install again.",
+    notfound: "FM-1 not found. Check the USB cable (a data cable), close other apps that use MIDI, and press Install again.",
+    model: "The connected device is not an FM-1.",
+    lost: "The USB connection was lost. Replug it and press Install again.",
+    noloader: "The FM-1 in update mode was not found. Replug the USB cable and press Install again (it stays in update mode until it is finished).",
+    noreturn: "The FM-1 did not come back. Power-cycle it.",
+    mismatch: "Written, but the FM-1 reports another version: ",
+    badpkg: "The file to install is damaged or invalid. Choose a valid .fwsc package.",
+    leave: "Writing. Do not close the page.",
+    license: "GPL-3.0, no warranty. Source:",
+    newtab: " (opens in a new tab)", progress: "Install progress", percent: " percent",
+  },
+};
+
+let lang = "en";
+const t = (k) => TEXT[lang][k];
+let lastKey = null, lastArg = "";
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-t]").forEach((e) => { e.textContent = t(e.dataset.t); });
+  document.querySelectorAll("[data-t-label]").forEach((e) => e.setAttribute("aria-label", t(e.dataset.tLabel)));
+  $("lang").textContent = t("other");
+  $("lang").lang = lang === "ja" ? "en" : "ja";
+  if (lastKey) show(t(lastKey) + lastArg, FAILS.has(lastKey));
+}
+
+$("lang").addEventListener("click", () => { lang = lang === "ja" ? "en" : "ja"; applyLang(); });
+applyLang();
+
+const FAILS = new Set(["nomidi", "loadfail", "stopped", "error", "denied", "notfound", "model", "lost", "noloader", "noreturn",
+                       "mismatch", "badpkg", "stockbad"]);
+
+function show(txt, fail) {
+  $(fail ? "status" : "alert").textContent = "";
+  $(fail ? "alert" : "status").textContent = txt;
+}
+
+const sayK = (k, arg = "") => { lastKey = k; lastArg = arg; shown = { k, at: performance.now(), pct: -100 }; show(t(k) + arg, FAILS.has(k)); };
+const say = (txt) => { lastKey = null; show(txt, false); };
+let shown = { k: null, at: 0, pct: -100 };
+
+function sayPct(k, pct) {
+  const now = performance.now();
+  if (shown.k === k && now - shown.at < 2000 && pct - shown.pct < 10) return;
+  lastKey = k; lastArg = `, ${Math.floor(pct)}${t("percent")}`;
+  shown = { k, at: now, pct };
+  show(t(k) + lastArg, false);
+}
+
+const log = (t) => { $("log").textContent += t + "\n"; };
+let image = null;
+const meta = {"version": "1.0.0", "product": "FM-1_945", "pkg": "firmware/morpheus.fwsc"};
+
+let writing = false;
+window.addEventListener("beforeunload", (e) => { if (writing) { e.preventDefault(); e.returnValue = t("leave"); } });
+
+(async () => {
+  if (!navigator.requestMIDIAccess) { sayK("nomidi"); return; }
+  try {
+    const r = await fetch(meta.pkg);
+    if (!r.ok) throw new Error(`${meta.pkg}: HTTP ${r.status}`);
+    const pkg = new Uint8Array(await r.arrayBuffer());
+    if (productOf(pkg) !== meta.product) { sayK("badpkg"); return; }
+    image = logicalImage(pkg);
+    say(`MORPHEUS ${meta.version}`);
+    $("go").disabled = false;
+  } catch (e) {
+    sayK("loadfilehint");
+  }
+})();
+
+// Allow user to select a downloaded or custom morpheus.fwsc file
+$("pkgfile").addEventListener("change", async (e) => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  try {
+    const raw = new Uint8Array(await f.arrayBuffer());
+    const prod = productOf(raw);
+    if (!prod.startsWith("FM-1_")) {
+      sayK("badpkg");
+      return;
+    }
+    image = logicalImage(raw);
+    meta.product = prod;
+    say(`Loaded ${f.name} (${prod})`);
+    $("go").disabled = writing;
+  } catch (err) {
+    sayK("error", err && err.message);
+  }
+});
+
+const STOCK_SHA256 = "db1642b2b6fa5c2cccb11ffd13878068bb28601678d3644049f99dc40e7edb8a";
+let stock = null;
+$("stockfile").addEventListener("change", async (e) => {
+  stock = null;
+  $("stockgo").disabled = true;
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  try {
+    const raw = new Uint8Array(await f.arrayBuffer());
+    const hex = [...new Uint8Array(await crypto.subtle.digest("SHA-256", raw))].map((b) => b.toString(16).padStart(2, "0")).join("");
+    if (hex !== STOCK_SHA256) { sayK("stockbad"); return; }
+    stock = { image: logicalImage(raw), product: productOf(raw) };
+    $("stockgo").disabled = writing;
+    sayK("stockok");
+  } catch (err) { sayK("error", err && err.message); }
+});
+
+async function run(img, product, isStock) {
+  let midi;
+  try { midi = await navigator.requestMIDIAccess({ sysex: true }); }
+  catch (e) { sayK("denied"); return; }
+  writing = true;
+  $("go").disabled = $("stockgo").disabled = true;
+  try {
+    const up = new Updater(midi, log);
+    const total = 74 + 1167;
+    const step = (k, a) => {
+      log(`${k} ${a ?? ""}`);
+      if (k === "start") sayK("start");
+      if (k === "verify") { $("bar").value = (a / total) * 100; sayPct("verify", $("bar").value); }
+      if (k === "loader") sayK("loader");
+      if (k === "write") { $("bar").value = ((74 + a) / total) * 100; sayPct("write", $("bar").value); }
+      if (k === "reboot") sayK("reboot");
+      if (k === "done") { $("bar").value = 100; sayK(isStock ? "stockdone" : "done"); }
+    };
+    const ota = await up.find((id) => /^ota-/i.test(id.model));
+    if (ota) {
+      ota.link.close();
+      sayK((await up.resume(img, step)) ? (isStock ? "stockdone" : "done") : "stopped");
+    } else {
+      await up.install(img, product, step);
+    }
+  } catch (e) {
+    if (isStock && e && e.code === "mismatch") { $("bar").value = 100; sayK("stockdone"); }
+    else if (e && e.code && TEXT[lang][e.code]) sayK(e.code, e.detail || "");
+    else sayK("error", e && e.message);
+    log(String(e && e.stack || e));
+  }
+  writing = false;
+  $("go").disabled = !image;
+  $("stockgo").disabled = !stock;
+}
+
+$("go").addEventListener("click", () => run(image, meta.product, false));
+$("stockgo").addEventListener("click", () => { if (stock) run(stock.image, stock.product, true); });
+</script>
 </body>
 </html>

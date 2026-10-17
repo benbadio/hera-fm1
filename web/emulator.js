@@ -30,6 +30,13 @@
     tracks: []
   };
 
+  // Tempo format helper: cap tempo display to 1 decimal place max (e.g. 128 or 128.5)
+  function formatBpm(bpm) {
+    const n = Number(bpm);
+    if (isNaN(n)) return '120';
+    return n % 1 === 0 ? n.toString() : n.toFixed(1);
+  }
+
   // Factory Patterns initialization
   function createDefaultPattern(trackIdx) {
     const pat = {
@@ -563,10 +570,10 @@
     ctx.fillText(`P${state.viewPage + 1} OCT:${state.viewOctave}`, 6, 233);
 
     ctx.fillStyle = '#e0e6ed';
-    ctx.fillText(`${state.bpm}BPM`, 82, 233);
+    ctx.fillText(`${formatBpm(state.bpm)}BPM`, 82, 233);
 
     ctx.fillStyle = '#808b96';
-    ctx.fillText('CLICK:EDIT', 148, 233);
+    ctx.fillText(state.screenEditEnabled ? 'TOUCH:EDIT' : 'K1-4:EDIT', 148, 233);
 
     // 5. Modal Pattern Tools Overlay (when FX menu is open)
     if (state.menuMode === 'fx') {
@@ -1155,9 +1162,13 @@
   });
 
   bindKnob(knobs.TEMPO, (dy) => {
-    state.bpm = Math.min(240, Math.max(50, state.bpm + dy));
+    const delta = state.shiftMode ? (dy * 0.1) : dy;
+    const nextBpm = Math.min(240, Math.max(50, state.bpm + delta));
+    state.bpm = Math.round(nextBpm * 10) / 10;
     knobs.TEMPO.angle = ((state.bpm - 50) / 190) * 270 - 135;
     drawKnob(knobs.TEMPO);
+    showHint(`⏱️ Tempo: ${formatBpm(state.bpm)} BPM${state.shiftMode ? ' (Fine Adjust 0.1 BPM)' : ''}`);
+    updateButtonVisuals();
   });
   knobs.TEMPO.angle = ((state.bpm - 50) / 190) * 270 - 135;
   drawKnob(knobs.TEMPO);
@@ -1258,7 +1269,7 @@
     }
     const info = document.getElementById("statusInfo");
     if (info) {
-      info.textContent = `${state.bpm} BPM • T${state.activeTrack + 1} (${SOUND_MODES[state.soundEngine]}) • ${state.isRunning ? 'RUNNING' : 'STOPPED'}`;
+      info.textContent = `${formatBpm(state.bpm)} BPM • T${state.activeTrack + 1} (${SOUND_MODES[state.soundEngine]}) • ${state.isRunning ? 'RUNNING' : 'STOPPED'}`;
     }
   }
 

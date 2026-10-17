@@ -1,7 +1,6 @@
 # Make it yours
 
-Dinghy is meant to be copied. This is how a copy becomes your firmware, gets released, and gets into the
-[FM-1 Firmware Hub](https://fm1.designburgapps.com) next to the others.
+This is how a copy becomes your firmware, gets released, and installs on devices next to the others.
 
 ## 1. Copy
 
@@ -38,20 +37,15 @@ hub use it to tell firmwares apart: two firmwares with the same identity look li
 ./build.sh --release 0.2        # -> build/dinghy-0.2.fwsc, identity FM-1_992, the version "0.2" on the screen
 ```
 
-On GitHub: a release with a tag (`v0.2`) and the `.fwsc` attached. Say what changed in its notes: the hub links
-them.
+On GitHub: a release with a tag (`v0.2`) and the `.fwsc` attached. Say what changed in its notes.
 
-## 5. Into the hub
+## 5. Releases & Distribution
 
-The [FM-1 Firmware Hub](https://fm1.designburgapps.com) installs open-source FM-1 firmwares with one click,
-and checks every night for new releases. To be listed:
+Open-source FM-1 firmwares install directly over Web MIDI. To distribute your releases:
 
-- the source is public and GPL-3.0 (Dinghy already is: keep it so);
+- the source is public and GPL-3.0;
 - the releases are on GitHub, each with its `.fwsc`;
-- a screenshot of your firmware's screen: `tests/run_host.sh` makes one (`build/host/*.png`), or a photo;
-- you ask: the hub's *"Made an open-source firmware?"* card says how.
-
-After that every release you make shows up there by itself.
+- a screenshot of your firmware's screen: `tests/run_host.sh` makes one (`build/host/*.png`), or a photo.
 
 ## 6. Keep the credits
 
