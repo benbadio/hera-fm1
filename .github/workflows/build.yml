@@ -32,7 +32,14 @@ jobs:
       - name: Run Host Simulator Test Suite
         run: |
           chmod +x tests/run_host.sh
-          ./tests/run_host.sh
+          sh -x ./tests/run_host.sh 2>&1 | tee host-test.log
+
+      - name: Upload Test Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: host-test-log
+          path: host-test.log
 
       - name: Upload Test Audio and Screenshots
         uses: actions/upload-artifact@v4
@@ -71,10 +78,20 @@ jobs:
 
       - name: Build MORPHEUS Firmware
         run: |
+          echo "=== Debug Info ==="
+          ls -la "$HOME/.jieli" || true
+          ls -la "$HOME/.jieli/toolchain" || true
           export JIELI_TOOLCHAIN="$HOME/.jieli/toolchain"
           export AC79_SDK="$HOME/fw-AC79_AIoT_SDK"
           chmod +x build.sh
-          ./build.sh
+          sh -x ./build.sh 2>&1 | tee firmware-build.log
+
+      - name: Upload Build Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-build-log
+          path: firmware-build.log
 
       - name: Upload Firmware Binary Package
         uses: actions/upload-artifact@v4
