@@ -84,3 +84,88 @@ static uint32_t rng(void)
     rng_state ^= rng_state << 5;
     return rng_state;
 }
+
+/* Compiler-rt soft-float conversion routines for freestanding JieLi toolchain */
+float __floatsisf(int32_t i)
+{
+    if (i == 0) return 0.0f;
+    uint32_t sign = 0;
+    uint32_t u;
+    if (i < 0) {
+        sign = 0x80000000u;
+        u = (uint32_t)(-(uint32_t)i);
+    } else {
+        u = (uint32_t)i;
+    }
+    int shift = 0;
+    while ((u & 0x80000000u) == 0) {
+        u <<= 1;
+        shift++;
+    }
+    int exp = 127 + (31 - shift);
+    uint32_t mantissa = (u >> 8) & 0x7FFFFFu;
+    if ((u & 0x80u) && ((u & 0x7Fu) || (mantissa & 1u))) {
+        mantissa++;
+        if (mantissa & 0x800000u) {
+            mantissa = 0;
+            exp++;
+        }
+    }
+    union { uint32_t u; float f; } b;
+    b.u = sign | ((uint32_t)exp << 23) | mantissa;
+    return b.f;
+}
+
+float __floatunsisf(uint32_t u)
+{
+    if (u == 0) return 0.0f;
+    int shift = 0;
+    while ((u & 0x80000000u) == 0) {
+        u <<= 1;
+        shift++;
+    }
+    int exp = 127 + (31 - shift);
+    uint32_t mantissa = (u >> 8) & 0x7FFFFFu;
+    if ((u & 0x80u) && ((u & 0x7Fu) || (mantissa & 1u))) {
+        mantissa++;
+        if (mantissa & 0x800000u) {
+            mantissa = 0;
+            exp++;
+        }
+    }
+    union { uint32_t u; float f; } b;
+    b.u = ((uint32_t)exp << 23) | mantissa;
+    return b.f;
+}
+
+int32_t __fixsfsi(float f)
+{
+    union { float f; uint32_t u; } b;
+    b.f = f;
+    uint32_t sign = b.u >> 31;
+    int exp = (int)((b.u >> 23) & 0xFF) - 127;
+    if (exp < 0) return 0;
+    if (exp >= 31) return sign ? (int32_t)0x80000000 : 0x7FFFFFFF;
+    uint32_t mant = (b.u & 0x7FFFFFu) | 0x800000u;
+    uint32_t val;
+    if (exp <= 23)
+        val = mant >> (23 - exp);
+    else
+        val = mant << (exp - 23);
+    return sign ? -(int32_t)val : (int32_t)val;
+}
+
+uint32_t __fixunssfsi(float f)
+{
+    union { float f; uint32_t u; } b;
+    b.f = f;
+    if (b.u & 0x80000000u) return 0;
+    int exp = (int)((b.u >> 23) & 0xFF) - 127;
+    if (exp < 0) return 0;
+    if (exp >= 32) return 0xFFFFFFFFu;
+    uint32_t mant = (b.u & 0x7FFFFFu) | 0x800000u;
+    if (exp <= 23)
+        return mant >> (23 - exp);
+    else
+        return mant << (exp - 23);
+}
