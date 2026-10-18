@@ -284,7 +284,7 @@ void matrix_ui_draw(void)
     cv_begin(240, 32, C_TOPBAR);
     cv_rect(0, 0, 240, 1, C_DIVIDER);
 
-    const char *status_to_show = NULL;
+    const char *status_to_show = 0;
     uint16_t status_color = C_TEXT_WHITE;
     uint16_t banner_bg = C_TOPBAR;
     uint16_t border_col = C_DIVIDER;
