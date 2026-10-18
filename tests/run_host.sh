@@ -7,7 +7,7 @@ mkdir -p build/host
 
 echo "==> Compiling MORPHEUS host simulator..."
 cc -O2 -Wall -Wno-unused-function -DDINGHY_HOST -DAPP_VER="\"dev\"" "-D__attribute__(x)=" \
-   -Ifirmware/src -Ifirmware/gen -o build/host/morpheus_sim firmware/src/morpheus_app.c
+   -Ifirmware/src -Ifirmware/src/dsp -Ifirmware/gen -o build/host/morpheus_sim firmware/src/morpheus_app.c
 
 echo "==> Running automated multi-track test scenario..."
 build/host/morpheus_sim build/host/morpheus tests/morpheus_scenario.txt

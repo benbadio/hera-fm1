@@ -25,7 +25,7 @@
 <main class="doc">
   <header>
     <h1>MORPHEUS // MANUAL</h1>
-    <p>4-Track Pattern Sequencer & Multi-Engine Synthesizer for M-VAVE FM-1</p>
+    <p>8-Track ReBirth Groovebox & Matrix Pattern Sequencer for M-VAVE FM-1</p>
     <nav aria-label="Navigation">
       <a href="index.html">Emulator</a>
       <a href="install.html">Install</a>
@@ -36,10 +36,10 @@
   <section>
     <h2>1. Introduction</h2>
     <p>
-      <strong>MORPHEUS</strong> transforms the ultra-portable M-VAVE FM-1 hardware groovebox into a standalone 4-track pattern sequencer workstation and synthesizer rack inspired by classic matrix pattern sequencers.
+      <strong>MORPHEUS</strong> transforms the ultra-portable M-VAVE FM-1 hardware groovebox into a standalone 8-track ReBirth-style groovebox and matrix pattern sequencer workstation.
     </p>
     <p>
-      It pairs a 240×240 pixel color LCD pattern grid with an integer fixed-point (Q15) audio DSP engine. Each of the 4 independent tracks can sequence external synthesizers over USB-MIDI and 3.5mm TRS-MIDI, or play internal sound generators: a resonant 303 acid bassline with non-linear saturation and portamento slide, an analog subtractive lead, a 2-operator FM synth, or silent MUTE mode for pure MIDI sequencing.
+      It combines a 240×240 pixel high-contrast dual-phosphor matrix LCD grid with a high-performance audio DSP engine. It integrates circuit-modeled TR-808 and TR-909 drum machines with a dedicated 12-lane Drum Matrix (ACC, CH, OH, CY, CB, CP, RS, HT, MT, LT, SD, BD), dual TB-303 acid synths with non-linear diode ladder resonance, Devilfish envelope expansion, and RAT-style distortion, an Amen breakbeat loop slicer, a 2-operator FM lead synth, a sub-bass synth, and independent MIDI channel output for every track (CH 1–16).
     </p>
   </section>
 
@@ -57,23 +57,23 @@
         <tr><td><strong>MASTER</strong></td><td>Hardware audio volume (0–100%)</td><td>Audio Headphone Gain</td></tr>
         <tr><td><strong>SELECT</strong></td><td>Scrub active step (1–32)</td><td>Pattern Transpose (±12 semitones)</td></tr>
         <tr><td><strong>TEMPO</strong></td><td>Sequencer BPM (50–240 BPM)</td><td>Global Shuffle / Swing (0–75%)</td></tr>
-        <tr><td><strong>TRACK</strong></td><td>Switch active track (T1 &rarr; T4)</td><td>Track Mute / Solo toggle</td></tr>
-        <tr><td><strong>KNOB 1 (Cutoff)</strong></td><td>Filter Cutoff / Active Step Note Pitch</td><td>Step Gate Velocity (0–127)</td></tr>
-        <tr><td><strong>KNOB 2 (Resonance)</strong></td><td>Filter Resonance / Gate Length</td><td>Tied Note (Slide On/Off)</td></tr>
+        <tr><td><strong>TRACK</strong></td><td>Switch active track (T1 &rarr; T8)</td><td>Track Mute / Solo toggle</td></tr>
+        <tr><td><strong>KNOB 1 (Cutoff)</strong></td><td>Filter Cutoff / Note Pitch (Synth) / Select Drum Lane (808/909)</td><td>Step Gate Velocity (0–127)</td></tr>
+        <tr><td><strong>KNOB 2 (Resonance)</strong></td><td>Filter Resonance / Gate Length / Toggle Drum Trigger</td><td>Tied Note (Slide On/Off)</td></tr>
         <tr><td><strong>KNOB 3 (Decay)</strong></td><td>Envelope Decay / Curve Modulation Value</td><td>MIDI CC Modulation Depth</td></tr>
-        <tr><td><strong>KNOB 4 (Accent)</strong></td><td>303 Accent Intensity / Pattern Length (1–32)</td><td>Step Resolution (1/16, 1/8T, 1/32...)</td></tr>
+        <tr><td><strong>KNOB 4 (Accent)</strong></td><td>303 Accent / Pattern Length / Toggle Drum Accent</td><td>Step Resolution (1/16, 1/8T, 1/32...)</td></tr>
         <tr><td><strong>OCT- / OCT+</strong></td><td>Grid Octave Scroll (C1..B5)</td><td>Track Octave Transpose</td></tr>
         <tr><td><strong>PLAY</strong></td><td>Start / Stop sequencer transport</td><td>Restart from Step 1</td></tr>
         <tr><td><strong>REC</strong></td><td>Step Record Mode (Audition + Auto-advance)</td><td>Clear current step</td></tr>
         <tr><td><strong>FX</strong></td><td>Toggle Pattern Tools Menu (Undo, Redo, Shift, Transpose, Alter, Randomize, Clear)</td><td>Shift+FX: Deliberate Randomize</td></tr>
         <tr><td><strong>SEL</strong></td><td>Toggle Page 1 (Steps 1–16) / Page 2 (17–32)</td><td>Set loop end point</td></tr>
-        <tr><td><strong>ENV</strong></td><td>Toggle KEYS (Notes) / CURVE (Modulation) View</td><td>Toggle unipolar / bipolar curve</td></tr>
-        <tr><td><strong>LFO</strong></td><td>Cycle Sound Engine (303 &rarr; SUB &rarr; FM &rarr; MUTE)</td><td>Engine Parameters</td></tr>
+        <tr><td><strong>ENV</strong></td><td>Toggle KEYS (Notes/Drums) / CURVE (Modulation) View</td><td>Toggle unipolar / bipolar curve</td></tr>
+        <tr><td><strong>LFO</strong></td><td>Cycle Sound Engine (303A &rarr; 303B &rarr; D808 &rarr; D909 &rarr; BRK &rarr; FM &rarr; SUB &rarr; MIDI)</td><td>Engine Parameters</td></tr>
         <tr><td><strong>EDIT</strong></td><td>SHIFT modifier button for secondary functions</td><td>Shift+HOME: Undo / Shift+SAVE: Redo</td></tr>
         <tr><td><strong>GLO</strong></td><td>Cycle sequence length (16, 24, 32 steps)</td><td>Global MIDI channel routing</td></tr>
-        <tr><td><strong>HOME</strong></td><td>Switch Active Track (T1–T4) / Execute Menu Option</td><td>Shift+HOME: Instant Undo</td></tr>
+        <tr><td><strong>HOME</strong></td><td>Switch Active Track (T1–T8) / Execute Menu Option</td><td>Shift+HOME: Instant Undo</td></tr>
         <tr><td><strong>SAVE</strong></td><td>Save all patterns and settings to flash storage</td><td>Shift+SAVE: Instant Redo</td></tr>
-        <tr><td><strong>ARP</strong></td><td>Cycle Bank (A, B, C, D)</td><td>Copy Pattern</td></tr>
+        <tr><td><strong>ARP</strong></td><td>Cycle Bank (A, B)</td><td>Copy Pattern</td></tr>
         <tr><td><strong>SEQ</strong></td><td>Cycle Pattern (1 to 8) within current bank</td><td>Paste Pattern</td></tr>
       </tbody>
     </table>

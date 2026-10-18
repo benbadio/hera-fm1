@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MORPHEUS // 4-Track Pattern Sequencer & Synthesizer</title>
-  <meta name="description" content="In-browser interactive emulator for MORPHEUS: 4-track matrix pattern sequencer & 303 acid synth firmware for the M-VAVE FM-1.">
+  <title>MORPHEUS // 8-Track ReBirth Groovebox & Matrix Sequencer</title>
+  <meta name="description" content="In-browser interactive emulator for MORPHEUS: 8-track ReBirth groovebox (808, 909, dual 303s, break slicer, FM lead, sub synth) & matrix pattern sequencer for the M-VAVE FM-1.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎛️</text></svg>">
   <link rel="stylesheet" href="style.css?v=20261017e">
   <style>
@@ -22,7 +22,7 @@
 <main>
   <header>
     <h1>MORPHEUS</h1>
-    <p>4-track matrix pattern sequencer & 303 acid synth for the M-VAVE FM-1</p>
+    <p>8-track ReBirth groovebox & matrix pattern sequencer for the M-VAVE FM-1</p>
     <nav aria-label="Navigation">
       <a href="manual.html">Manual</a>
       <a href="install.html">Install</a>
@@ -54,7 +54,7 @@
     <span id="status" role="status">Off. Click "Switch on" to initialize Web Audio and start the Matrix sequencer.</span>
     <button id="muteBtn" type="button" aria-pressed="false">Mute Audio</button>
     <button id="resetBtn" type="button" title="Reload factory patterns">Factory Reset</button>
-    <span class="cpu" id="statusInfo">128 BPM &bull; 4 Tracks &bull; 303 Bass</span>
+    <span class="cpu" id="statusInfo">128 BPM &bull; 8 Tracks &bull; ReBirth 303/808/909</span>
   </div>
 
   <!-- Demo Groove Presets Bar -->
@@ -99,7 +99,7 @@
         <span class="guide-badge">STEP 1</span>
         <h3>Start & Play</h3>
       </div>
-      <p>Click <strong>Switch on</strong>, then tap <strong>PLAY</strong>. All 4 tracks start jamming together: T1 Acid Bass, T2 Lead, T3 Arp, and T4 909 Drums.</p>
+      <p>Click <strong>Switch on</strong>, then tap <strong>PLAY</strong>. All 8 tracks start jamming together: T1 303 A, T2 303 B, T3 808 Drums, T4 909 Drums, T5 Breaks, T6 FM, T7 Sub, and T8 MIDI.</p>
     </div>
 
     <div class="guide-card">
@@ -135,7 +135,7 @@
         <li><strong>MASTER:</strong> Output volume.</li>
         <li><strong>SELECT:</strong> Scrubs active step (1&ndash;32) or transposes pattern with EDIT.</li>
         <li><strong>TEMPO:</strong> Sequencer speed (50&ndash;240 BPM). With EDIT: Swing (0&ndash;75%).</li>
-        <li><strong>TRACK:</strong> Switch active track (T1 Bass, T2 Lead, T3 Arp, T4 Drums).</li>
+        <li><strong>TRACK:</strong> Switch active track (T1..T8: 303A, 303B, D808, D909, BRK, FM, SUB, MIDI).</li>
         <li><strong>K1 (Cutoff):</strong> 303 Filter Cutoff frequency / note pitch.</li>
         <li><strong>K2 (Resonance):</strong> Squelchy diode-ladder resonance / gate length & tie.</li>
         <li><strong>K3 (Decay):</strong> Envelope decay / curve modulation value.</li>

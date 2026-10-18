@@ -3,7 +3,8 @@
 # Commands: btn <id>, keys <mask>, midi <status> <d1> <d2>, end
 100 btn 12
 800 btn 3
+2400 btn 3
 3000 btn 6
-4500 btn 4
+4500 btn 6
 6000 btn 12
 7000 end

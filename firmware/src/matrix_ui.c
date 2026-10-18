@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* MORPHEUS: 240x240 LCD Reason Matrix UI Renderer */
+/* MORPHEUS: Reason Matrix Interface with Dual-Phosphor CRT Theme & Drum Matrix View */
 #include "matrix_ui.h"
 #include "matrix_core.h"
 #include "matrix_synth.h"
@@ -22,18 +22,20 @@
 #define C_KEY_WHITE    RGB(230, 250, 235)  /* Bright Phosphor White Piano Key */
 #define C_KEY_BLACK    RGB(6, 12, 8)       /* Deep Charcoal Black Piano Key */
 
-static const char *const SOUND_NAMES[4] = {
-    "303", "SUB", "FM", "MUTE"
+static const char *const ENGINE_NAMES[NUM_TRACK_TYPES] = {
+    "303A", "303B", "D808", "D909", "BRK", "FM", "SUB", "MIDI"
 };
 
-/* Piano keyboard black/white key map (0 = B, 1 = A#, ..., 11 = C) */
+static const char *const DRUM_LABELS[12] = {
+    "BD ", "SD ", "LT ", "MT ", "HT ", "RS ", "CP ", "CB ", "CY ", "OH ", "CH ", "ACC"
+};
+
 static const uint8_t PIANO_IS_BLACK[12] = {
-    0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0
+    0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0
 };
 
-#define NUM_FX_MENU_ITEMS 10
-static const char *const FX_MENU_ITEMS[NUM_FX_MENU_ITEMS] = {
-    "1. UNDO LAST EDIT",
+static const char *const FX_MENU_ITEMS[10] = {
+    "1. UNDO EDIT",
     "2. REDO EDIT",
     "3. SHIFT LEFT",
     "4. SHIFT RIGHT",
@@ -85,6 +87,8 @@ void matrix_ui_draw(void)
     uint8_t step_offset = g_matrix.view_page * 16u;
     uint8_t cur_play_step = g_matrix.cur_step[trk];
     uint8_t is_running = g_matrix.is_running;
+    uint8_t engine = g_matrix.track_types[trk];
+    int is_drum_track = (engine == TRACK_TYPE_808 || engine == TRACK_TYPE_909);
     char str[32];
 
     /* =========================================================================
@@ -93,81 +97,94 @@ void matrix_ui_draw(void)
     cv_begin(240, 26, C_TOPBAR);
     cv_rect(0, 25, 240, 1, C_DIVIDER);
 
-    /* Track badge: [T1] */
+    /* Track badge: [T1]..[T8] */
     cv_rect(4, 4, 20, 17, C_RED_LED);
     str[0] = 'T'; str[1] = '1' + trk; str[2] = '\0';
     cv_text(7, 5, &FONT_S, str, C_BLACK);
 
-    /* Track mini lights (T1..T4) */
+    /* 8 Track Indicator Dots (T1..T8) */
     uint32_t t;
     for (t = 0; t < NUM_TRACKS; t++) {
         uint16_t c = (t == trk) ? C_RED_LED : (g_matrix.patterns[t][g_matrix.cur_bank[t] * PATS_PER_BANK + g_matrix.cur_pat[t]].mute ? C_DIVIDER : C_TEXT_DIM);
-        cv_rect(28 + t * 6, 10, 4, 5, c);
+        cv_rect(27 + t * 4, 10, 3, 5, c);
     }
 
-    /* Bank/Pattern badge: "A1" */
+    /* Bank/Pattern badge: "A1".."B8" */
     str[0] = 'A' + g_matrix.cur_bank[trk];
     str[1] = '1' + g_matrix.cur_pat[trk];
     str[2] = '\0';
-    cv_rect(54, 4, 18, 17, C_DIVIDER);
-    cv_text(56, 5, &FONT_S, str, C_TEXT_WHITE);
+    cv_rect(61, 4, 18, 17, C_DIVIDER);
+    cv_text(63, 5, &FONT_S, str, C_TEXT_WHITE);
 
     /* Sound Engine Badge */
-    const char *snd_name = SOUND_NAMES[g_matrix.sound_engine % 4];
-    uint16_t snd_c = (g_matrix.sound_engine == SOUND_MUTED) ? C_TEXT_DIM : C_PURPLE_LED;
-    cv_rect(76, 5, 34, 15, snd_c);
-    cv_text(79, 5, &FONT_S, snd_name, (g_matrix.sound_engine == SOUND_MUTED) ? C_BLACK : C_TEXT_WHITE);
+    const char *snd_name = (engine < NUM_TRACK_TYPES) ? ENGINE_NAMES[engine] : "UNKN";
+    uint16_t snd_c = (engine == TRACK_TYPE_MIDI) ? C_TEXT_DIM : C_PURPLE_LED;
+    cv_rect(82, 5, 34, 15, snd_c);
+    cv_text(84, 5, &FONT_S, snd_name, C_BLACK);
 
     /* Mode Badge: KEYS vs CURV */
     uint16_t mode_c = (g_matrix.view_mode == MODE_KEYS) ? C_GREEN_LED : C_BLUE_LED;
-    cv_rect(114, 5, 42, 15, mode_c);
-    cv_text(118, 5, &FONT_S, (g_matrix.view_mode == MODE_KEYS) ? "KEYS" : "CURV", C_BLACK);
+    cv_rect(120, 5, 38, 15, mode_c);
+    cv_text(122, 5, &FONT_S, (g_matrix.view_mode == MODE_KEYS) ? (is_drum_track ? "DRUM" : "KEYS") : "CURV", C_BLACK);
 
     /* MIDI Channel: e.g. "CH01" */
     str[0] = 'C'; str[1] = 'H';
     fmt_num(str + 2, pat->midi_ch);
-    cv_text(160, 5, &FONT_S, str, C_TEXT_DIM);
+    cv_text(162, 5, &FONT_S, str, C_TEXT_DIM);
 
     /* Run / Stop status */
     if (is_running) {
-        cv_rect(202, 7, 7, 10, C_GREEN_LED);
-        cv_text(212, 5, &FONT_S, "RUN", C_GREEN_LED);
+        cv_rect(204, 7, 7, 10, C_GREEN_LED);
+        cv_text(214, 5, &FONT_S, "RUN", C_GREEN_LED);
     } else {
-        cv_rect(202, 7, 7, 10, C_TEXT_DIM);
-        cv_text(212, 5, &FONT_S, "STOP", C_TEXT_DIM);
+        cv_rect(204, 7, 7, 10, C_TEXT_DIM);
+        cv_text(214, 5, &FONT_S, "STOP", C_TEXT_DIM);
     }
 
     cv_blit(0, 0);
 
     /* =========================================================================
-     * STRIP 2: Upper Matrix Note Grid (y: 26..148, h: 122)
+     * STRIP 2: Upper Matrix Note/Drum Grid (y: 26..148, h: 122)
      * ========================================================================= */
     cv_begin(240, 122, C_BG);
 
-    const int32_t grid_x = 22;
-    const int32_t grid_w = 216;
+    const int32_t grid_x = 24;
+    const int32_t grid_w = 214;
     const int32_t row_h = 10;
     const int32_t col_w = 13;
 
-    /* Piano Keyboard Rail on Left (x: 0..20) */
+    /* Left Sidebar: Piano Keys or 12 Drum Lane Labels */
     cv_rect(0, 0, grid_x, 122, C_TOPBAR);
     cv_rect(grid_x - 1, 0, 1, 122, C_DIVIDER);
 
     uint32_t r;
-    for (r = 0; r < 12; r++) {
-        int32_t ky = r * row_h;
-        if (PIANO_IS_BLACK[r]) {
-            /* Black key */
-            cv_rect(0, ky, 13, row_h - 1, C_KEY_BLACK);
-            cv_rect(13, ky, grid_x - 14, row_h - 1, C_TOPBAR);
-        } else {
-            /* White key */
-            cv_rect(0, ky, grid_x - 2, row_h - 1, C_KEY_WHITE);
+    if (is_drum_track) {
+        /* Drum Lane Column */
+        uint8_t focused_lane = g_matrix.drum_lane_sel[trk];
+        for (r = 0; r < 12; r++) {
+            uint8_t lane_idx = 11 - r; /* Row 0 = ACC, Row 11 = BD */
+            int32_t ky = r * row_h;
+            int is_focused = (lane_idx == focused_lane);
+            if (is_focused) {
+                cv_rect(0, ky, grid_x - 1, row_h - 1, RGB(18, 48, 26));
+            }
+            uint16_t lbl_col = is_focused ? C_ORANGE_LED : C_TEXT_DIM;
+            cv_text(2, ky + 1, &FONT_S, DRUM_LABELS[lane_idx], lbl_col);
+        }
+    } else {
+        /* Piano Keyboard Column */
+        for (r = 0; r < 12; r++) {
+            int32_t ky = r * row_h;
+            if (PIANO_IS_BLACK[r]) {
+                cv_rect(0, ky, 14, row_h - 1, C_KEY_BLACK);
+                cv_rect(14, ky, grid_x - 15, row_h - 1, C_TOPBAR);
+            } else {
+                cv_rect(0, ky, grid_x - 2, row_h - 1, C_KEY_WHITE);
+            }
         }
     }
-    /* Piano key rail is clean black & white keys */
 
-    /* Grid Area */
+    /* Grid Glass Background */
     cv_rect(grid_x, 0, grid_w, 120, C_GRID_BG);
 
     /* Horizontal grid lines */
@@ -175,7 +192,7 @@ void matrix_ui_draw(void)
         cv_line(grid_x, r * row_h, grid_x + grid_w, r * row_h, C_GRID_LINE);
     }
 
-    /* Vertical grid lines */
+    /* Vertical grid lines (Beat lines highlighted every 4th step) */
     uint32_t c;
     for (c = 0; c <= 16; c++) {
         uint16_t lc = (c % 4 == 0) ? C_BEAT_LINE : C_GRID_LINE;
@@ -187,7 +204,7 @@ void matrix_ui_draw(void)
     for (s_idx = 0; s_idx < 16; s_idx++) {
         uint8_t actual_step = step_offset + s_idx;
         if (actual_step >= pat->length) {
-            cv_rect(grid_x + s_idx * col_w + 1, 1, col_w - 1, 118, RGB(4, 9, 5));
+            cv_rect(grid_x + s_idx * col_w + 1, 1, col_w - 1, 118, RGB(4, 8, 4));
             continue;
         }
 
@@ -195,7 +212,7 @@ void matrix_ui_draw(void)
         int is_current_play = (is_running && actual_step == cur_play_step);
         int is_cursor = (actual_step == g_matrix.active_step);
 
-        /* Cursor indicator */
+        /* Cursor border */
         if (is_cursor) {
             cv_rect(grid_x + s_idx * col_w, 0, col_w, 1, C_WHITE);
             cv_rect(grid_x + s_idx * col_w, 119, col_w, 1, C_WHITE);
@@ -203,29 +220,43 @@ void matrix_ui_draw(void)
 
         /* Playhead cursor across the top */
         if (is_current_play) {
-            cv_rect(grid_x + s_idx * col_w + 1, 0, col_w - 2, 2, C_RED_LED);
+            cv_rect(grid_x + s_idx * col_w + 1, 0, col_w - 2, 2, C_PLAY_HL);
         }
 
         if (g_matrix.view_mode == MODE_KEYS) {
-            /* Note pitch: C3=48 -> note_oct = 48/12 - 1 = 3 */
-            if (st->gate > 0) {
-                int32_t note_oct = ((int32_t)st->note / 12) - 1;
-                int32_t note_in_oct = st->note % 12;
-                int32_t view_oct = (int32_t)g_matrix.view_octave;
+            if (is_drum_track) {
+                /* Render 12 Drum Lane hits */
+                uint16_t dmask = st->drums;
+                uint8_t lane;
+                for (lane = 0; lane < 12; lane++) {
+                    if (dmask & (1u << lane)) {
+                        int32_t drum_row = 11 - lane;
+                        int32_t cell_y = drum_row * row_h + 1;
+                        uint16_t led_col = is_current_play ? C_PLAY_HL : ((lane == DRUM_LANE_ACC || st->gate >= 105) ? C_ORANGE_LED : C_RED_LED);
+                        cv_rect(grid_x + s_idx * col_w + 2, cell_y + 1, col_w - 3, row_h - 2, led_col);
+                    }
+                }
+            } else {
+                /* Render Pitched Synth Note */
+                if (st->gate > 0) {
+                    int32_t note_oct = ((int32_t)st->note / 12) - 1;
+                    int32_t note_in_oct = st->note % 12;
+                    int32_t view_oct = (int32_t)g_matrix.view_octave;
 
-                if (note_oct == view_oct) {
-                    int32_t note_row = 11 - note_in_oct;
-                    int32_t cell_y = note_row * row_h + 1;
-                    uint16_t led_col = is_current_play ? C_PLAY_HL : ((st->gate > 105) ? C_ORANGE_LED : C_RED_LED);
-                    cv_rect(grid_x + s_idx * col_w + 2, cell_y + 1, col_w - 3, row_h - 2, led_col);
-                } else if (note_oct > view_oct) {
-                    cv_rect(grid_x + s_idx * col_w + 4, 1, col_w - 7, 3, C_ORANGE_LED);
-                } else {
-                    cv_rect(grid_x + s_idx * col_w + 4, 116, col_w - 7, 3, C_ORANGE_LED);
+                    if (note_oct == view_oct) {
+                        int32_t note_row = 11 - note_in_oct;
+                        int32_t cell_y = note_row * row_h + 1;
+                        uint16_t led_col = is_current_play ? C_PLAY_HL : ((st->gate > 105) ? C_ORANGE_LED : C_RED_LED);
+                        cv_rect(grid_x + s_idx * col_w + 2, cell_y + 1, col_w - 3, row_h - 2, led_col);
+                    } else if (note_oct > view_oct) {
+                        cv_rect(grid_x + s_idx * col_w + 4, 1, col_w - 7, 3, C_ORANGE_LED);
+                    } else {
+                        cv_rect(grid_x + s_idx * col_w + 4, 116, col_w - 7, 3, C_ORANGE_LED);
+                    }
                 }
             }
         } else {
-            /* Curve CV vertical level bar */
+            /* Curve CV vertical level bar in Electric Cyan */
             int32_t bar_h = ((int32_t)st->curve * 116) / 127;
             if (bar_h > 116) bar_h = 116;
             int32_t bar_y = 120 - bar_h;
@@ -257,16 +288,17 @@ void matrix_ui_draw(void)
         int is_current_play = (is_running && actual_step == cur_play_step);
         int32_t bar_x = grid_x + s_idx * col_w + 2;
 
-        if (st->gate > 0) {
-            int32_t bar_h = ((int32_t)st->gate * 50) / 127;
+        if (st->gate > 0 || (is_drum_track && st->drums > 0)) {
+            uint8_t effective_gate = st->gate > 0 ? st->gate : 100;
+            int32_t bar_h = ((int32_t)effective_gate * 50) / 127;
             if (bar_h < 4) bar_h = 4;
             if (bar_h > 52) bar_h = 52;
             int32_t bar_y = 56 - bar_h;
-            uint16_t g_col = is_current_play ? C_PLAY_HL : ((st->gate > 105) ? C_ORANGE_LED : C_RED_LED);
+            uint16_t g_col = is_current_play ? C_PLAY_HL : ((effective_gate > 105) ? C_ORANGE_LED : C_RED_LED);
 
             cv_rect(bar_x, bar_y, col_w - 4, bar_h, g_col);
 
-            /* Tie bridge to next step */
+            /* Tie / Slide bridge to next step */
             if (st->tie && s_idx < 15) {
                 cv_rect(bar_x + (col_w - 4), bar_y + bar_h - 4, 4, 4, C_ORANGE_LED);
             }
@@ -311,10 +343,17 @@ void matrix_ui_draw(void)
         cv_text(8, 8, &FONT_S, status_to_show, status_color);
     } else {
         /* Default status display with high-contrast text and badges */
-        str[0] = 'P'; str[1] = '1' + g_matrix.view_page;
-        str[2] = ' '; str[3] = 'O'; str[4] = 'C'; str[5] = 'T';
-        str[6] = ':'; str[7] = '0' + g_matrix.view_octave; str[8] = '\0';
-        cv_text(4, 8, &FONT_S, str, C_ORANGE_LED);
+        if (is_drum_track) {
+            str[0] = 'P'; str[1] = '1' + g_matrix.view_page;
+            str[2] = ' '; str[3] = '\0';
+            str_cpy(str + 3, DRUM_LABELS[g_matrix.drum_lane_sel[trk]], sizeof(str) - 3);
+            cv_text(4, 8, &FONT_S, str, C_ORANGE_LED);
+        } else {
+            str[0] = 'P'; str[1] = '1' + g_matrix.view_page;
+            str[2] = ' '; str[3] = 'O'; str[4] = 'C'; str[5] = 'T';
+            str[6] = ':'; str[7] = '0' + g_matrix.view_octave; str[8] = '\0';
+            cv_text(4, 8, &FONT_S, str, C_ORANGE_LED);
+        }
 
         fmt_int(str, g_matrix.bpm);
         {
@@ -324,32 +363,33 @@ void matrix_ui_draw(void)
             str[slen + 2] = 'M';
             str[slen + 3] = '\0';
         }
-        cv_text(78, 8, &FONT_S, str, C_TEXT_WHITE);
+        cv_text(86, 8, &FONT_S, str, C_TEXT_WHITE);
 
-        cv_text(150, 8, &FONT_S, "K1-4:EDIT", C_TEXT_DIM);
+        cv_text(152, 8, &FONT_S, "K1-4:EDIT", C_TEXT_DIM);
     }
 
     cv_blit(0, 208);
 
-    /* =========================================================================
-     * MODAL MENUS
-     * ========================================================================= */
+    /* Render Menu Overlay if active */
     if (g_matrix.menu_mode == MENU_FX) {
-        cv_begin(190, 144, C_TOPBAR);
-        cv_rect(0, 0, 190, 1, C_RED_LED);
-        cv_rect(0, 0, 1, 144, C_RED_LED);
-        cv_rect(189, 0, 1, 144, C_RED_LED);
-        cv_rect(0, 143, 190, 1, C_RED_LED);
+        cv_begin(180, 160, RGB(10, 22, 14));
+        cv_rect(0, 0, 180, 160, RGB(10, 22, 14));
+        cv_rect(0, 0, 180, 1, C_ORANGE_LED);
+        cv_rect(0, 159, 180, 1, C_ORANGE_LED);
+        cv_rect(0, 0, 1, 160, C_ORANGE_LED);
+        cv_rect(179, 0, 1, 160, C_ORANGE_LED);
 
-        cv_text(30, 4, &FONT_S, "-- PATTERN TOOLS --", C_ORANGE_LED);
-        uint32_t m;
-        for (m = 0; m < NUM_FX_MENU_ITEMS; m++) {
-            uint16_t tc = (g_matrix.menu_sel == (int8_t)m) ? C_PLAY_HL : C_TEXT_DIM;
-            if (g_matrix.menu_sel == (int8_t)m) {
-                cv_rect(6, 18 + m * 12, 178, 11, C_DIVIDER);
+        cv_text(8, 6, &FONT_S, "--- PATTERN TOOLS ---", C_ORANGE_LED);
+
+        uint32_t i;
+        for (i = 0; i < 10; i++) {
+            int32_t my = 22 + i * 13;
+            uint16_t tc = (i == (uint32_t)g_matrix.menu_sel) ? C_BLACK : C_TEXT_WHITE;
+            if (i == (uint32_t)g_matrix.menu_sel) {
+                cv_rect(6, my - 1, 168, 12, C_GREEN_LED);
             }
-            cv_text(10, 18 + m * 12, &FONT_S, FX_MENU_ITEMS[m], tc);
+            cv_text(8, my, &FONT_S, FX_MENU_ITEMS[i], tc);
         }
-        cv_blit(25, 48);
+        cv_blit(30, 40);
     }
 }

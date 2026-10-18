@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* MORPHEUS: 4-Track Reason Matrix Pattern Sequencer & Synth for M-VAVE FM-1 */
+/* MORPHEUS: 8-Track Reason Matrix Pattern Sequencer & ReBirth Groovebox for M-VAVE FM-1 */
 
 #ifndef APP_NAME
 #define APP_NAME "MORPHEUS"
 #endif
 #ifndef FELUCCA_ID
-#define FELUCCA_ID "FM-1_988"
+#define FELUCCA_ID "FM-1_8000013"
 #endif
 
 #include "platform.c"
@@ -33,20 +33,22 @@ static void handle_midi_in(void)
         uint8_t ch = (st & 0x0Fu) + 1u;
 
         if (cmd == 0x90u && d2 > 0) {
-            /* Note On: Live keyboard transposition or audition */
+            /* Note On */
             uint8_t trk = g_matrix.active_track;
             if (ch == g_matrix.patterns[trk][0].midi_ch) {
                 int8_t transpose_delta = (int8_t)d1 - 48; /* Relative to C3 */
                 matrix_shift_vertical(trk, transpose_delta);
             }
-            if (trk == g_matrix.sound_track) {
-                matrix_synth_note_on(d1, d2, 0);
-            }
+            matrix_step_t live_step;
+            live_step.note = d1;
+            live_step.gate = d2;
+            live_step.tie = 0;
+            live_step.curve = 64;
+            live_step.drums = (1u << DRUM_LANE_BD);
+            matrix_synth_trigger_step(trk, &live_step);
         } else if (cmd == 0x80u || (cmd == 0x90u && d2 == 0)) {
             /* Note Off */
-            if (g_matrix.active_track == g_matrix.sound_track) {
-                matrix_synth_note_off();
-            }
+            matrix_synth_note_off(g_matrix.active_track);
         } else if (cmd == 0xC0u) {
             /* Program change: switch pattern */
             uint8_t trk = g_matrix.active_track;
@@ -62,6 +64,36 @@ static void handle_midi_in(void)
     }
 }
 
+static const uint8_t GM_DRUM_NOTES[12] = {
+    36, /* BD - Bass Drum */
+    38, /* SD - Snare Drum */
+    45, /* LT - Low Tom */
+    48, /* MT - Mid Tom */
+    50, /* HT - High Tom */
+    37, /* RS - Rim Shot */
+    39, /* CP - Hand Clap */
+    56, /* CB - Cowbell */
+    49, /* CY - Crash Cymbal */
+    46, /* OH - Open Hi-Hat */
+    42, /* CH - Closed Hi-Hat */
+    0   /* ACC - Total Accent */
+};
+
+static const char *const DRUM_NAMES_FULL[12] = {
+    "BASS DRUM (BD)",
+    "SNARE DRUM (SD)",
+    "LOW TOM (LT)",
+    "MID TOM (MT)",
+    "HIGH TOM (HT)",
+    "RIM SHOT (RS)",
+    "HAND CLAP (CP)",
+    "COWBELL (CB)",
+    "CRASH CYMBAL (CY)",
+    "OPEN HI-HAT (OH)",
+    "CLOSED HI-HAT (CH)",
+    "TOTAL ACCENT (ACC)"
+};
+
 /* ---- Sequencer Timing & Step Advancement */
 static void step_track(uint8_t trk)
 {
@@ -70,29 +102,40 @@ static void step_track(uint8_t trk)
 
     uint8_t step_idx = g_matrix.cur_step[trk];
     matrix_step_t *st = &pat->steps[step_idx];
-    uint8_t ch = pat->midi_ch - 1;
+    uint8_t ch = (pat->midi_ch > 0 && pat->midi_ch <= 16) ? (pat->midi_ch - 1) : trk;
+    uint8_t engine = g_matrix.track_types[trk];
+    int is_drum_track = (engine == TRACK_TYPE_808 || engine == TRACK_TYPE_909);
 
-    /* 1. Send Note Off for previous step if not tied */
-    if (g_matrix.last_gate[trk] > 0 && !st->tie) {
-        midi_send(0x80u | ch, g_matrix.last_note[trk], 0);
-        if (trk == g_matrix.sound_track) {
-            matrix_synth_note_off();
-        }
-    }
-
-    /* 2. Play current step if gate > 0 */
-    if (st->gate > 0) {
-        midi_send(0x90u | ch, st->note, st->gate);
-        g_matrix.last_note[trk] = st->note;
-        g_matrix.last_gate[trk] = st->gate;
-
-        if (trk == g_matrix.sound_track) {
-            /* Pass to internal synth */
-            g_synth.curve_mod = (int16_t)st->curve - 64;
-            matrix_synth_note_on(st->note, st->gate, st->tie);
+    if (is_drum_track) {
+        /* Drum Engine: Trigger internal sound and MIDI Out */
+        matrix_synth_trigger_step(trk, st);
+        uint16_t m = st->drums;
+        if (m > 0) {
+            uint8_t vel = (m & (1u << DRUM_LANE_ACC)) ? 127 : 100;
+            uint8_t l;
+            for (l = 0; l < 11; l++) {
+                if (m & (1u << l)) {
+                    midi_send(0x90u | ch, GM_DRUM_NOTES[l], vel);
+                }
+            }
         }
     } else {
-        g_matrix.last_gate[trk] = 0;
+        /* Pitched Synth Engine: 303 A, 303 B, FM, Sub, External MIDI */
+        /* 1. Send Note Off for previous step if not tied */
+        if (g_matrix.last_gate[trk] > 0 && !st->tie) {
+            midi_send(0x80u | ch, g_matrix.last_note[trk], 0);
+            matrix_synth_note_off(trk);
+        }
+
+        /* 2. Play current step if gate > 0 */
+        if (st->gate > 0) {
+            midi_send(0x90u | ch, st->note, st->gate);
+            g_matrix.last_note[trk] = st->note;
+            g_matrix.last_gate[trk] = st->gate;
+            matrix_synth_trigger_step(trk, st);
+        } else {
+            g_matrix.last_gate[trk] = 0;
+        }
     }
 
     /* 3. Send Curve CV as MIDI CC */
@@ -155,6 +198,23 @@ static void notify_step_note(uint8_t step_idx, uint8_t note, uint8_t vel)
     matrix_ui_notify(buf);
 }
 
+static void notify_drum_step(uint8_t step_idx, uint8_t lane, int is_on)
+{
+    char buf[32];
+    str_cpy(buf, "S", sizeof(buf));
+    buf[1] = '0' + ((step_idx + 1u) / 10u) % 10u;
+    buf[2] = '0' + ((step_idx + 1u) % 10u);
+    buf[3] = ' ';
+    str_cpy(buf + 4, DRUM_LABELS[lane], sizeof(buf) - 4);
+    unsigned len = str_len(buf);
+    if (is_on) {
+        str_cpy(buf + len, "[TRIGGER ON]", sizeof(buf) - len);
+    } else {
+        str_cpy(buf + len, "[OFF]", sizeof(buf) - len);
+    }
+    matrix_ui_notify(buf);
+}
+
 static void notify_bpm(uint16_t bpm)
 {
     char buf[32];
@@ -179,27 +239,22 @@ static void app_main(void)
     /* Try to load saved patterns from flash */
     settings_load(&g_matrix.patterns, sizeof(g_matrix.patterns));
 
-    uint32_t last_tick_us[NUM_TRACKS];
-    uint32_t t;
-    uint32_t now_us = fm1_micros();
-    for (t = 0; t < NUM_TRACKS; t++) {
-        last_tick_us[t] = now_us;
-    }
-
     uint32_t last_ui_ms = 0;
+    uint32_t last_tick_us[NUM_TRACKS] = {0};
     uint32_t last_save_ms = 0;
     uint8_t save_pending = 0;
-    uint32_t prev_notes = 0;
 
-    for (;;) {
+    while (1) {
         platform_poll();
+        uint32_t now_ms = fm1_ms;
+        uint32_t now_us = now_ms * 1000u;
+        uint32_t t;
+
+        /* Check for incoming MIDI */
         handle_midi_in();
 
-        now_us = fm1_micros();
-        uint32_t now_ms = fm1_ms;
-
         /* =====================================================================
-         * 1. 4-Track Sequencer Engine Clock
+         * 1. 8-Track Sequencer Engine Clock
          * ===================================================================== */
         if (g_matrix.is_running) {
             for (t = 0; t < NUM_TRACKS; t++) {
@@ -220,7 +275,7 @@ static void app_main(void)
 
         /* Button Hold Tracking */
         if (fm1_in.buttons & (1u << BTN_EDIT)) {
-            matrix_ui_set_held_status("⚡ SHIFT: +HOME=UNDO +SAVE=REDO");
+            matrix_ui_set_held_status("⚡ SHIFT: +HOME=UNDO +SAVE=REDO +ENV=ENGINE");
         } else if (released & (1u << BTN_EDIT)) {
             matrix_ui_clear_held_status();
             matrix_ui_notify("SHIFT RELEASED");
@@ -229,12 +284,11 @@ static void app_main(void)
         if (pressed & (1u << BTN_PLAY)) {
             g_matrix.is_running = !g_matrix.is_running;
             if (!g_matrix.is_running) {
-                /* All notes off when stopped */
                 for (t = 0; t < NUM_TRACKS; t++) {
                     matrix_pattern_t *pat = &g_matrix.patterns[t][g_matrix.cur_bank[t] * PATS_PER_BANK + g_matrix.cur_pat[t]];
                     midi_send(0xB0u | (pat->midi_ch - 1), 123, 0); /* All Notes Off */
+                    matrix_synth_note_off(t);
                 }
-                matrix_synth_note_off();
                 matrix_ui_notify("STOP: SEQUENCER STOPPED");
             } else {
                 matrix_ui_notify("PLAY: SEQUENCER RUNNING");
@@ -246,29 +300,47 @@ static void app_main(void)
             matrix_ui_notify(g_matrix.rec_mode ? "REC: TAP KEY TO WRITE" : "REC: STEP REC OFF");
         }
 
-        /* BTN_SEL: Cycle active track (T1 -> T2 -> T3 -> T4) */
+        /* BTN_SEL: Cycle active track (T1 -> T2 -> ... -> T8) */
         if (pressed & (1u << BTN_SEL)) {
             g_matrix.active_track = (g_matrix.active_track + 1u) % NUM_TRACKS;
-            if (g_matrix.active_track == 3) matrix_ui_notify("TRACK 4: DRUMS (CH10)");
-            else if (g_matrix.active_track == 0) matrix_ui_notify("TRACK 1: 303 ACID BASS");
-            else if (g_matrix.active_track == 1) matrix_ui_notify("TRACK 2: SYNTH LEAD");
-            else matrix_ui_notify("TRACK 3: ARPEGGIATOR");
+            uint8_t cur_t = g_matrix.active_track;
+            uint8_t eng = g_matrix.track_types[cur_t];
+            char t_buf[32];
+            str_cpy(t_buf, "TRACK ", sizeof(t_buf));
+            t_buf[6] = '1' + cur_t;
+            t_buf[7] = ':';
+            t_buf[8] = ' ';
+            str_cpy(t_buf + 9, ENGINE_NAMES[eng % NUM_TRACK_TYPES], sizeof(t_buf) - 9);
+            matrix_ui_notify(t_buf);
         }
 
         /* BTN_EDIT: Toggle KEYS vs CURVE mode */
         if (pressed & (1u << BTN_EDIT)) {
             g_matrix.view_mode = (g_matrix.view_mode == MODE_KEYS) ? MODE_CURVE : MODE_KEYS;
-            matrix_ui_notify(g_matrix.view_mode == MODE_KEYS ? "VIEW: NOTE PITCH (KEYS)" : "VIEW: CC CURVE (CURV)");
+            matrix_ui_notify(g_matrix.view_mode == MODE_KEYS ? "VIEW: STEP NOTE / DRUM" : "VIEW: CC CURVE (CURV)");
         }
 
-        /* BTN_OCT_DOWN / BTN_OCT_UP: Shift view octave (1..5) */
+        /* BTN_OCT_DOWN / BTN_OCT_UP: Shift view octave or drum lane */
+        uint8_t cur_trk = g_matrix.active_track;
+        int cur_is_drum = (g_matrix.track_types[cur_trk] == TRACK_TYPE_808 || g_matrix.track_types[cur_trk] == TRACK_TYPE_909);
+
         if (pressed & (1u << BTN_OCT_DOWN)) {
-            if (g_matrix.view_octave > 1) g_matrix.view_octave--;
-            notify_knob_val("OCTAVE", g_matrix.view_octave, 5);
+            if (cur_is_drum) {
+                if (g_matrix.drum_lane_sel[cur_trk] > 0) g_matrix.drum_lane_sel[cur_trk]--;
+                matrix_ui_notify(DRUM_NAMES_FULL[g_matrix.drum_lane_sel[cur_trk]]);
+            } else {
+                if (g_matrix.view_octave > 1) g_matrix.view_octave--;
+                notify_knob_val("OCTAVE", g_matrix.view_octave, 5);
+            }
         }
         if (pressed & (1u << BTN_OCT_UP)) {
-            if (g_matrix.view_octave < 5) g_matrix.view_octave++;
-            notify_knob_val("OCTAVE", g_matrix.view_octave, 5);
+            if (cur_is_drum) {
+                if (g_matrix.drum_lane_sel[cur_trk] < 11) g_matrix.drum_lane_sel[cur_trk]++;
+                matrix_ui_notify(DRUM_NAMES_FULL[g_matrix.drum_lane_sel[cur_trk]]);
+            } else {
+                if (g_matrix.view_octave < 5) g_matrix.view_octave++;
+                notify_knob_val("OCTAVE", g_matrix.view_octave, 5);
+            }
         }
 
         /* BTN_SEQ: Toggle 16-step Page (1-16 vs 17-32) */
@@ -277,22 +349,18 @@ static void app_main(void)
             matrix_ui_notify(g_matrix.view_page ? "PAGE 2: STEPS 17-32" : "PAGE 1: STEPS 1-16");
         }
 
-        /* BTN_ENV: Cycle Sound Engine (303 -> SUB -> FM -> MUTE) */
+        /* BTN_ENV: Cycle Sound Engine for active track (303A -> 303B -> 808 -> 909 -> BRK -> FM -> SUB -> MIDI) */
         if (pressed & (1u << BTN_ENV)) {
-            g_matrix.sound_engine = (g_matrix.sound_engine + 1u) % NUM_SOUND_ENGINES;
-            g_synth.engine_mode = g_matrix.sound_engine;
-            switch (g_matrix.sound_engine) {
-                case 0: matrix_ui_notify("SOUND: 303 ACID BASS"); break;
-                case 1: matrix_ui_notify("SOUND: SUB SYNTH LEAD"); break;
-                case 2: matrix_ui_notify("SOUND: 2-OP FM SYNTH"); break;
-                default: matrix_ui_notify("SOUND: MUTE (MIDI ONLY)"); break;
-            }
+            g_matrix.track_types[cur_trk] = (g_matrix.track_types[cur_trk] + 1u) % NUM_TRACK_TYPES;
+            char s_buf[32];
+            str_cpy(s_buf, "ENGINE: ", sizeof(s_buf));
+            str_cpy(s_buf + 8, ENGINE_NAMES[g_matrix.track_types[cur_trk]], sizeof(s_buf) - 8);
+            matrix_ui_notify(s_buf);
         }
 
         /* BTN_FX: Open/Close Pattern FX menu, or Shift+FX for Randomize */
         if (pressed & (1u << BTN_FX)) {
             if (fm1_in.buttons & (1u << BTN_EDIT)) {
-                /* Shift + FX = Deliberate Randomize with Undo */
                 matrix_randomize(g_matrix.active_track);
                 matrix_ui_notify("RANDOMIZED PATTERN");
             } else {
@@ -307,7 +375,7 @@ static void app_main(void)
             }
         }
 
-        /* BTN_SAVE: Save patterns to flash, or Shift+SAVE for Redo */
+        /* BTN_SAVE: Save to flash, or Shift+SAVE for REDO */
         if (pressed & (1u << BTN_SAVE)) {
             if (fm1_in.buttons & (1u << BTN_EDIT)) {
                 matrix_redo();
@@ -319,7 +387,7 @@ static void app_main(void)
             }
         }
 
-        /* BTN_HOME: Cycle track, Execute Menu, or Shift+HOME for Undo */
+        /* BTN_HOME: Undo, track cycle, or Menu execute */
         if (pressed & (1u << BTN_HOME)) {
             if (fm1_in.buttons & (1u << BTN_EDIT)) {
                 matrix_undo();
@@ -341,20 +409,24 @@ static void app_main(void)
                 g_matrix.menu_mode = MENU_NONE;
             } else {
                 g_matrix.active_track = (g_matrix.active_track + 1u) % NUM_TRACKS;
-                if (g_matrix.active_track == 3) matrix_ui_notify("TRACK 4: DRUMS (CH10)");
-                else if (g_matrix.active_track == 0) matrix_ui_notify("TRACK 1: 303 ACID BASS");
-                else if (g_matrix.active_track == 1) matrix_ui_notify("TRACK 2: SYNTH LEAD");
-                else matrix_ui_notify("TRACK 3: ARPEGGIATOR");
+                uint8_t cur_t = g_matrix.active_track;
+                char t_buf[32];
+                str_cpy(t_buf, "TRACK ", sizeof(t_buf));
+                t_buf[6] = '1' + cur_t;
+                t_buf[7] = ':';
+                t_buf[8] = ' ';
+                str_cpy(t_buf + 9, ENGINE_NAMES[g_matrix.track_types[cur_t]], sizeof(t_buf) - 9);
+                matrix_ui_notify(t_buf);
             }
         }
 
         /* =====================================================================
-         * 3. Rotary Encoders
+         * 3. Encoders & Knobs Handling
          * ===================================================================== */
         int32_t enc_sel = fm1_enc_take(ENC_SELECT);
         if (enc_sel != 0) {
             if (g_matrix.menu_mode == MENU_FX) {
-                int8_t ms = g_matrix.menu_sel + (int8_t)enc_sel;
+                int32_t ms = (int32_t)g_matrix.menu_sel + enc_sel;
                 if (ms < 0) ms = 9;
                 if (ms > 9) ms = 0;
                 g_matrix.menu_sel = ms;
@@ -367,23 +439,28 @@ static void app_main(void)
                 g_matrix.view_page = (g_matrix.active_step >= 16);
                 matrix_pattern_t *p = &g_matrix.patterns[g_matrix.active_track][g_matrix.cur_bank[g_matrix.active_track] * PATS_PER_BANK + g_matrix.cur_pat[g_matrix.active_track]];
                 matrix_step_t *st = &p->steps[g_matrix.active_step];
-                notify_step_note(g_matrix.active_step, st->note, st->gate);
+                if (cur_is_drum) {
+                    notify_drum_step(g_matrix.active_step, g_matrix.drum_lane_sel[cur_trk], (st->drums & (1u << g_matrix.drum_lane_sel[cur_trk])) != 0);
+                } else {
+                    notify_step_note(g_matrix.active_step, st->note, st->gate);
+                }
             }
         }
 
-        int32_t enc_bpm = fm1_enc_take(ENC_ALGORITHM);
-        if (enc_bpm != 0) {
-            int32_t b = (int32_t)g_matrix.bpm + enc_bpm;
+        int32_t enc_tempo = fm1_enc_take(ENC_ALGORITHM);
+        if (enc_tempo != 0) {
+            int32_t b = (int32_t)g_matrix.bpm + enc_tempo;
             if (b < 40) b = 40;
             if (b > 250) b = 250;
             g_matrix.bpm = (uint16_t)b;
+            fxbus_set_bpm(&g_fxbus, (float)g_matrix.bpm);
             notify_bpm(g_matrix.bpm);
         }
 
         int32_t enc_pat = fm1_enc_take(ENC_PRESETS);
         if (enc_pat != 0) {
             uint8_t trk_idx = g_matrix.active_track;
-            int32_t p = (int32_t)g_matrix.cur_pat[trk_idx] + enc_pat;
+            int32_t p = (int32_t)g_matrix.next_pat[trk_idx] + enc_pat;
             if (p < 0) p = 7;
             if (p > 7) p = 0;
             g_matrix.next_pat[trk_idx] = (uint8_t)p;
@@ -410,7 +487,7 @@ static void app_main(void)
             }
         }
 
-        /* KNOB 2: Gate Velocity & Tie */
+        /* KNOB 2: Gate / Velocity */
         int32_t enc_k2 = fm1_enc_take(ENC_KNOB2);
         if (enc_k2 != 0) {
             matrix_pattern_t *p = &g_matrix.patterns[g_matrix.active_track][g_matrix.cur_bank[g_matrix.active_track] * PATS_PER_BANK + g_matrix.cur_pat[g_matrix.active_track]];
@@ -422,43 +499,49 @@ static void app_main(void)
             notify_knob_val(st->tie ? "VEL [TIE:ON]" : "VELOCITY", st->gate, 127);
         }
 
-        /* KNOB 3: Cutoff filter */
+        /* KNOB 3: Cutoff filter / Tone */
         int32_t enc_k3 = fm1_enc_take(ENC_KNOB3);
         if (enc_k3 != 0) {
-            int32_t cut = (int32_t)g_synth.knob_cutoff + enc_k3 * 2;
-            if (cut < 10) cut = 10;
-            if (cut > 127) cut = 127;
-            g_synth.knob_cutoff = (uint8_t)cut;
-            notify_knob_val("CUTOFF", g_synth.knob_cutoff, 127);
+            matrix_synth_set_param(cur_trk, 0, (uint8_t)(75 + enc_k3 * 4));
+            notify_knob_val("CUTOFF/TONE", 75 + enc_k3 * 4, 127);
         }
 
-        /* KNOB 4: Resonance */
+        /* KNOB 4: Resonance / Drive / FX */
         int32_t enc_k4 = fm1_enc_take(ENC_KNOB4);
         if (enc_k4 != 0) {
-            int32_t res = (int32_t)g_synth.knob_resonance + enc_k4 * 2;
-            if (res < 0) res = 0;
-            if (res > 127) res = 127;
-            g_synth.knob_resonance = (uint8_t)res;
-            notify_knob_val("RESONANCE", g_synth.knob_resonance, 127);
+            matrix_synth_set_param(cur_trk, 1, (uint8_t)(90 + enc_k4 * 4));
+            notify_knob_val("RESONANCE/FX", 90 + enc_k4 * 4, 127);
         }
 
         /* =====================================================================
-         * 4. 27 Silicone Keys: Step Entry & Note Audition
+         * 4. Keyboard Notes & Step Keys: Drum Toggles or Pitched Note Input
          * ===================================================================== */
-        uint32_t cur_notes = fm1_in.notes;
-        uint32_t note_down = cur_notes & ~prev_notes;
-        prev_notes = cur_notes;
+        uint32_t note_down = fm1_input_note_edges();
+        uint32_t k;
+        for (k = 0; k < 27u; k++) {
+            if (note_down & (1u << k)) {
+                matrix_pattern_t *p = &g_matrix.patterns[g_matrix.active_track][g_matrix.cur_bank[g_matrix.active_track] * PATS_PER_BANK + g_matrix.cur_pat[g_matrix.active_track]];
 
-        if (note_down) {
-            uint32_t k;
-            for (k = 0; k < 27u; k++) {
-                if (note_down & (1u << k)) {
-                    /* Key 0 is F3 = MIDI 53 */
-                    uint8_t midi_note = 53u + (uint8_t)k;
-                    matrix_pattern_t *p = &g_matrix.patterns[g_matrix.active_track][g_matrix.cur_bank[g_matrix.active_track] * PATS_PER_BANK + g_matrix.cur_pat[g_matrix.active_track]];
+                if (cur_is_drum && k < 16u) {
+                    /* Drum Track: Toggle focused drum lane trigger on this step */
+                    uint8_t target_s = (g_matrix.view_page * 16u) + (uint8_t)k;
+                    uint8_t lane = g_matrix.drum_lane_sel[cur_trk];
+                    matrix_undo_push(cur_trk);
+                    p->steps[target_s].drums ^= (1u << lane);
+                    int is_on = (p->steps[target_s].drums & (1u << lane)) != 0;
+                    notify_drum_step(target_s, lane, is_on);
 
+                    /* Audition drum sound */
+                    matrix_step_t audit;
+                    audit.drums = (1u << lane);
+                    audit.gate = 110;
+                    audit.tie = 0;
+                    audit.curve = 64;
+                    matrix_synth_trigger_step(cur_trk, &audit);
+                } else {
+                    /* Pitched Synth Track: Key note input or step jump */
+                    uint8_t midi_note = 53u + (uint8_t)k; /* Key 0 = F3 */
                     if (g_matrix.rec_mode) {
-                        /* Record note directly to current step, then advance */
                         matrix_undo_push(g_matrix.active_track);
                         p->steps[g_matrix.active_step].note = midi_note;
                         p->steps[g_matrix.active_step].gate = 110;
@@ -466,7 +549,6 @@ static void app_main(void)
                         g_matrix.active_step = (g_matrix.active_step + 1u) % p->length;
                         g_matrix.view_page = (g_matrix.active_step >= 16);
                     } else if (k < 16u) {
-                        /* Keys 0..15 jump directly to step 0..15 on active page! */
                         g_matrix.active_step = (g_matrix.view_page * 16u) + (uint8_t)k;
                         notify_step_note(g_matrix.active_step, p->steps[g_matrix.active_step].note, p->steps[g_matrix.active_step].gate);
                     } else {
@@ -474,33 +556,25 @@ static void app_main(void)
                     }
 
                     /* Audition note */
-                    if (g_matrix.active_track == g_matrix.sound_track) {
-                        matrix_synth_note_on(midi_note, 110, 0);
-                    }
-                    midi_send(0x90u | (p->midi_ch - 1), midi_note, 110);
+                    matrix_step_t audit;
+                    audit.note = midi_note;
+                    audit.gate = 110;
+                    audit.tie = 0;
+                    audit.curve = 64;
+                    audit.drums = 0;
+                    matrix_synth_trigger_step(g_matrix.active_track, &audit);
                 }
             }
         }
 
-        /* =====================================================================
-         * 5. LED Indicator Feedback
-         * ===================================================================== */
-        fm1_led_key(BTN_PLAY, g_matrix.is_running);
-        fm1_led_key(BTN_REC, g_matrix.rec_mode);
-        fm1_led_key(BTN_EDIT, g_matrix.view_mode == MODE_CURVE);
-
-        /* =====================================================================
-         * 6. Save to Flash (safe deferred save)
-         * ===================================================================== */
-        if (save_pending && (now_ms - last_save_ms > 1000u)) {
-            settings_save(&g_matrix.patterns, sizeof(g_matrix.patterns));
+        /* Periodic Flash Save if pending */
+        if (save_pending && (now_ms - last_save_ms >= 500u)) {
             save_pending = 0;
+            settings_save(&g_matrix.patterns, sizeof(g_matrix.patterns));
         }
 
-        /* =====================================================================
-         * 7. Refresh LCD Display (every 25ms = 40 FPS)
-         * ===================================================================== */
-        if (now_ms - last_ui_ms >= 25u) {
+        /* 30 FPS Display Redraw */
+        if (now_ms - last_ui_ms >= 33u) {
             last_ui_ms = now_ms;
             matrix_ui_draw();
         }

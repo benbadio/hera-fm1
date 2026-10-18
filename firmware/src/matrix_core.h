@@ -1,15 +1,15 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* MORPHEUS: 4-Track Reason Matrix Pattern Sequencer & Synth Core Model */
+/* MORPHEUS: 8-Track Reason Matrix Pattern Sequencer & ReBirth Groovebox Core Model */
 #ifndef MATRIX_CORE_H
 #define MATRIX_CORE_H
 
 #include <stdint.h>
 
 #define MAX_STEPS 32u
-#define NUM_BANKS 4u             /* A, B, C, D */
-#define PATS_PER_BANK 8u         /* 1..8 */
-#define TOTAL_PATS (NUM_BANKS * PATS_PER_BANK) /* 32 */
-#define NUM_TRACKS 4u            /* T1, T2, T3, T4 */
+#define NUM_BANKS 2u                           /* Bank A, B */
+#define PATS_PER_BANK 8u                       /* 1..8 */
+#define TOTAL_PATS (NUM_BANKS * PATS_PER_BANK) /* 16 */
+#define NUM_TRACKS 8u                          /* T1..T8 */
 
 enum {
     RES_1_2 = 0,
@@ -27,46 +27,69 @@ enum {
     MODE_CURVE = 1
 };
 
+typedef enum {
+    TRACK_TYPE_303_A  = 0,
+    TRACK_TYPE_303_B  = 1,
+    TRACK_TYPE_808    = 2,
+    TRACK_TYPE_909    = 3,
+    TRACK_TYPE_BREAKS = 4,
+    TRACK_TYPE_FM     = 5,
+    TRACK_TYPE_SUB    = 6,
+    TRACK_TYPE_MIDI   = 7,
+    NUM_TRACK_TYPES   = 8
+} matrix_track_type_t;
+
+/* 12-Lane Drum Map for 808 and 909 kits */
 enum {
-    SOUND_303 = 0,
-    SOUND_SUBTRACTIVE = 1,
-    SOUND_FM = 2,
-    SOUND_MUTED = 3,
-    NUM_SOUND_ENGINES = 4
+    DRUM_LANE_BD  = 0,  /* Bass Drum */
+    DRUM_LANE_SD  = 1,  /* Snare Drum */
+    DRUM_LANE_LT  = 2,  /* Low Tom / Conga */
+    DRUM_LANE_MT  = 3,  /* Mid Tom / Conga */
+    DRUM_LANE_HT  = 4,  /* High Tom / Conga */
+    DRUM_LANE_RS  = 5,  /* Rim Shot / Claves */
+    DRUM_LANE_CP  = 6,  /* Clap / Maracas */
+    DRUM_LANE_CB  = 7,  /* Cowbell */
+    DRUM_LANE_CY  = 8,  /* Crash Cymbal */
+    DRUM_LANE_OH  = 9,  /* Open Hi-Hat */
+    DRUM_LANE_CH  = 10, /* Closed Hi-Hat */
+    DRUM_LANE_ACC = 11, /* Total Accent */
+    NUM_DRUM_LANES = 12
 };
 
 enum {
     MENU_NONE = 0,
     MENU_FX = 1,        /* Shift, Transpose, Alter, Randomize, Copy, Paste, Clear */
-    MENU_SOUND = 2,     /* 303, Sub, FM, Mute */
+    MENU_SOUND = 2,     /* 303 A, 303 B, 808, 909, Breaks, FM, Sub, MIDI-only */
     MENU_TRACK = 3,     /* Track length, MIDI Channel, Curve CC */
     MENU_GLOBAL = 4     /* BPM, Clock Sync, Master Vol */
 };
 
 typedef struct {
-    uint8_t note;        /* MIDI pitch 0..127 */
+    uint8_t note;        /* MIDI pitch 0..127 or drum lane 0..11 */
     uint8_t gate;        /* Velocity 0..127 (0 = rest) */
-    uint8_t tie;         /* 1 = tied/legato to next step, 0 = normal */
+    uint8_t tie;         /* 1 = slide/legato to next step, 0 = normal */
     uint8_t curve;       /* 0..127 unipolar or -64..+63 bipolar */
+    uint16_t drums;      /* Bitmask of triggered drum voices for 808/909 */
 } matrix_step_t;
 
 typedef struct {
     matrix_step_t steps[MAX_STEPS];
-    uint8_t length;      /* 1..32 (default 16) */
-    uint8_t resolution;  /* RES_1_16 default */
-    uint8_t shuffle;     /* 0..75% swing */
+    uint8_t length;        /* 1..32 (default 16) */
+    uint8_t resolution;    /* RES_1_16 default */
+    uint8_t shuffle;       /* 0..75% swing */
     uint8_t curve_bipolar; /* 0 = unipolar, 1 = bipolar */
-    uint8_t curve_cc;    /* MIDI CC destination (default 74 = Cutoff) */
-    uint8_t midi_ch;     /* 1..16 */
-    uint8_t mute;        /* 0 = active, 1 = muted */
+    uint8_t curve_cc;      /* MIDI CC destination (default 74 = Cutoff) */
+    uint8_t midi_ch;       /* 1..16 */
+    uint8_t mute;          /* 0 = active, 1 = muted */
+    uint8_t track_type;    /* TRACK_TYPE_303_A..TRACK_TYPE_MIDI */
 } matrix_pattern_t;
 
 typedef struct {
-    /* 4 tracks x 32 patterns */
+    /* 8 tracks x 16 patterns */
     matrix_pattern_t patterns[NUM_TRACKS][TOTAL_PATS];
     
     /* Playback state per track */
-    uint8_t cur_bank[NUM_TRACKS];      /* 0..3 (Bank A..D) */
+    uint8_t cur_bank[NUM_TRACKS];      /* 0..1 (Bank A..B) */
     uint8_t cur_pat[NUM_TRACKS];       /* 0..7 (Pattern 1..8) */
     uint8_t next_bank[NUM_TRACKS];     /* Queued for next bar */
     uint8_t next_pat[NUM_TRACKS];
@@ -79,12 +102,12 @@ typedef struct {
     uint16_t bpm;                      /* 40..250 BPM (default 128) */
     uint8_t is_running;                /* 0 = stop, 1 = run */
     uint8_t ext_sync;                  /* 0 = internal clock, 1 = external MIDI clock */
-    uint8_t sound_engine;              /* SOUND_303, SOUND_SUBTRACTIVE, etc. */
-    uint8_t sound_track;               /* Which track drives internal synth (0..3, default 0 = T1) */
+    uint8_t track_types[NUM_TRACKS];   /* Assigned engine for each track */
     
     /* UI / Editor State */
-    uint8_t active_track;              /* 0..3 (the track shown on screen) */
+    uint8_t active_track;              /* 0..7 (the track shown on screen) */
     uint8_t active_step;               /* 0..31 (cursor position) */
+    uint8_t drum_lane_sel[NUM_TRACKS]; /* Focused drum lane 0..11 for 808/909 step entry */
     uint8_t view_mode;                 /* MODE_KEYS or MODE_CURVE */
     uint8_t view_octave;               /* 1..5 (default 3: C3..B3) */
     uint8_t view_page;                 /* 0 = Steps 1..16, 1 = Steps 17..32 */

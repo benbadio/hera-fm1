@@ -21,6 +21,9 @@
 #ifndef APP_VER
 #define APP_VER "0.0"
 #endif
+#ifndef POOL
+#define POOL
+#endif
 #define FS 44100u
 #define HALF_FRAMES 256u
 
