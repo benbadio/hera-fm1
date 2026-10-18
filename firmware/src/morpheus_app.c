@@ -229,6 +229,63 @@ static void notify_bpm(uint16_t bpm)
     matrix_ui_notify(buf);
 }
 
+/* 16 White Keys mapping on 27-key silicone keyboard (F3..G5) */
+static const int8_t WHITE_KEY_TO_STEP[27] = {
+     0, -1,  1, -1,  2, -1,  3,  /* 0..6:   F3..B3 */
+     4, -1,  5, -1,  6,          /* 7..11:  C4..E4 */
+     7, -1,  8, -1,  9, -1, 10,  /* 12..18: F4..B4 */
+    11, -1, 12, -1, 13,          /* 19..23: C5..E5 */
+    14, -1, 15                  /* 24..26: F5..G5 */
+};
+
+/* Hardware LED Manager: Drives Key and Button LEDs */
+static void update_hardware_leds(void)
+{
+    uint32_t k;
+    uint8_t cur_t = g_matrix.active_track;
+    uint8_t eng = g_matrix.track_types[cur_t];
+    int is_drum = (eng == TRACK_TYPE_808 || eng == TRACK_TYPE_909);
+    matrix_pattern_t *pat = &g_matrix.patterns[cur_t][g_matrix.cur_bank[cur_t] * PATS_PER_BANK + g_matrix.cur_pat[cur_t]];
+    uint8_t page_offset = g_matrix.view_page * 16u;
+    uint8_t cur_play_step = g_matrix.cur_step[cur_t];
+
+    /* Note Key LEDs (0..26) */
+    for (k = 0; k < 27u; k++) {
+        int is_held = (fm1_in.notes & (1u << k)) != 0;
+        int is_lit = is_held;
+
+        if (is_drum) {
+            int8_t step_idx = WHITE_KEY_TO_STEP[k];
+            if (step_idx >= 0) {
+                uint8_t actual_step = page_offset + (uint8_t)step_idx;
+                if (actual_step < pat->length) {
+                    uint8_t lane = g_matrix.drum_lane_sel[cur_t];
+                    int has_trig = (pat->steps[actual_step].drums & (1u << lane)) != 0;
+                    int is_playhead = (g_matrix.is_running && actual_step == cur_play_step);
+                    if (has_trig || is_playhead) {
+                        is_lit = 1;
+                    }
+                }
+            }
+        } else {
+            /* Pitched synth track: light up key if it matches sounding note */
+            uint8_t midi_note = 53u + (uint8_t)k;
+            if (g_matrix.last_gate[cur_t] > 0 && g_matrix.last_note[cur_t] == midi_note) {
+                is_lit = 1;
+            }
+        }
+
+        fm1_led_key(KEY_LED(k), is_lit);
+    }
+
+    /* Button LEDs */
+    fm1_led_key(BTN_PLAY, g_matrix.is_running);
+    fm1_led_key(BTN_REC, g_matrix.rec_mode);
+    fm1_led_key(BTN_FX, g_matrix.menu_mode == MENU_FX);
+    fm1_led_key(BTN_SEQ, g_matrix.view_page == 1);
+    fm1_led_key(BTN_EDIT, g_matrix.view_mode == MODE_CURVE);
+}
+
 /* ---- Main Application Loop */
 static void app_main(void)
 {
@@ -528,22 +585,25 @@ static void app_main(void)
             if (note_down & (1u << k)) {
                 matrix_pattern_t *p = &g_matrix.patterns[g_matrix.active_track][g_matrix.cur_bank[g_matrix.active_track] * PATS_PER_BANK + g_matrix.cur_pat[g_matrix.active_track]];
 
-                if (cur_is_drum && k < 16u) {
-                    /* Drum Track: Toggle focused drum lane trigger on this step */
-                    uint8_t target_s = (g_matrix.view_page * 16u) + (uint8_t)k;
-                    uint8_t lane = g_matrix.drum_lane_sel[cur_trk];
-                    matrix_undo_push(cur_trk);
-                    p->steps[target_s].drums ^= (1u << lane);
-                    int is_on = (p->steps[target_s].drums & (1u << lane)) != 0;
-                    notify_drum_step(target_s, lane, is_on);
+                if (cur_is_drum) {
+                    /* Drum Track: Only the 16 white keys toggle drum triggers (16 steps) */
+                    int8_t step_i = WHITE_KEY_TO_STEP[k];
+                    if (step_i >= 0) {
+                        uint8_t target_s = (g_matrix.view_page * 16u) + (uint8_t)step_i;
+                        uint8_t lane = g_matrix.drum_lane_sel[cur_trk];
+                        matrix_undo_push(cur_trk);
+                        p->steps[target_s].drums ^= (1u << lane);
+                        int is_on = (p->steps[target_s].drums & (1u << lane)) != 0;
+                        notify_drum_step(target_s, lane, is_on);
 
-                    /* Audition drum sound */
-                    matrix_step_t audit;
-                    audit.drums = (1u << lane);
-                    audit.gate = 110;
-                    audit.tie = 0;
-                    audit.curve = 64;
-                    matrix_synth_trigger_step(cur_trk, &audit);
+                        /* Audition drum sound */
+                        matrix_step_t audit;
+                        audit.drums = (1u << lane);
+                        audit.gate = 110;
+                        audit.tie = 0;
+                        audit.curve = 64;
+                        matrix_synth_trigger_step(cur_trk, &audit);
+                    }
                 } else {
                     /* Pitched Synth Track: Key note input or step jump */
                     uint8_t midi_note = 53u + (uint8_t)k; /* Key 0 = F3 */
@@ -578,6 +638,9 @@ static void app_main(void)
             save_pending = 0;
             settings_save(&g_matrix.patterns, sizeof(g_matrix.patterns));
         }
+
+        /* Update Panel and Keyboard LEDs */
+        update_hardware_leds();
 
         /* 30 FPS Display Redraw */
         if (now_ms - last_ui_ms >= 33u) {

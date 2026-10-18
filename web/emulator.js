@@ -1094,7 +1094,7 @@
       const mx = (240 - menuW) / 2;
       const my = 38;
 
-      ctx.fillStyle = 'rgba(4, 10, 6, 0.94)';
+      ctx.fillStyle = '#040a06';
       ctx.fillRect(0, 26, 240, 194);
 
       ctx.fillStyle = '#09160d';
@@ -1321,8 +1321,53 @@
     }
   }
 
+  function updateKeyboardLights() {
+    if (!keys || keys.length === 0) return;
+    const trk = state.tracks[state.activeTrack];
+    const pat = trk ? trk.patterns[trk.curBank * 8 + trk.curPat] : null;
+    const eng = trk ? (trk.engine !== undefined ? trk.engine : pat.engine) : 0;
+    const isDrum = (eng === 2 || eng === 3);
+    const pageOffset = state.viewPage * 16;
+    const curPlayStep = trk ? trk.curStep : 0;
+
+    for (let k = 0; k < keys.length; k++) {
+      const keyObj = keys[k];
+      if (!keyObj || !keyObj.g) continue;
+
+      let isLit = false;
+      let isPlayhead = false;
+
+      if (isDrum) {
+        const whiteIdx = WHITE_K.indexOf(k);
+        if (whiteIdx >= 0 && pat) {
+          const actualStep = pageOffset + whiteIdx;
+          if (actualStep < pat.length) {
+            const lane = state.drumLaneSel[state.activeTrack];
+            const bit = 11 - lane;
+            const hasTrig = (pat.steps[actualStep].drums & (1 << bit)) !== 0;
+            if (state.isRunning && actualStep === curPlayStep) {
+              isPlayhead = true;
+            }
+            if (hasTrig || isPlayhead) {
+              isLit = true;
+            }
+          }
+        }
+      } else if (pat) {
+        const midiNote = KEY_NOTES[k];
+        if (trk && trk.lastGate > 0 && trk.lastNote === midiNote) {
+          isLit = true;
+        }
+      }
+
+      keyObj.g.classList.toggle("lit", isLit);
+      keyObj.g.classList.toggle("playhead", isPlayhead);
+    }
+  }
+
   function loop() {
     renderScreen();
+    updateKeyboardLights();
     requestAnimationFrame(loop);
   }
 
@@ -1502,6 +1547,10 @@
   const WHITE_K = [0, 2, 4, 6, 7, 9, 11, 12, 14, 16, 18, 19, 21, 23, 24, 26];
   const BLACK_K = [1, 3, 5, 8, 10, 13, 15, 17, 20, 22, 25];
   const BLACK_AFTER = [0, 1, 2, 4, 5, 7, 8, 9, 11, 12, 14];
+  const KEY_NOTES = [
+    53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65,
+    66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79
+  ];
 
   const svg = document.getElementById("panel");
   const controls = document.getElementById("controls");
@@ -1868,6 +1917,12 @@
     if (buttons.EDIT) {
       buttons.EDIT.g.classList.toggle("lit", state.shiftMode);
     }
+    if (buttons.FX) {
+      buttons.FX.g.classList.toggle("lit", state.menuMode === 'fx');
+    }
+    if (buttons.SEQ) {
+      buttons.SEQ.g.classList.toggle("lit", state.viewPage === 1);
+    }
     const info = document.getElementById("statusInfo");
     if (info) {
       const trk = state.tracks[state.activeTrack];
@@ -2013,11 +2068,6 @@
   });
 
   // 27 Silicone Keys Handling
-  const KEY_NOTES = [
-    53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65,
-    66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79
-  ];
-
   keys.forEach((k, idx) => {
     if (!k) return;
     const midiNote = KEY_NOTES[idx];
@@ -2034,19 +2084,19 @@
       const isDrum = (eng === 2 || eng === 3);
 
       if (isDrum) {
-        const bit = idx % 12;
-        const lane = 11 - bit;
-        if (state.recMode) {
-          pushUndo("Record Drum");
-          pat.steps[state.activeStep].drums ^= (1 << bit);
-          if (pat.steps[state.activeStep].gate === 0) pat.steps[state.activeStep].gate = 115;
-          showStatus(`REC S${state.activeStep + 1}: ${DRUM_LABELS[lane]}`);
-          state.activeStep = (state.activeStep + 1) % pat.length;
-          state.viewPage = state.activeStep >= 16 ? 1 : 0;
-        } else {
-          showStatus(`AUDITION: ${DRUM_LABELS[lane]} (${DRUM_FULL_NAMES[lane]})`);
+        /* Drum Track: Only the 16 white keys toggle drum triggers (16 steps) */
+        const whiteIdx = WHITE_K.indexOf(idx);
+        if (whiteIdx >= 0) {
+          const targetStep = (state.viewPage * 16) + whiteIdx;
+          const lane = state.drumLaneSel[state.activeTrack];
+          const bit = 11 - lane;
+          pushUndo("Toggle Drum Step");
+          pat.steps[targetStep].drums ^= (1 << bit);
+          if (pat.steps[targetStep].gate === 0) pat.steps[targetStep].gate = 115;
+          const isOn = (pat.steps[targetStep].drums & (1 << bit)) !== 0;
+          showStatus(`STEP ${targetStep + 1} ${DRUM_LABELS[lane]}: [${isOn ? 'TRIGGER ON' : 'OFF'}]`);
+          playDrumVoice(eng, lane, 115, (pat.steps[targetStep].drums & (1 << 11)) !== 0);
         }
-        playDrumVoice(eng, lane, 115, bit === 11);
         return;
       }
 

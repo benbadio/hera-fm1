@@ -213,12 +213,39 @@ a {
   transition: fill .06s, stroke .06s, transform .06s;
 }
 
-.lit .keyface.white, .held .keyface.white {
-  fill: #f3b25c;
+.lit .keyface.white {
+  fill: #ffb71a;
+  stroke: #ffe082;
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 4px rgba(255, 183, 26, 0.6));
 }
 
-.lit .keyface.black, .held .keyface.black {
+.lit.playhead .keyface.white {
+  fill: #ffffff;
+  stroke: #00ff66;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 8px #ffffff);
+}
+
+.lit .keyface.black {
   fill: #e0902c;
+  stroke: #ffd54f;
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 4px rgba(224, 144, 44, 0.6));
+}
+
+.held .keyface.white {
+  fill: #00ff66;
+  stroke: #ffffff;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 8px #00ff66);
+}
+
+.held .keyface.black {
+  fill: #00cc55;
+  stroke: #ffffff;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 8px #00ff66);
 }
 
 /* Switch On Start Screen Overlay */

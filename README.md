@@ -72,6 +72,8 @@ When selecting drum tracks (T3 TR-808 or T4 TR-909), MORPHEUS automatically tran
 - **K1 (Select Lane):** Scroll through the 12 drum instruments.
 - **K2 (Toggle Trigger):** Turn active drum voice on/off on the selected step.
 - **K4 (Toggle Accent):** Enable total accent boost on that step.
+- **16 White Keys Direct Step Input:** The 16 white silicone keys on the FM-1 map 1:1 to the 16 sequencer steps (1–16 or 17–32), providing authentic TR-808/909 step programming. Tapping a white key instantly toggles the trigger for the active drum lane.
+- **Keyboard & Button LEDs:** Silicone key LEDs illuminate all active triggers for the focused drum lane, follow the running sequencer playhead across the 16 steps, and light up dynamically whenever any key is pressed.
 
 ---
 

@@ -232,6 +232,59 @@ void matrix_ui_draw(void)
     cv_blit(0, 0);
 
     /* =========================================================================
+     * SINGLE-PASS FX MENU (No over-blitting, zero flicker on hardware LCD)
+     * ========================================================================= */
+    if (g_matrix.menu_mode == MENU_FX) {
+        /* Strip 2: Upper Menu (rows 26..125, h=100) */
+        cv_begin(240, 100, C_BG);
+        cv_rect(30, 14, 180, 86, RGB(10, 22, 14));
+        cv_rect(30, 14, 180, 1, C_ORANGE_LED);
+        cv_rect(30, 14, 1, 86, C_ORANGE_LED);
+        cv_rect(209, 14, 1, 86, C_ORANGE_LED);
+        cv_text(38, 20, &FONT_S, "--- PATTERN TOOLS ---", C_ORANGE_LED);
+
+        uint32_t i;
+        for (i = 0; i < 5; i++) {
+            int32_t my = 36 + i * 13;
+            uint16_t tc = (i == (uint32_t)g_matrix.menu_sel) ? C_BLACK : C_TEXT_WHITE;
+            if (i == (uint32_t)g_matrix.menu_sel) {
+                cv_rect(36, my - 1, 168, 12, C_GREEN_LED);
+            }
+            cv_text(38, my, &FONT_S, FX_MENU_ITEMS[i], tc);
+        }
+        cv_blit(0, 26);
+
+        /* Strip 3: Lower Menu (rows 126..207, h=82) */
+        cv_begin(240, 82, C_BG);
+        cv_rect(30, 0, 180, 74, RGB(10, 22, 14));
+        cv_rect(30, 73, 180, 1, C_ORANGE_LED);
+        cv_rect(30, 0, 1, 74, C_ORANGE_LED);
+        cv_rect(209, 0, 1, 74, C_ORANGE_LED);
+
+        for (i = 5; i < 10; i++) {
+            int32_t my = 1 + (i - 5) * 13;
+            uint16_t tc = (i == (uint32_t)g_matrix.menu_sel) ? C_BLACK : C_TEXT_WHITE;
+            if (i == (uint32_t)g_matrix.menu_sel) {
+                cv_rect(36, my - 1, 168, 12, C_GREEN_LED);
+            }
+            cv_text(38, my, &FONT_S, FX_MENU_ITEMS[i], tc);
+        }
+        cv_blit(0, 126);
+
+        /* Strip 4: Bottom Navigation Status Bar (rows 208..239, h=32) */
+        cv_begin(240, 32, C_TOPBAR);
+        cv_rect(0, 0, 240, 1, C_DIVIDER);
+        cv_rect(3, 3, 234, 26, RGB(10, 26, 14));
+        cv_rect(3, 3, 234, 1, C_ORANGE_LED);
+        cv_rect(3, 28, 234, 1, C_ORANGE_LED);
+        cv_rect(3, 3, 1, 26, C_ORANGE_LED);
+        cv_rect(236, 3, 1, 26, C_ORANGE_LED);
+        cv_text(8, 8, &FONT_S, "ENC:NAV | HOME:DO | FX:EXIT", C_ORANGE_LED);
+        cv_blit(0, 208);
+        return;
+    }
+
+    /* =========================================================================
      * STRIP 2: Upper Matrix Note/Drum Grid (y: 26..148, h: 122)
      * ========================================================================= */
     cv_begin(240, 122, C_BG);
@@ -457,27 +510,5 @@ void matrix_ui_draw(void)
     }
 
     cv_blit(0, 208);
-
-    /* Render Menu Overlay if active */
-    if (g_matrix.menu_mode == MENU_FX) {
-        cv_begin(180, 160, RGB(10, 22, 14));
-        cv_rect(0, 0, 180, 160, RGB(10, 22, 14));
-        cv_rect(0, 0, 180, 1, C_ORANGE_LED);
-        cv_rect(0, 159, 180, 1, C_ORANGE_LED);
-        cv_rect(0, 0, 1, 160, C_ORANGE_LED);
-        cv_rect(179, 0, 1, 160, C_ORANGE_LED);
-
-        cv_text(8, 6, &FONT_S, "--- PATTERN TOOLS ---", C_ORANGE_LED);
-
-        uint32_t i;
-        for (i = 0; i < 10; i++) {
-            int32_t my = 22 + i * 13;
-            uint16_t tc = (i == (uint32_t)g_matrix.menu_sel) ? C_BLACK : C_TEXT_WHITE;
-            if (i == (uint32_t)g_matrix.menu_sel) {
-                cv_rect(6, my - 1, 168, 12, C_GREEN_LED);
-            }
-            cv_text(8, my, &FONT_S, FX_MENU_ITEMS[i], tc);
-        }
-        cv_blit(30, 40);
-    }
 }
+
