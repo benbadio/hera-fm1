@@ -111,6 +111,64 @@ static void step_track(uint8_t trk)
     g_matrix.cur_step[trk] = next_s;
 }
 
+static const char *const NOTE_NAMES_SHORT[12] = {
+    "C-", "C#", "D-", "D#", "E-", "F-", "F#", "G-", "G#", "A-", "A#", "B-"
+};
+
+static void notify_knob_val(const char *name, int32_t val, int32_t max_val)
+{
+    char buf[32];
+    str_cpy(buf, name, sizeof(buf));
+    unsigned len = str_len(buf);
+    buf[len++] = ':';
+    buf[len++] = ' ';
+    fmt_int(buf + len, val);
+    len = str_len(buf);
+    if (max_val > 0) {
+        buf[len++] = '/';
+        fmt_int(buf + len, max_val);
+    }
+    matrix_ui_notify(buf);
+}
+
+static void notify_step_note(uint8_t step_idx, uint8_t note, uint8_t vel)
+{
+    char buf[32];
+    str_cpy(buf, "STEP ", sizeof(buf));
+    buf[5] = '0' + ((step_idx + 1u) / 10u) % 10u;
+    buf[6] = '0' + ((step_idx + 1u) % 10u);
+    buf[7] = ' ';
+    buf[8] = '\0';
+    if (vel == 0) {
+        str_cpy(buf + 8, "[REST]", sizeof(buf) - 8);
+    } else {
+        uint8_t oct = (note / 12u) - 1u;
+        const char *nm = NOTE_NAMES_SHORT[note % 12u];
+        buf[8] = nm[0];
+        buf[9] = nm[1];
+        buf[10] = '0' + (oct % 10u);
+        buf[11] = ' ';
+        buf[12] = 'V';
+        buf[13] = ':';
+        fmt_int(buf + 14, vel);
+    }
+    matrix_ui_notify(buf);
+}
+
+static void notify_bpm(uint16_t bpm)
+{
+    char buf[32];
+    str_cpy(buf, "TEMPO: ", sizeof(buf));
+    fmt_int(buf + 7, bpm);
+    unsigned len = str_len(buf);
+    buf[len++] = ' ';
+    buf[len++] = 'B';
+    buf[len++] = 'P';
+    buf[len++] = 'M';
+    buf[len] = '\0';
+    matrix_ui_notify(buf);
+}
+
 /* ---- Main Application Loop */
 static void app_main(void)
 {
@@ -160,6 +218,14 @@ static void app_main(void)
         uint32_t released = 0;
         uint32_t pressed = fm1_input_edges(&released);
 
+        /* Button Hold Tracking */
+        if (fm1_in.buttons & (1u << BTN_EDIT)) {
+            matrix_ui_set_held_status("⚡ SHIFT: +HOME=UNDO +SAVE=REDO");
+        } else if (released & (1u << BTN_EDIT)) {
+            matrix_ui_clear_held_status();
+            matrix_ui_notify("SHIFT RELEASED");
+        }
+
         if (pressed & (1u << BTN_PLAY)) {
             g_matrix.is_running = !g_matrix.is_running;
             if (!g_matrix.is_running) {
@@ -169,40 +235,58 @@ static void app_main(void)
                     midi_send(0xB0u | (pat->midi_ch - 1), 123, 0); /* All Notes Off */
                 }
                 matrix_synth_note_off();
+                matrix_ui_notify("STOP: SEQUENCER STOPPED");
+            } else {
+                matrix_ui_notify("PLAY: SEQUENCER RUNNING");
             }
         }
 
         if (pressed & (1u << BTN_REC)) {
             g_matrix.rec_mode = !g_matrix.rec_mode;
+            matrix_ui_notify(g_matrix.rec_mode ? "REC: TAP KEY TO WRITE" : "REC: STEP REC OFF");
         }
 
         /* BTN_SEL: Cycle active track (T1 -> T2 -> T3 -> T4) */
         if (pressed & (1u << BTN_SEL)) {
             g_matrix.active_track = (g_matrix.active_track + 1u) % NUM_TRACKS;
+            if (g_matrix.active_track == 3) matrix_ui_notify("TRACK 4: DRUMS (CH10)");
+            else if (g_matrix.active_track == 0) matrix_ui_notify("TRACK 1: 303 ACID BASS");
+            else if (g_matrix.active_track == 1) matrix_ui_notify("TRACK 2: SYNTH LEAD");
+            else matrix_ui_notify("TRACK 3: ARPEGGIATOR");
         }
 
         /* BTN_EDIT: Toggle KEYS vs CURVE mode */
         if (pressed & (1u << BTN_EDIT)) {
             g_matrix.view_mode = (g_matrix.view_mode == MODE_KEYS) ? MODE_CURVE : MODE_KEYS;
+            matrix_ui_notify(g_matrix.view_mode == MODE_KEYS ? "VIEW: NOTE PITCH (KEYS)" : "VIEW: CC CURVE (CURV)");
         }
 
         /* BTN_OCT_DOWN / BTN_OCT_UP: Shift view octave (1..5) */
         if (pressed & (1u << BTN_OCT_DOWN)) {
             if (g_matrix.view_octave > 1) g_matrix.view_octave--;
+            notify_knob_val("OCTAVE", g_matrix.view_octave, 5);
         }
         if (pressed & (1u << BTN_OCT_UP)) {
             if (g_matrix.view_octave < 5) g_matrix.view_octave++;
+            notify_knob_val("OCTAVE", g_matrix.view_octave, 5);
         }
 
         /* BTN_SEQ: Toggle 16-step Page (1-16 vs 17-32) */
         if (pressed & (1u << BTN_SEQ)) {
             g_matrix.view_page = !g_matrix.view_page;
+            matrix_ui_notify(g_matrix.view_page ? "PAGE 2: STEPS 17-32" : "PAGE 1: STEPS 1-16");
         }
 
         /* BTN_ENV: Cycle Sound Engine (303 -> SUB -> FM -> MUTE) */
         if (pressed & (1u << BTN_ENV)) {
             g_matrix.sound_engine = (g_matrix.sound_engine + 1u) % NUM_SOUND_ENGINES;
             g_synth.engine_mode = g_matrix.sound_engine;
+            switch (g_matrix.sound_engine) {
+                case 0: matrix_ui_notify("SOUND: 303 ACID BASS"); break;
+                case 1: matrix_ui_notify("SOUND: SUB SYNTH LEAD"); break;
+                case 2: matrix_ui_notify("SOUND: 2-OP FM SYNTH"); break;
+                default: matrix_ui_notify("SOUND: MUTE (MIDI ONLY)"); break;
+            }
         }
 
         /* BTN_FX: Open/Close Pattern FX menu, or Shift+FX for Randomize */
@@ -210,12 +294,15 @@ static void app_main(void)
             if (fm1_in.buttons & (1u << BTN_EDIT)) {
                 /* Shift + FX = Deliberate Randomize with Undo */
                 matrix_randomize(g_matrix.active_track);
+                matrix_ui_notify("RANDOMIZED PATTERN");
             } else {
                 if (g_matrix.menu_mode == MENU_FX) {
                     g_matrix.menu_mode = MENU_NONE;
+                    matrix_ui_notify("PATTERN TOOLS CLOSED");
                 } else {
                     g_matrix.menu_mode = MENU_FX;
                     g_matrix.menu_sel = 0;
+                    matrix_ui_notify("PATTERN TOOLS OPEN");
                 }
             }
         }
@@ -224,9 +311,11 @@ static void app_main(void)
         if (pressed & (1u << BTN_SAVE)) {
             if (fm1_in.buttons & (1u << BTN_EDIT)) {
                 matrix_redo();
+                matrix_ui_notify("REDO: RE-APPLIED EDIT");
             } else {
                 save_pending = 1;
                 last_save_ms = now_ms;
+                matrix_ui_notify("SAVED PATTERNS TO FLASH");
             }
         }
 
@@ -234,23 +323,28 @@ static void app_main(void)
         if (pressed & (1u << BTN_HOME)) {
             if (fm1_in.buttons & (1u << BTN_EDIT)) {
                 matrix_undo();
+                matrix_ui_notify("UNDO: RESTORED STATE");
             } else if (g_matrix.menu_mode == MENU_FX) {
                 uint8_t cur_t = g_matrix.active_track;
                 switch (g_matrix.menu_sel) {
-                    case 0: matrix_undo(); break;
-                    case 1: matrix_redo(); break;
-                    case 2: matrix_shift_horizontal(cur_t, -1); break;
-                    case 3: matrix_shift_horizontal(cur_t, 1); break;
-                    case 4: matrix_shift_vertical(cur_t, 1); break;
-                    case 5: matrix_shift_vertical(cur_t, -1); break;
-                    case 6: matrix_alter(cur_t); break;
-                    case 7: matrix_randomize(cur_t); break;
-                    case 8: matrix_clear(cur_t); break;
-                    case 9: break; /* Exit menu */
+                    case 0: matrix_undo(); matrix_ui_notify("UNDO EXECUTED"); break;
+                    case 1: matrix_redo(); matrix_ui_notify("REDO EXECUTED"); break;
+                    case 2: matrix_shift_horizontal(cur_t, -1); matrix_ui_notify("SHIFTED LEFT"); break;
+                    case 3: matrix_shift_horizontal(cur_t, 1); matrix_ui_notify("SHIFTED RIGHT"); break;
+                    case 4: matrix_shift_vertical(cur_t, 1); matrix_ui_notify("TRANSPOSED +1"); break;
+                    case 5: matrix_shift_vertical(cur_t, -1); matrix_ui_notify("TRANSPOSED -1"); break;
+                    case 6: matrix_alter(cur_t); matrix_ui_notify("ALTERED PATTERN"); break;
+                    case 7: matrix_randomize(cur_t); matrix_ui_notify("RANDOMIZED PATTERN"); break;
+                    case 8: matrix_clear(cur_t); matrix_ui_notify("CLEARED PATTERN"); break;
+                    case 9: matrix_ui_notify("MENU EXITED"); break;
                 }
                 g_matrix.menu_mode = MENU_NONE;
             } else {
                 g_matrix.active_track = (g_matrix.active_track + 1u) % NUM_TRACKS;
+                if (g_matrix.active_track == 3) matrix_ui_notify("TRACK 4: DRUMS (CH10)");
+                else if (g_matrix.active_track == 0) matrix_ui_notify("TRACK 1: 303 ACID BASS");
+                else if (g_matrix.active_track == 1) matrix_ui_notify("TRACK 2: SYNTH LEAD");
+                else matrix_ui_notify("TRACK 3: ARPEGGIATOR");
             }
         }
 
@@ -264,12 +358,16 @@ static void app_main(void)
                 if (ms < 0) ms = 9;
                 if (ms > 9) ms = 0;
                 g_matrix.menu_sel = ms;
+                matrix_ui_notify(FX_MENU_ITEMS[g_matrix.menu_sel]);
             } else {
                 int32_t as = (int32_t)g_matrix.active_step + enc_sel;
                 if (as < 0) as = 31;
                 if (as > 31) as = 0;
                 g_matrix.active_step = (uint8_t)as;
                 g_matrix.view_page = (g_matrix.active_step >= 16);
+                matrix_pattern_t *p = &g_matrix.patterns[g_matrix.active_track][g_matrix.cur_bank[g_matrix.active_track] * PATS_PER_BANK + g_matrix.cur_pat[g_matrix.active_track]];
+                matrix_step_t *st = &p->steps[g_matrix.active_step];
+                notify_step_note(g_matrix.active_step, st->note, st->gate);
             }
         }
 
@@ -279,6 +377,7 @@ static void app_main(void)
             if (b < 40) b = 40;
             if (b > 250) b = 250;
             g_matrix.bpm = (uint16_t)b;
+            notify_bpm(g_matrix.bpm);
         }
 
         int32_t enc_pat = fm1_enc_take(ENC_PRESETS);
@@ -288,6 +387,7 @@ static void app_main(void)
             if (p < 0) p = 7;
             if (p > 7) p = 0;
             g_matrix.next_pat[trk_idx] = (uint8_t)p;
+            notify_knob_val("PATTERN", g_matrix.next_pat[trk_idx] + 1, 8);
         }
 
         /* KNOB 1: Pitch (in KEYS mode) or Curve (in CURVE mode) */
@@ -300,11 +400,13 @@ static void app_main(void)
                 if (n < 24) n = 24;
                 if (n > 108) n = 108;
                 st->note = (uint8_t)n;
+                notify_step_note(g_matrix.active_step, st->note, st->gate);
             } else {
                 int32_t c = (int32_t)st->curve + enc_k1 * 4;
                 if (c < 0) c = 0;
                 if (c > 127) c = 127;
                 st->curve = (uint8_t)c;
+                notify_knob_val("CURVE CC", st->curve, 127);
             }
         }
 
@@ -317,6 +419,7 @@ static void app_main(void)
             if (v < 0) v = 0;
             if (v > 127) v = 127;
             st->gate = (uint8_t)v;
+            notify_knob_val(st->tie ? "VEL [TIE:ON]" : "VELOCITY", st->gate, 127);
         }
 
         /* KNOB 3: Cutoff filter */
@@ -326,6 +429,7 @@ static void app_main(void)
             if (cut < 10) cut = 10;
             if (cut > 127) cut = 127;
             g_synth.knob_cutoff = (uint8_t)cut;
+            notify_knob_val("CUTOFF", g_synth.knob_cutoff, 127);
         }
 
         /* KNOB 4: Resonance */
@@ -335,6 +439,7 @@ static void app_main(void)
             if (res < 0) res = 0;
             if (res > 127) res = 127;
             g_synth.knob_resonance = (uint8_t)res;
+            notify_knob_val("RESONANCE", g_synth.knob_resonance, 127);
         }
 
         /* =====================================================================
@@ -357,11 +462,15 @@ static void app_main(void)
                         matrix_undo_push(g_matrix.active_track);
                         p->steps[g_matrix.active_step].note = midi_note;
                         p->steps[g_matrix.active_step].gate = 110;
+                        notify_step_note(g_matrix.active_step, midi_note, 110);
                         g_matrix.active_step = (g_matrix.active_step + 1u) % p->length;
                         g_matrix.view_page = (g_matrix.active_step >= 16);
                     } else if (k < 16u) {
                         /* Keys 0..15 jump directly to step 0..15 on active page! */
                         g_matrix.active_step = (g_matrix.view_page * 16u) + (uint8_t)k;
+                        notify_step_note(g_matrix.active_step, p->steps[g_matrix.active_step].note, p->steps[g_matrix.active_step].gate);
+                    } else {
+                        notify_step_note(g_matrix.active_step, midi_note, 110);
                     }
 
                     /* Audition note */

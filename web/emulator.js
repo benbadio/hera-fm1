@@ -26,9 +26,35 @@
     menuMode: 'none', // 'none' or 'fx'
     menuSel: 0,       // active item in modal menu
     screenEditEnabled: false, // Hardware faithful by default; toggleable
+    statusMsg: null,
+    statusTimer: 0,
+    heldStatus: null,
     clipboard: null,
     tracks: []
   };
+
+  const NOTE_NAMES_SHORT = ['C-', 'C#', 'D-', 'D#', 'E-', 'F-', 'F#', 'G-', 'G#', 'A-', 'A#', 'B-'];
+  function getNoteName(midiNote) {
+    const semi = midiNote % 12;
+    const oct = Math.floor(midiNote / 12) - 1;
+    return `${NOTE_NAMES_SHORT[semi]}${oct}`;
+  }
+
+  function showStatus(msg, durationMs = 1800) {
+    state.statusMsg = msg;
+    state.statusTimer = Date.now() + durationMs;
+    showHint(msg);
+  }
+
+  function setHeldStatus(msg) {
+    state.heldStatus = msg;
+    showHint(msg);
+  }
+
+  function clearHeldStatus() {
+    state.heldStatus = null;
+    resetHint();
+  }
 
   // Tempo format helper: cap tempo display to 1 decimal place max (e.g. 128 or 128.5)
   function formatBpm(bpm) {
@@ -369,7 +395,7 @@
   const PIANO_IS_BLACK = [0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0];
 
   function renderScreen() {
-    ctx.fillStyle = '#050c07';
+    ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, 240, 240);
 
     const trkIdx = state.activeTrack;
@@ -379,51 +405,55 @@
     const curPlayStep = trk.curStep;
 
     // 1. Top Header Bar (y: 0..25)
-    ctx.fillStyle = '#08140c';
+    ctx.fillStyle = '#080e0a';
     ctx.fillRect(0, 0, 240, 25);
-    ctx.fillStyle = '#12301a';
+    ctx.fillStyle = '#183420';
     ctx.fillRect(0, 25, 240, 1);
 
     // Track Badge: [T1]
     ctx.fillStyle = '#00ff66';
     ctx.fillRect(4, 4, 20, 17);
-    ctx.fillStyle = '#041206';
+    ctx.fillStyle = '#000000';
     ctx.font = 'bold 10px monospace';
     ctx.textAlign = 'center';
     ctx.fillText(`T${trkIdx + 1}`, 14, 16);
 
     for (let t = 0; t < 4; t++) {
-      ctx.fillStyle = (t === trkIdx) ? '#00ff66' : '#1b3b24';
+      ctx.fillStyle = (t === trkIdx) ? '#00ff66' : '#122c19';
       ctx.fillRect(28 + t * 6, 10, 4, 5);
     }
 
     // Pattern Badge: A1
-    ctx.fillStyle = '#12301a';
+    ctx.fillStyle = '#0c1a10';
     ctx.fillRect(54, 4, 18, 17);
-    ctx.fillStyle = '#dcfae2';
+    ctx.strokeStyle = '#1e4a28';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(54.5, 4.5, 17, 16);
+    ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 9px monospace';
     ctx.fillText(`${String.fromCharCode(65 + trk.curBank)}${trk.curPat + 1}`, 63, 16);
 
     // Sound Mode badge
-    ctx.fillStyle = '#0abd6e';
+    const sndColors = ['#ffb71a', '#00ff66', '#00f0ff', '#1b3022'];
+    ctx.fillStyle = sndColors[state.soundEngine];
     ctx.fillRect(76, 4, 34, 17);
-    ctx.fillStyle = '#021408';
+    ctx.fillStyle = state.soundEngine === 3 ? '#80aa90' : '#000000';
     ctx.font = 'bold 8px monospace';
     ctx.fillText(SOUND_MODES[state.soundEngine], 93, 16);
 
     // View Mode badge
-    ctx.fillStyle = state.viewMode === 'keys' ? '#00ff66' : '#33ffcc';
+    ctx.fillStyle = state.viewMode === 'keys' ? '#00ff66' : '#00f0ff';
     ctx.fillRect(114, 4, 42, 17);
-    ctx.fillStyle = '#041206';
+    ctx.fillStyle = '#000000';
     ctx.fillText(state.viewMode === 'keys' ? 'KEYS' : 'CURV', 135, 16);
 
     // MIDI CH
-    ctx.fillStyle = '#558b66';
-    ctx.font = '8px monospace';
+    ctx.fillStyle = '#50be6e';
+    ctx.font = 'bold 8px monospace';
     ctx.fillText(`CH${pat.midiCh < 10 ? '0' + pat.midiCh : pat.midiCh}`, 174, 16);
 
     // Run / Stop
-    ctx.fillStyle = state.isRunning ? '#00ff66' : '#2d4d35';
+    ctx.fillStyle = state.isRunning ? '#00ff66' : '#ffb71a';
     ctx.beginPath();
     ctx.arc(205, 12, 3.5, 0, Math.PI * 2);
     ctx.fill();
@@ -438,31 +468,31 @@
     const colW = 13;
 
     // Piano Keyboard Rail on Left
-    ctx.fillStyle = '#08140c';
+    ctx.fillStyle = '#080e0a';
     ctx.fillRect(0, 26, gridX, 122);
-    ctx.fillStyle = '#12301a';
+    ctx.fillStyle = '#183420';
     ctx.fillRect(gridX - 1, 26, 1, 122);
 
     for (let r = 0; r < 12; r++) {
       const ky = 26 + r * rowH;
       if (PIANO_IS_BLACK[r]) {
-        ctx.fillStyle = '#0a160e';
+        ctx.fillStyle = '#080e0a';
         ctx.fillRect(0, ky, 13, rowH - 1);
-        ctx.fillStyle = '#08140c';
+        ctx.fillStyle = '#050a07';
         ctx.fillRect(13, ky, gridX - 14, rowH - 1);
       } else {
-        ctx.fillStyle = '#c8eed0';
+        ctx.fillStyle = '#e1f5e6';
         ctx.fillRect(0, ky, gridX - 2, rowH - 1);
       }
     }
 
     // Grid Area
-    ctx.fillStyle = '#071009';
+    ctx.fillStyle = '#030704';
     ctx.fillRect(gridX, 26, gridW, 120);
 
-    ctx.strokeStyle = '#122618';
-    ctx.lineWidth = 1;
     for (let r = 0; r <= 12; r++) {
+      ctx.strokeStyle = '#0c1c10';
+      ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(gridX, 26 + r * rowH);
       ctx.lineTo(gridX + gridW, 26 + r * rowH);
@@ -470,7 +500,8 @@
     }
 
     for (let c = 0; c <= 16; c++) {
-      ctx.strokeStyle = (c % 4 === 0) ? '#1e4028' : '#122618';
+      ctx.strokeStyle = (c % 4 === 0) ? '#1e502a' : '#0c1c10';
+      ctx.lineWidth = (c % 4 === 0) ? 1.5 : 1;
       ctx.beginPath();
       ctx.moveTo(gridX + c * colW, 26);
       ctx.lineTo(gridX + c * colW, 146);
@@ -481,7 +512,7 @@
     for (let sIdx = 0; sIdx < 16; sIdx++) {
       const actualStep = stepOffset + sIdx;
       if (actualStep >= pat.length) {
-        ctx.fillStyle = '#040905';
+        ctx.fillStyle = '#000000';
         ctx.fillRect(gridX + sIdx * colW, 26, colW, 120);
         continue;
       }
@@ -489,12 +520,12 @@
       const st = pat.steps[actualStep];
 
       if (state.isRunning && actualStep === curPlayStep) {
-        ctx.fillStyle = 'rgba(0, 255, 102, 0.16)';
+        ctx.fillStyle = 'rgba(0, 255, 102, 0.22)';
         ctx.fillRect(gridX + sIdx * colW, 26, colW, 120);
       }
 
       if (actualStep === state.activeStep) {
-        ctx.strokeStyle = '#00ff66';
+        ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 1.5;
         ctx.strokeRect(gridX + sIdx * colW + 1, 27, colW - 2, 118);
       }
@@ -508,46 +539,62 @@
           if (noteOct === state.viewOctave && rowIdx >= 0 && rowIdx < 12) {
             const ny = 26 + rowIdx * rowH;
             if (state.isRunning && actualStep === curPlayStep) {
-              ctx.shadowColor = '#00ff66';
+              ctx.shadowColor = '#ffffff';
               ctx.shadowBlur = 8;
-              ctx.fillStyle = '#f4ffe0';
+              ctx.fillStyle = '#ffffff';
             } else if (actualStep === state.activeStep) {
               ctx.shadowColor = '#00ff66';
-              ctx.shadowBlur = 5;
+              ctx.shadowBlur = 6;
               ctx.fillStyle = '#ffffff';
             } else if (st.gate > 105) {
-              ctx.shadowColor = '#a3ff3b';
-              ctx.shadowBlur = 4;
-              ctx.fillStyle = '#a3ff3b';
+              ctx.shadowColor = '#ffb71a';
+              ctx.shadowBlur = 5;
+              ctx.fillStyle = '#ffb71a';
             } else {
               ctx.shadowColor = '#00ff66';
-              ctx.shadowBlur = 2;
+              ctx.shadowBlur = 4;
               ctx.fillStyle = '#00ff66';
             }
-            ctx.fillRect(gridX + sIdx * colW + 2, ny + 2, colW - 3, rowH - 3);
+            ctx.fillRect(gridX + sIdx * colW + 2, ny + 1, colW - 3, rowH - 2);
             ctx.shadowBlur = 0;
 
             if (st.tie && sIdx < 15) {
-              ctx.fillStyle = '#88ff33';
-              ctx.fillRect(gridX + sIdx * colW + colW - 2, ny + 4, 3, 3);
+              ctx.fillStyle = '#ffb71a';
+              ctx.fillRect(gridX + sIdx * colW + colW - 2, ny + 3, 3, 3);
             }
+          } else if (noteOct > state.viewOctave) {
+            ctx.fillStyle = '#ffb71a';
+            ctx.fillRect(gridX + sIdx * colW + 4, 27, colW - 7, 3);
+          } else {
+            ctx.fillStyle = '#ffb71a';
+            ctx.fillRect(gridX + sIdx * colW + 4, 142, colW - 7, 3);
           }
         }
       } else {
-        const cvY = 146 - (st.curve / 127) * 116;
-        ctx.fillStyle = '#33ffcc';
-        ctx.fillRect(gridX + sIdx * colW + 2, cvY - 2, colW - 3, 5);
+        const barH = (st.curve / 127) * 116;
+        const cvY = 146 - barH;
+        if (state.isRunning && actualStep === curPlayStep) {
+          ctx.shadowColor = '#ffffff';
+          ctx.shadowBlur = 8;
+          ctx.fillStyle = '#ffffff';
+        } else {
+          ctx.shadowColor = '#00f0ff';
+          ctx.shadowBlur = 4;
+          ctx.fillStyle = '#00f0ff';
+        }
+        ctx.fillRect(gridX + sIdx * colW + 2, cvY, colW - 4, barH);
+        ctx.shadowBlur = 0;
       }
     }
 
-    // 3. Lower Section: Velocity Bars / Tied Bridges (y: 150..218)
-    ctx.fillStyle = '#060e08';
+    // 3. Lower Section: Velocity Bars / Tied Bridges (y: 148..218)
+    ctx.fillStyle = '#050a07';
     ctx.fillRect(0, 148, 240, 72);
-    ctx.fillStyle = '#12301a';
+    ctx.fillStyle = '#183420';
     ctx.fillRect(0, 148, 240, 1);
 
-    ctx.fillStyle = '#558b66';
-    ctx.font = '8px monospace';
+    ctx.fillStyle = '#50be6e';
+    ctx.font = 'bold 8px monospace';
     ctx.textAlign = 'left';
     ctx.fillText('GATE', 2, 160);
     ctx.fillText('VEL', 4, 170);
@@ -560,21 +607,21 @@
       const bx = gridX + sIdx * colW;
 
       if (st.gate > 0) {
-        const barH = (st.gate / 127) * 58;
+        const barH = Math.max(4, Math.min(56, (st.gate / 127) * 58));
         const by = 216 - barH;
 
         if (state.isRunning && actualStep === curPlayStep) {
-          ctx.shadowColor = '#00ff66';
+          ctx.shadowColor = '#ffffff';
           ctx.shadowBlur = 6;
-          ctx.fillStyle = '#f4ffe0';
+          ctx.fillStyle = '#ffffff';
         } else if (actualStep === state.activeStep) {
           ctx.shadowColor = '#00ff66';
           ctx.shadowBlur = 4;
           ctx.fillStyle = '#ffffff';
         } else if (st.gate > 105) {
-          ctx.shadowColor = '#a3ff3b';
+          ctx.shadowColor = '#ffb71a';
           ctx.shadowBlur = 4;
-          ctx.fillStyle = '#a3ff3b';
+          ctx.fillStyle = '#ffb71a';
         } else {
           ctx.shadowColor = '#00ff66';
           ctx.shadowBlur = 2;
@@ -584,30 +631,46 @@
         ctx.shadowBlur = 0;
 
         if (st.tie && sIdx < 15) {
-          ctx.fillStyle = '#88ff33';
+          ctx.fillStyle = '#ffb71a';
           ctx.fillRect(bx + colW - 3, by + 4, 5, 4);
         }
       } else {
-        ctx.fillStyle = '#12301a';
+        ctx.fillStyle = '#183420';
         ctx.fillRect(bx + 2, 214, colW - 4, 2);
       }
     }
 
     // 4. Bottom Status Bar (y: 220..240)
-    ctx.fillStyle = '#08140c';
+    ctx.fillStyle = '#080e0a';
     ctx.fillRect(0, 220, 240, 20);
-    ctx.fillStyle = '#12301a';
+    ctx.fillStyle = '#183420';
     ctx.fillRect(0, 220, 240, 1);
 
-    ctx.fillStyle = '#a3ff3b';
-    ctx.font = 'bold 9px monospace';
-    ctx.fillText(`P${state.viewPage + 1} OCT:${state.viewOctave}`, 6, 233);
+    const statusToShow = state.heldStatus || (state.statusMsg && Date.now() < state.statusTimer ? state.statusMsg : null);
+    if (statusToShow) {
+      const isHeld = !!state.heldStatus;
+      ctx.fillStyle = isHeld ? '#142016' : '#0a1a0e';
+      ctx.fillRect(3, 222, 234, 16);
+      ctx.strokeStyle = isHeld ? '#ffb71a' : '#00ff66';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(3.5, 222.5, 233, 15);
 
-    ctx.fillStyle = '#dcfae2';
-    ctx.fillText(`${formatBpm(state.bpm)}BPM`, 82, 233);
+      ctx.fillStyle = isHeld ? '#ffb71a' : '#ffffff';
+      ctx.font = 'bold 9px monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(statusToShow, 8, 233);
+    } else {
+      ctx.fillStyle = '#ffb71a';
+      ctx.font = 'bold 9px monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(`P${state.viewPage + 1} OCT:${state.viewOctave}`, 6, 233);
 
-    ctx.fillStyle = '#558b66';
-    ctx.fillText(state.screenEditEnabled ? 'TOUCH:EDIT' : 'K1-4:EDIT', 148, 233);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(`${formatBpm(state.bpm)}BPM`, 82, 233);
+
+      ctx.fillStyle = '#50be6e';
+      ctx.fillText(state.screenEditEnabled ? 'TOUCH:EDIT' : 'K1-4:EDIT', 152, 233);
+    }
 
     // 5. Modal Pattern Tools Overlay (when FX menu is open)
     if (state.menuMode === 'fx') {
@@ -944,16 +1007,19 @@
           pushUndo("Toggle Note");
           if (st.gate > 0 && st.note === targetNote) {
             st.gate = 0; // Toggle off
+            showStatus(`STEP ${actualStep + 1}/32: [REST]`);
           } else {
             st.note = targetNote;
             st.gate = 115;
             st.tie = 0;
             play303Note(targetNote, 115, false, st.curve);
+            showStatus(`STEP ${actualStep + 1}/32: ${getNoteName(targetNote)} (V:115)`);
           }
         } else {
           pushUndo("Draw Curve");
           const curveVal = Math.min(127, Math.max(0, Math.round((146 - cy) / 116 * 127)));
           st.curve = curveVal;
+          showStatus(`STEP ${actualStep + 1} CURVE CC: ${curveVal}/127`);
         }
       }
     }
@@ -969,6 +1035,7 @@
         const vel = Math.min(127, Math.max(0, Math.round((216 - cy) / 58 * 127)));
         pushUndo("Adjust Velocity");
         st.gate = vel;
+        showStatus(`STEP ${actualStep + 1} VEL: ${vel}/127`);
         if (vel > 0) {
           play303Note(st.note, vel, false, st.curve);
         }
@@ -1178,6 +1245,7 @@
     if (masterGain && audioCtx) {
       masterGain.gain.setValueAtTime(state.masterVol, audioCtx.currentTime);
     }
+    showStatus(`MASTER VOL: ${Math.round(state.masterVol * 100)}%`);
   });
   knobs.MASTER.angle = -135 + state.masterVol * 270;
   drawKnob(knobs.MASTER);
@@ -1187,12 +1255,17 @@
       state.menuSel = (state.menuSel + (dy > 0 ? 1 : -1) + FX_MENU_ITEMS.length) % FX_MENU_ITEMS.length;
       knobs.SELECT.angle = (knobs.SELECT.angle + (dy > 0 ? 15 : -15)) % 360;
       drawKnob(knobs.SELECT);
+      showStatus(FX_MENU_ITEMS[state.menuSel]);
       return;
     }
     state.activeStep = (state.activeStep + (dy > 0 ? 1 : -1) + 32) % 32;
     state.viewPage = state.activeStep >= 16 ? 1 : 0;
     knobs.SELECT.angle = (knobs.SELECT.angle + (dy > 0 ? 15 : -15)) % 360;
     drawKnob(knobs.SELECT);
+    const trk = state.tracks[state.activeTrack];
+    const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+    const st = pat.steps[state.activeStep];
+    showStatus(st.gate > 0 ? `STEP ${state.activeStep + 1}/32: ${getNoteName(st.note)} (V:${st.gate})` : `STEP ${state.activeStep + 1}/32: [REST]`);
   });
 
   bindKnob(knobs.TEMPO, (dy) => {
@@ -1201,7 +1274,7 @@
     state.bpm = Math.round(nextBpm * 10) / 10;
     knobs.TEMPO.angle = ((state.bpm - 50) / 190) * 270 - 135;
     drawKnob(knobs.TEMPO);
-    showHint(`⏱️ Tempo: ${formatBpm(state.bpm)} BPM${state.shiftMode ? ' (Fine Adjust 0.1 BPM)' : ''}`);
+    showStatus(`TEMPO: ${formatBpm(state.bpm)} BPM${state.shiftMode ? ' (FINE)' : ''}`);
     updateButtonVisuals();
   });
   knobs.TEMPO.angle = ((state.bpm - 50) / 190) * 270 - 135;
@@ -1212,7 +1285,7 @@
       state.activeTrack = (state.activeTrack + (dy > 0 ? 1 : -1) + 4) % 4;
       knobs.TRACK.angle = (state.activeTrack / 3) * 180 - 90;
       drawKnob(knobs.TRACK);
-      showHint(`🔀 Switched to Track ${state.activeTrack + 1} (${state.activeTrack === 3 ? 'Drums' : (state.activeTrack === 0 ? '303 Bass' : 'Synth')})`);
+      showStatus(`TRACK ${state.activeTrack + 1}: ${state.activeTrack === 3 ? 'DRUMS (CH10)' : (state.activeTrack === 0 ? '303 ACID BASS' : 'SYNTH LEAD')}`);
     }
   });
 
@@ -1225,13 +1298,13 @@
       st.note = Math.min(127, Math.max(0, st.note + (dy > 0 ? 1 : -1)));
       if (st.gate === 0) st.gate = 110;
       play303Note(st.note, st.gate, false, st.curve);
-      showHint(`🎹 Step ${state.activeStep + 1} Note Pitch: MIDI ${st.note}`);
+      showStatus(`STEP ${state.activeStep + 1} PITCH: ${getNoteName(st.note)} (${st.note})`);
       return;
     }
     synthCutoff = Math.min(127, Math.max(0, synthCutoff + dy));
     knobs.KNOB1.angle = (synthCutoff / 127) * 270 - 135;
     drawKnob(knobs.KNOB1);
-    showHint(`🎛️ Cutoff: ${synthCutoff}/127 (${Math.round((synthCutoff / 127) * 100)}%)`);
+    showStatus(`CUTOFF: ${synthCutoff}/127 (${Math.round((synthCutoff / 127) * 100)}%)`);
   });
   knobs.KNOB1.angle = (synthCutoff / 127) * 270 - 135;
   drawKnob(knobs.KNOB1);
@@ -1245,13 +1318,13 @@
       st.gate = Math.min(127, Math.max(0, st.gate + dy * 2));
       if (dy > 3 && st.tie === 0) st.tie = 1;
       else if (dy < -3 && st.tie === 1) st.tie = 0;
-      showHint(`📊 Step ${state.activeStep + 1} Gate: ${st.gate}/127 (Slide Tie: ${st.tie ? 'ON' : 'OFF'})`);
+      showStatus(`STEP ${state.activeStep + 1} VEL: ${st.gate} [TIE:${st.tie ? 'ON' : 'OFF'}]`);
       return;
     }
     synthResonance = Math.min(127, Math.max(0, synthResonance + dy));
     knobs.KNOB2.angle = (synthResonance / 127) * 270 - 135;
     drawKnob(knobs.KNOB2);
-    showHint(`🎛️ Resonance: ${synthResonance}/127 (${Math.round((synthResonance / 127) * 100)}%)`);
+    showStatus(`RESONANCE: ${synthResonance}/127 (${Math.round((synthResonance / 127) * 100)}%)`);
   });
   knobs.KNOB2.angle = (synthResonance / 127) * 270 - 135;
   drawKnob(knobs.KNOB2);
@@ -1263,29 +1336,29 @@
       const st = pat.steps[state.activeStep];
       pushUndo("Step Curve");
       st.curve = Math.min(127, Math.max(0, st.curve + dy * 2));
-      showHint(`📈 Step ${state.activeStep + 1} Curve CC: ${st.curve}/127`);
+      showStatus(`STEP ${state.activeStep + 1} CURVE CC: ${st.curve}/127`);
       return;
     }
     synthDecay = Math.min(127, Math.max(0, synthDecay + dy));
     knobs.KNOB3.angle = (synthDecay / 127) * 270 - 135;
     drawKnob(knobs.KNOB3);
-    showHint(`🎛️ Decay: ${synthDecay}/127 (${Math.round((synthDecay / 127) * 100)}%)`);
+    showStatus(`DECAY: ${synthDecay}/127 (${Math.round((synthDecay / 127) * 100)}%)`);
   });
   knobs.KNOB3.angle = (synthDecay / 127) * 270 - 135;
   drawKnob(knobs.KNOB3);
 
   bindKnob(knobs.KNOB4, (dy) => {
+    const trk = state.tracks[state.activeTrack];
+    const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
     if (state.shiftMode) {
-      const trk = state.tracks[state.activeTrack];
-      const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
       pat.length = Math.min(32, Math.max(1, pat.length + (dy > 0 ? 1 : -1)));
-      showHint(`📏 Track ${state.activeTrack + 1} Pattern Length: ${pat.length} steps`);
+      showStatus(`TRACK ${state.activeTrack + 1} LENGTH: ${pat.length} STEPS`);
       return;
     }
     synthAccent = Math.min(127, Math.max(0, synthAccent + dy));
     knobs.KNOB4.angle = (synthAccent / 127) * 270 - 135;
     drawKnob(knobs.KNOB4);
-    showHint(`🎛️ Accent Intensity: ${synthAccent}/127`);
+    showStatus(`ACCENT INTENSITY: ${synthAccent}/127`);
   });
   knobs.KNOB4.angle = (synthAccent / 127) * 270 - 135;
   drawKnob(knobs.KNOB4);
@@ -1311,9 +1384,15 @@
     b.hit.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       b.g.classList.add("held");
+      if (b.label === "EDIT") {
+        setHeldStatus("⚡ SHIFT: +HOME=UNDO +SAVE=REDO +FX=RND");
+      }
     });
     b.hit.addEventListener("pointerup", (e) => {
       b.g.classList.remove("held");
+      if (b.label === "EDIT") {
+        clearHeldStatus();
+      }
     });
     b.hit.addEventListener("click", () => {
       onClick();
@@ -1324,97 +1403,93 @@
   bindButton(buttons["OCT-"], () => {
     if (state.viewOctave > 1) {
       state.viewOctave--;
-      showHint(`🎹 Octave shifted down to Octave ${state.viewOctave} (C${state.viewOctave}..B${state.viewOctave})`);
+      showStatus(`OCTAVE: C${state.viewOctave}..B${state.viewOctave} (OCT ${state.viewOctave})`);
     }
   });
 
   bindButton(buttons["OCT+"], () => {
     if (state.viewOctave < 5) {
       state.viewOctave++;
-      showHint(`🎹 Octave shifted up to Octave ${state.viewOctave} (C${state.viewOctave}..B${state.viewOctave})`);
+      showStatus(`OCTAVE: C${state.viewOctave}..B${state.viewOctave} (OCT ${state.viewOctave})`);
     }
   });
 
   bindButton(buttons.PLAY, () => {
     if (state.isRunning) {
       stopSequencer();
-      showHint("⏹️ Sequencer Paused. Click PLAY to resume.");
+      showStatus("STOP: SEQUENCER STOPPED");
     } else {
       startSequencer();
-      showHint("▶️ Sequencer Running! Jamming all 4 synced tracks.");
+      showStatus("PLAY: SEQUENCER RUNNING");
     }
   });
 
   bindButton(buttons.REC, () => {
     state.recMode = !state.recMode;
-    if (state.recMode) {
-      showHint("🔴 REC MODE ACTIVE: Tap any silicone key to punch in note pitch and auto-advance to next step!");
-    } else {
-      showHint("REC mode off.");
-    }
+    showStatus(state.recMode ? "REC: TAP KEY TO RECORD" : "REC: STEP REC OFF");
   });
 
   bindButton(buttons.FX, () => {
     if (state.shiftMode) {
       randomizePattern();
+      showStatus("🎲 RANDOMIZED PATTERN");
       return;
     }
     state.menuMode = (state.menuMode === 'fx') ? 'none' : 'fx';
-    if (state.menuMode === 'fx') {
-      showHint("⚙️ PATTERN TOOLS: Click an action on screen or turn SELECT and tap HOME. Tap FX to exit.");
-    } else {
-      showHint("Pattern tools closed.");
-    }
+    showStatus(state.menuMode === 'fx' ? "PATTERN TOOLS OPEN" : "PATTERN TOOLS CLOSED");
   });
 
   bindButton(buttons.SEL, () => {
     state.viewPage = state.viewPage === 0 ? 1 : 0;
-    showHint(`📄 Viewing Step Page ${state.viewPage + 1} (${state.viewPage === 0 ? 'Steps 1–16' : 'Steps 17–32'})`);
+    showStatus(state.viewPage === 0 ? "PAGE 1: STEPS 1–16" : "PAGE 2: STEPS 17–32");
   });
 
   bindButton(buttons.ENV, () => {
     state.viewMode = state.viewMode === 'keys' ? 'curve' : 'keys';
-    showHint(state.viewMode === 'keys' ? "🎹 Display: Note Pitch Grid (KEYS)" : "📈 Display: CC Modulation Curves (CURV)");
+    showStatus(state.viewMode === 'keys' ? "VIEW: NOTE PITCH (KEYS)" : "VIEW: CC CURVE (CURV)");
   });
 
   bindButton(buttons.LFO, () => {
     state.soundEngine = (state.soundEngine + 1) % SOUND_MODES.length;
-    showHint(`🔊 Sound Engine switched to: ${SOUND_MODES[state.soundEngine]}`);
+    showStatus(`SOUND: ${SOUND_MODES[state.soundEngine]}`);
   });
 
   bindButton(buttons.EDIT, () => {
     state.shiftMode = !state.shiftMode;
-    showHint(state.shiftMode ? "⚡ Shift Active: Knobs and buttons access secondary functions (HOME: Undo, SAVE: Redo, FX: Randomize)." : "Shift inactive.");
+    showStatus(state.shiftMode ? "⚡ SHIFT ACTIVE (+HOME:UNDO)" : "SHIFT INACTIVE", 1200);
   });
 
   bindButton(buttons.GLO, () => {
     const trk = state.tracks[state.activeTrack];
     const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
     pat.length = pat.length === 16 ? 32 : (pat.length === 32 ? 24 : 16);
-    showHint(`📏 Sequence Length for Track ${state.activeTrack + 1} set to ${pat.length} steps.`);
+    showStatus(`TRACK ${state.activeTrack + 1} LENGTH: ${pat.length} STEPS`);
   });
 
   bindButton(buttons.HOME, () => {
     if (state.shiftMode) {
       undo();
+      showStatus("UNDO: RESTORED STATE");
       return;
     }
     if (state.menuMode === 'fx') {
       executeFxMenuItem(state.menuSel);
+      showStatus("ACTION EXECUTED");
       return;
     }
     state.activeTrack = (state.activeTrack + 1) % NUM_TRACKS;
-    showHint(`🏠 Active Track: T${state.activeTrack + 1} (${state.activeTrack === 3 ? 'Drums' : (state.activeTrack === 0 ? '303 Bass' : 'Synth')})`);
+    showStatus(`TRACK ${state.activeTrack + 1}: ${state.activeTrack === 3 ? 'DRUMS (CH10)' : (state.activeTrack === 0 ? '303 ACID BASS' : 'SYNTH LEAD')}`);
   });
 
   bindButton(buttons.SAVE, () => {
     if (state.shiftMode) {
       redo();
+      showStatus("REDO: RE-APPLIED EDIT");
       return;
     }
     try {
       localStorage.setItem('morpheus_patterns', JSON.stringify(state.tracks));
-      showHint('💾 All 4 tracks and 32 patterns saved successfully to browser storage!');
+      showStatus("💾 SAVED ALL PATTERNS TO STORAGE");
     } catch (e) {
       alert('Could not save to localStorage: ' + e);
     }
@@ -1424,14 +1499,14 @@
     const trk = state.tracks[state.activeTrack];
     trk.nextBank = (trk.curBank + 1) % 4;
     trk.curBank = trk.nextBank;
-    showHint(`📚 Bank switched to Bank ${String.fromCharCode(65 + trk.curBank)}`);
+    showStatus(`BANK: BANK ${String.fromCharCode(65 + trk.curBank)}`);
   });
 
   bindButton(buttons.SEQ, () => {
     const trk = state.tracks[state.activeTrack];
     trk.nextPat = (trk.curPat + 1) % 8;
     trk.curPat = trk.nextPat;
-    showHint(`🔢 Switched to Pattern ${trk.curPat + 1} in Bank ${String.fromCharCode(65 + trk.curBank)}`);
+    showStatus(`PATTERN: PAT ${trk.curPat + 1} (BANK ${String.fromCharCode(65 + trk.curBank)})`);
   });
 
   // 27 Silicone Keys Handling
@@ -1456,11 +1531,15 @@
         pushUndo("Record Note");
         pat.steps[state.activeStep].note = midiNote;
         pat.steps[state.activeStep].gate = 115;
+        showStatus(`RECORD STEP ${state.activeStep + 1}: ${getNoteName(midiNote)} (${midiNote})`);
         state.activeStep = (state.activeStep + 1) % pat.length;
         state.viewPage = state.activeStep >= 16 ? 1 : 0;
-        showHint(`🔴 Step ${state.activeStep}: Recorded Note ${midiNote}`);
       } else if (idx < 16) {
         state.activeStep = (state.viewPage * 16) + idx;
+        const st = pat.steps[state.activeStep];
+        showStatus(st.gate > 0 ? `STEP ${state.activeStep + 1}/32: ${getNoteName(st.note)} (V:${st.gate})` : `STEP ${state.activeStep + 1}/32: [REST]`);
+      } else {
+        showStatus(`AUDITION: ${getNoteName(midiNote)} (${midiNote}) VEL:110`);
       }
 
       play303Note(midiNote, 110, false, 64);

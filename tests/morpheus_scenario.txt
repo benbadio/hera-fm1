@@ -2,7 +2,7 @@
 # Format: <time_ms> <command> <args>
 # Commands: btn <id>, keys <mask>, midi <status> <d1> <d2>, end
 100 btn 12
-1500 btn 3
+800 btn 3
 3000 btn 6
 4500 btn 4
 6000 btn 12

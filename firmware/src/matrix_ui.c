@@ -4,23 +4,23 @@
 #include "matrix_core.h"
 #include "matrix_synth.h"
 
-/* Colors (RGB565) - Matrix Green with Warm Glow Theme */
-#define C_BG           RGB(5, 12, 7)
-#define C_TOPBAR       RGB(8, 20, 12)
-#define C_DIVIDER      RGB(18, 48, 26)
-#define C_GRID_BG      RGB(7, 16, 9)
-#define C_GRID_LINE    RGB(14, 34, 18)
-#define C_BEAT_LINE    RGB(28, 68, 36)
-#define C_RED_LED      RGB(0, 255, 90)     /* Primary Matrix Phosphor Green */
-#define C_ORANGE_LED   RGB(155, 255, 45)   /* Warm Phosphor Lime-Gold Glow */
-#define C_BLUE_LED     RGB(40, 255, 180)   /* Mint Phosphor Green (Curve mode) */
-#define C_PLAY_HL      RGB(245, 255, 205)  /* Warm Incandescent Phosphor Flash */
-#define C_GREEN_LED    RGB(0, 255, 100)    /* Bright Matrix Green */
-#define C_PURPLE_LED   RGB(10, 220, 110)   /* Emerald Matrix Badge */
-#define C_TEXT_WHITE   RGB(220, 255, 230)  /* Phosphor Bright Text */
-#define C_TEXT_DIM     RGB(60, 125, 80)    /* Dim Matrix Green Text */
-#define C_KEY_WHITE    RGB(190, 230, 200)  /* Phosphor Ivory Key */
-#define C_KEY_BLACK    RGB(10, 22, 14)     /* Dark Charcoal Green Key */
+/* Colors (RGB565) - High Contrast Matrix CRT Theme with Dual-Phosphor Pop */
+#define C_BG           RGB(0, 0, 0)        /* Pure CRT Pitch Black Void */
+#define C_TOPBAR       RGB(8, 14, 10)      /* Deep Graphite Bar */
+#define C_DIVIDER      RGB(22, 54, 32)     /* Crisp Matrix Divider */
+#define C_GRID_BG      RGB(2, 6, 3)        /* Deep CRT Grid Glass */
+#define C_GRID_LINE    RGB(10, 24, 14)     /* Faint Step Guide */
+#define C_BEAT_LINE    RGB(32, 85, 46)     /* High-Contrast Beat Line (Every 4th step) */
+#define C_RED_LED      RGB(0, 255, 102)    /* Primary Electric Phosphor Green */
+#define C_ORANGE_LED   RGB(255, 185, 30)   /* Warm Phosphor Amber Gold (Accents & Velocity) */
+#define C_BLUE_LED     RGB(0, 240, 255)    /* Vibrant Electric Cyan (Curve Mode) */
+#define C_PLAY_HL      RGB(255, 255, 255)  /* Incandescent White Phosphor Flash */
+#define C_GREEN_LED    RGB(0, 255, 102)    /* Bright Matrix Green */
+#define C_PURPLE_LED   RGB(255, 185, 30)   /* Amber Gold Badge */
+#define C_TEXT_WHITE   RGB(240, 255, 245)  /* Crisp Phosphor White Text */
+#define C_TEXT_DIM     RGB(70, 185, 100)   /* Readable Crisp Phosphor Green Text */
+#define C_KEY_WHITE    RGB(230, 250, 235)  /* Bright Phosphor White Piano Key */
+#define C_KEY_BLACK    RGB(6, 12, 8)       /* Deep Charcoal Black Piano Key */
 
 static const char *const SOUND_NAMES[4] = {
     "303", "SUB", "FM", "MUTE"
@@ -44,6 +44,27 @@ static const char *const FX_MENU_ITEMS[NUM_FX_MENU_ITEMS] = {
     "9. CLEAR PATTERN",
     "10. EXIT MENU"
 };
+
+/* Transient and held status notification state */
+static char g_transient_msg[32] = {0};
+static uint32_t g_transient_expire_ms = 0;
+static char g_held_msg[32] = {0};
+
+void matrix_ui_notify(const char *msg)
+{
+    str_cpy(g_transient_msg, msg, sizeof(g_transient_msg));
+    g_transient_expire_ms = fm1_ms + 1800u;
+}
+
+void matrix_ui_set_held_status(const char *msg)
+{
+    str_cpy(g_held_msg, msg, sizeof(g_held_msg));
+}
+
+void matrix_ui_clear_held_status(void)
+{
+    g_held_msg[0] = '\0';
+}
 
 void matrix_ui_init(void)
 {
@@ -195,7 +216,7 @@ void matrix_ui_draw(void)
                 if (note_oct == view_oct) {
                     int32_t note_row = 11 - note_in_oct;
                     int32_t cell_y = note_row * row_h + 1;
-                    uint16_t led_col = is_current_play ? C_PLAY_HL : C_RED_LED;
+                    uint16_t led_col = is_current_play ? C_PLAY_HL : ((st->gate > 105) ? C_ORANGE_LED : C_RED_LED);
                     cv_rect(grid_x + s_idx * col_w + 2, cell_y + 1, col_w - 3, row_h - 2, led_col);
                 } else if (note_oct > view_oct) {
                     cv_rect(grid_x + s_idx * col_w + 4, 1, col_w - 7, 3, C_ORANGE_LED);
@@ -241,13 +262,13 @@ void matrix_ui_draw(void)
             if (bar_h < 4) bar_h = 4;
             if (bar_h > 52) bar_h = 52;
             int32_t bar_y = 56 - bar_h;
-            uint16_t g_col = is_current_play ? C_PLAY_HL : C_ORANGE_LED;
+            uint16_t g_col = is_current_play ? C_PLAY_HL : ((st->gate > 105) ? C_ORANGE_LED : C_RED_LED);
 
             cv_rect(bar_x, bar_y, col_w - 4, bar_h, g_col);
 
             /* Tie bridge to next step */
             if (st->tie && s_idx < 15) {
-                cv_rect(bar_x + (col_w - 4), bar_y + bar_h - 4, 4, 4, C_RED_LED);
+                cv_rect(bar_x + (col_w - 4), bar_y + bar_h - 4, 4, 4, C_ORANGE_LED);
             }
         } else {
             /* Rest marker */
@@ -263,22 +284,50 @@ void matrix_ui_draw(void)
     cv_begin(240, 32, C_TOPBAR);
     cv_rect(0, 0, 240, 1, C_DIVIDER);
 
-    str[0] = 'P'; str[1] = '1' + g_matrix.view_page;
-    str[2] = ' '; str[3] = 'O'; str[4] = 'C'; str[5] = 'T';
-    str[6] = ':'; str[7] = '0' + g_matrix.view_octave; str[8] = '\0';
-    cv_text(4, 8, &FONT_S, str, C_ORANGE_LED);
+    const char *status_to_show = NULL;
+    uint16_t status_color = C_TEXT_WHITE;
+    uint16_t banner_bg = C_TOPBAR;
+    uint16_t border_col = C_DIVIDER;
 
-    fmt_int(str, g_matrix.bpm);
-    {
-        unsigned slen = str_len(str);
-        str[slen] = 'B';
-        str[slen + 1] = 'P';
-        str[slen + 2] = 'M';
-        str[slen + 3] = '\0';
+    if (g_held_msg[0] != '\0') {
+        status_to_show = g_held_msg;
+        status_color = C_ORANGE_LED;
+        banner_bg = RGB(14, 24, 16);
+        border_col = C_ORANGE_LED;
+    } else if (g_transient_msg[0] != '\0' && fm1_ms < g_transient_expire_ms) {
+        status_to_show = g_transient_msg;
+        status_color = C_PLAY_HL;
+        banner_bg = RGB(10, 26, 14);
+        border_col = C_GREEN_LED;
     }
-    cv_text(76, 8, &FONT_S, str, C_TEXT_WHITE);
 
-    cv_text(142, 8, &FONT_S, "K1-4:EDIT", C_TEXT_DIM);
+    if (status_to_show) {
+        /* High-contrast transient notification banner */
+        cv_rect(3, 3, 234, 26, banner_bg);
+        cv_rect(3, 3, 234, 1, border_col);
+        cv_rect(3, 28, 234, 1, border_col);
+        cv_rect(3, 3, 1, 26, border_col);
+        cv_rect(236, 3, 1, 26, border_col);
+        cv_text(8, 8, &FONT_S, status_to_show, status_color);
+    } else {
+        /* Default status display with high-contrast text and badges */
+        str[0] = 'P'; str[1] = '1' + g_matrix.view_page;
+        str[2] = ' '; str[3] = 'O'; str[4] = 'C'; str[5] = 'T';
+        str[6] = ':'; str[7] = '0' + g_matrix.view_octave; str[8] = '\0';
+        cv_text(4, 8, &FONT_S, str, C_ORANGE_LED);
+
+        fmt_int(str, g_matrix.bpm);
+        {
+            unsigned slen = str_len(str);
+            str[slen] = 'B';
+            str[slen + 1] = 'P';
+            str[slen + 2] = 'M';
+            str[slen + 3] = '\0';
+        }
+        cv_text(78, 8, &FONT_S, str, C_TEXT_WHITE);
+
+        cv_text(150, 8, &FONT_S, "K1-4:EDIT", C_TEXT_DIM);
+    }
 
     cv_blit(0, 208);
 

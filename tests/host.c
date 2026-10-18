@@ -56,6 +56,15 @@ static void lcd_blit(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint1
 }
 static inline void fmt_int(char *b, int32_t v) { sprintf(b, "%d", (int)v); }
 static inline unsigned str_len(const char *s) { return (unsigned)strlen(s); }
+static inline void str_cpy(char *d, const char *s, unsigned max)
+{
+    unsigned i = 0;
+    while (s[i] && i + 1 < max) {
+        d[i] = s[i];
+        i++;
+    }
+    d[i] = 0;
+}
 
 #ifndef CV_MAX
 #define CV_MAX (240u * 128u)
@@ -106,7 +115,7 @@ static const host_ev_t SCRIPT0[] = {
 };
 static const host_ev_t *script = SCRIPT0;
 static uint32_t script_n = sizeof SCRIPT0 / sizeof SCRIPT0[0], end_ms = 6500, frame_fps;
-static const uint32_t SHOT[] = {500, 2000, 3500, 5000};
+static const uint32_t SHOT[] = {500, 2000, 2800, 3500, 5000};
 
 static void read_script(const char *path)
 {
