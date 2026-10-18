@@ -90,11 +90,11 @@ def make_ppm():
     W, H = 240, 240
     pixels = [[[0, 0, 0] for _ in range(W)] for _ in range(H)]
 
-    # 1. Phosphor Matrix Background: Deep void with scanline raster
+    # 1. Matrix Background: Deep void with scanline raster
     for y in range(H):
         for x in range(W):
             scan = 0.82 if (y % 2 == 0) else 1.0
-            # Faint digital phosphor matrix pattern
+            # Faint digital matrix pattern
             noise = (x * 11 + y * 19) % 9
             r = int(1 * scan)
             g = int((4 + (noise if noise < 4 else 0)) * scan)
@@ -130,7 +130,7 @@ def make_ppm():
                         intensity = (1.0 - dist / 10.0) ** 1.6
                         glow_grid[gy][gx] = max(glow_grid[gy][gx], intensity)
 
-    # Render Phosphor Glow Layer
+    # Render Glow Layer
     for y in range(H):
         for x in range(W):
             g_val = glow_grid[y][x]
@@ -145,7 +145,7 @@ def make_ppm():
                     min(255, base[2] + gb)
                 ]
 
-    # Render Rabbit Body: Crisp white with radiant phosphor edge
+    # Render Rabbit Body: Crisp white with green edge glow
     for px, py in rabbit_pixels:
         pixels[py][px] = [255, 255, 255]
 
@@ -210,7 +210,7 @@ def make_ppm():
     s2x = (W - (len(sub2) * 6 - 1) * sub_scale) // 2
     draw_text(sub2, s2x, 204, sub_scale, [0, 220, 255], None)
 
-    # Frame Border: Matrix Phosphor Green Double Bezel
+    # Frame Border: Matrix Double Bezel
     for x in range(W):
         pixels[2][x] = [0, 200, 80]
         pixels[H - 3][x] = [0, 200, 80]

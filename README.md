@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>8-Track ReBirth Groovebox (808, 909, Dual 303s, Amen Breaks, FM Lead, Sub Synth & MIDI) with a Reason Matrix-style Pattern Sequencer and Dual-Phosphor Matrix UI for the M-VAVE FM-1.</strong>
+  <strong>8-Track ReBirth Groovebox (808, 909, Dual 303s, Amen Breaks, FM Lead, Sub Synth & MIDI) with a Reason Matrix-style Pattern Sequencer for the M-VAVE FM-1.</strong>
 </p>
 
 <p align="center">
@@ -75,7 +75,7 @@ When selecting drum tracks (T3 TR-808 or T4 TR-909), MORPHEUS automatically tran
 
 ---
 
-## Dual-Phosphor Matrix Theme & Dynamic Status Bar
+## User Interface & Dynamic Status Bar
 
 <p align="center">
   <img src="assets/morpheus_splash.png" width="280" alt="8-Bit White Rabbit Boot Splash Screen">
@@ -83,11 +83,11 @@ When selecting drum tracks (T3 TR-808 or T4 TR-909), MORPHEUS automatically tran
   <img src="assets/screen_preview.png" width="280" alt="Reason Matrix 8-Track Sequencer">
 </p>
 <p align="center">
-  <em>Left: Boot Splash Screen (8-Bit White Rabbit & Phosphor Green Glow). Right: Live 8-Track Matrix Sequencer & Translucent Status Bar.</em>
+  <em>Left: Boot Splash Screen (v1.0.0). Right: Live 8-Track Matrix Sequencer & Dynamic Status Bar.</em>
 </p>
 
-- **Boot Splash Screen (v1.0.0):** Iconic 8-bit white rabbit with radiant phosphor green glow, cybernetic cyan eye glint, and 48kHz stereo DSP status. Appears for 1.8 seconds on power up, or dismisses instantly when any button or key is pressed.
-- **High-Contrast Dual-Phosphor Visuals:** Designed for maximum legibility on the FM-1's 240x240 LCD. High-contrast amber LEDs represent active playheads, accented gates, and ties, set against a phosphor matrix green LCD grid.
+- **Boot Splash Screen (v1.0.0):** Displays for 1.8 seconds on power up, or dismisses instantly when any button, knob, or key is touched for immediate performance access.
+- **High-Contrast Display:** Designed for maximum legibility on the FM-1's 240x240 LCD. Clear color coding identifies active playheads, accented gates, tied notes, and tracks at a glance.
 - **Transient Real-Time Status Bar:** Any knob turn or held button temporarily displays immediate, detailed feedback (e.g. `K1 Cutoff: 84`, `Swing: 54%`, `Queued Bank B`) and smoothly restores the default track status after 1.5 seconds of idle.
 
 ---

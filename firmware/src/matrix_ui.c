@@ -1,25 +1,25 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* MORPHEUS: Reason Matrix Interface with Dual-Phosphor Theme & Drum Matrix View */
+/* MORPHEUS: Reason Matrix Interface & Drum Matrix View */
 #include "matrix_ui.h"
 #include "matrix_core.h"
 #include "matrix_synth.h"
 
-/* Colors (RGB565) - High Contrast Dual-Phosphor Theme */
+/* Colors (RGB565) - High Contrast Matrix Theme */
 #define C_BG           RGB(0, 0, 0)        /* Pitch Black LCD Void */
 #define C_TOPBAR       RGB(8, 14, 10)      /* Deep Graphite Bar */
 #define C_DIVIDER      RGB(22, 54, 32)     /* Crisp Matrix Divider */
 #define C_GRID_BG      RGB(2, 6, 3)        /* Deep Matrix Grid Glass */
 #define C_GRID_LINE    RGB(10, 24, 14)     /* Faint Step Guide */
 #define C_BEAT_LINE    RGB(32, 85, 46)     /* High-Contrast Beat Line (Every 4th step) */
-#define C_RED_LED      RGB(0, 255, 102)    /* Primary Electric Phosphor Green */
-#define C_ORANGE_LED   RGB(255, 185, 30)   /* Warm Phosphor Amber Gold (Accents & Velocity) */
+#define C_RED_LED      RGB(0, 255, 102)    /* Primary Electric Green */
+#define C_ORANGE_LED   RGB(255, 185, 30)   /* Warm Amber Gold (Accents & Velocity) */
 #define C_BLUE_LED     RGB(0, 240, 255)    /* Vibrant Electric Cyan (Curve Mode) */
-#define C_PLAY_HL      RGB(255, 255, 255)  /* Incandescent White Phosphor Flash */
+#define C_PLAY_HL      RGB(255, 255, 255)  /* Incandescent White Flash */
 #define C_GREEN_LED    RGB(0, 255, 102)    /* Bright Matrix Green */
 #define C_PURPLE_LED   RGB(255, 185, 30)   /* Amber Gold Badge */
-#define C_TEXT_WHITE   RGB(240, 255, 245)  /* Crisp Phosphor White Text */
-#define C_TEXT_DIM     RGB(70, 185, 100)   /* Readable Crisp Phosphor Green Text */
-#define C_KEY_WHITE    RGB(230, 250, 235)  /* Bright Phosphor White Piano Key */
+#define C_TEXT_WHITE   RGB(240, 255, 245)  /* Crisp White Text */
+#define C_TEXT_DIM     RGB(70, 185, 100)   /* Readable Green Text */
+#define C_KEY_WHITE    RGB(230, 250, 235)  /* Bright White Piano Key */
 #define C_KEY_BLACK    RGB(6, 12, 8)       /* Deep Charcoal Black Piano Key */
 
 static const char *const ENGINE_NAMES[NUM_TRACK_TYPES] = {
@@ -82,11 +82,11 @@ static void matrix_ui_draw_splash(void)
     const int32_t oy = 16;
 
     /* -------------------------------------------------------------------------
-     * STRIP A: Top Half (y: 0..119, h: 120) - 8-Bit White Rabbit & Phosphor Glow
+     * STRIP A: Top Half (y: 0..119, h: 120) - 8-Bit White Rabbit & Glow
      * ------------------------------------------------------------------------- */
     cv_begin(240, 120, C_BG);
 
-    /* Double Matrix Phosphor Border */
+    /* Double Matrix Border */
     cv_rect(2, 2, 236, 1, C_GREEN_LED);
     cv_rect(2, 2, 1, 118, C_GREEN_LED);
     cv_rect(237, 2, 1, 118, C_GREEN_LED);
@@ -94,7 +94,7 @@ static void matrix_ui_draw_splash(void)
     cv_rect(4, 4, 1, 116, C_DIVIDER);
     cv_rect(235, 4, 1, 116, C_DIVIDER);
 
-    /* Phosphor glow halo behind rabbit */
+    /* Green glow halo behind rabbit */
     for (ry = 0; ry < 32; ry++) {
         uint32_t bits = RABBIT_BITS[ry];
         if (!bits) continue;
@@ -136,7 +136,7 @@ static void matrix_ui_draw_splash(void)
      * ------------------------------------------------------------------------- */
     cv_begin(240, 120, C_BG);
 
-    /* Double Matrix Phosphor Border */
+    /* Double Matrix Border */
     cv_rect(2, 0, 1, 118, C_GREEN_LED);
     cv_rect(237, 0, 1, 118, C_GREEN_LED);
     cv_rect(2, 117, 236, 1, C_GREEN_LED);

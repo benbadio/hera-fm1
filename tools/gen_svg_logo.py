@@ -59,7 +59,7 @@ def generate_svg(filename, width=480, height=480):
 
     svg_content = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="100%" height="100%" style="background:#050706;">
   <defs>
-    <!-- Matrix Phosphor Scanlines -->
+    <!-- Matrix Grid Lines -->
     <pattern id="scanlines" width="100" height="4" patternUnits="userSpaceOnUse">
       <line x1="0" y1="0" x2="100" y2="0" stroke="rgba(0,0,0,0.4)" stroke-width="1.5" />
     </pattern>
@@ -105,7 +105,7 @@ def generate_svg(filename, width=480, height=480):
   <path d="M 8,{height-24} L 8,{height-8} L 24,{height-8}" fill="none" stroke="#00ff66" stroke-width="3" />
   <path d="M {width-8},{height-24} L {width-8},{height-8} L {width-24},{height-8}" fill="none" stroke="#00ff66" stroke-width="3" />
 
-  <!-- 8-Bit White Rabbit with Green Phosphor Glow -->
+  <!-- 8-Bit White Rabbit with Green Glow -->
   <!-- 1. Ambient Green Glow Halo -->
   <g fill="#00ff66" filter="url(#matrixGlow)" opacity="0.9">
     {' '.join(rects)}

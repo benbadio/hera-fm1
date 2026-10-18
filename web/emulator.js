@@ -717,7 +717,7 @@
     ctx.fillStyle = '#010502';
     ctx.fillRect(0, 0, 240, 240);
 
-    // Phosphor Matrix Scanlines
+    // Matrix grid raster
     ctx.fillStyle = 'rgba(0, 24, 8, 0.45)';
     for (let y = 0; y < 240; y += 2) {
       ctx.fillRect(0, y, 240, 1);
