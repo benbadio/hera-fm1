@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -96,6 +96,15 @@ jobs:
             PASTE_URL=$(curl -s --data-binary @firmware-build.log https://paste.rs || true)
             echo "Full build log: $PASTE_URL" >> $GITHUB_STEP_SUMMARY
             echo "Paste URL: $PASTE_URL"
+            
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git checkout --orphan ci-debug-log
+            git rm -rf . || true
+            cp firmware-build.log build.log
+            git add build.log
+            git commit -m "ci: firmware build log [skip ci]" || true
+            git push -f origin ci-debug-log || true
           fi
 
       - name: Upload Build Log
