@@ -1,14 +1,14 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* MORPHEUS: Reason Matrix Interface with Dual-Phosphor CRT Theme & Drum Matrix View */
+/* MORPHEUS: Reason Matrix Interface with Dual-Phosphor Theme & Drum Matrix View */
 #include "matrix_ui.h"
 #include "matrix_core.h"
 #include "matrix_synth.h"
 
-/* Colors (RGB565) - High Contrast Matrix CRT Theme with Dual-Phosphor Pop */
-#define C_BG           RGB(0, 0, 0)        /* Pure CRT Pitch Black Void */
+/* Colors (RGB565) - High Contrast Dual-Phosphor Theme */
+#define C_BG           RGB(0, 0, 0)        /* Pitch Black LCD Void */
 #define C_TOPBAR       RGB(8, 14, 10)      /* Deep Graphite Bar */
 #define C_DIVIDER      RGB(22, 54, 32)     /* Crisp Matrix Divider */
-#define C_GRID_BG      RGB(2, 6, 3)        /* Deep CRT Grid Glass */
+#define C_GRID_BG      RGB(2, 6, 3)        /* Deep Matrix Grid Glass */
 #define C_GRID_LINE    RGB(10, 24, 14)     /* Faint Step Guide */
 #define C_BEAT_LINE    RGB(32, 85, 46)     /* High-Contrast Beat Line (Every 4th step) */
 #define C_RED_LED      RGB(0, 255, 102)    /* Primary Electric Phosphor Green */
@@ -55,14 +55,14 @@ static uint32_t g_splash_until_ms = 0;
 
 /* 32x32 8-Bit White Rabbit Matrix Icon (128 bytes) */
 static const uint32_t RABBIT_BITS[32] = {
-    0x00000000u, 0x00781E00u, 0x00FC3F00u, 0x00CC3300u,
-    0x00CC3300u, 0x00CC3300u, 0x00CC3300u, 0x00CC3300u,
-    0x00781E00u, 0x003FFC00u, 0x007FFE00u, 0x00FFFF00u,
-    0x01F3FF80u, 0x03F3FF80u, 0x03FFFF00u, 0x01FFFE00u,
-    0x00FFFC00u, 0x01FFFC00u, 0x03FFFE00u, 0x07FFFF00u,
-    0x0FFFFF8Eu, 0x1FFFFFDFu, 0x3FFFFFFFu, 0x3FFFFFFEu,
-    0x7FFFFFFCu, 0x7FFFFFF8u, 0x7F9FFFF0u, 0x7F0FFFC0u,
-    0x7F0FFFC0u, 0x3E07FF80u, 0x1C03FF00u, 0x00000000u
+    0x00000000u, 0x007C0000u, 0x00FE07C0u, 0x00C60FE0u,
+    0x00C60C60u, 0x00C61860u, 0x00C61860u, 0x00C630C0u,
+    0x00C630C0u, 0x006C3180u, 0x006C6300u, 0x00387E00u,
+    0x007FFE00u, 0x01FFFF80u, 0x03FFFFC0u, 0x0373DCE0u,
+    0x0373DCE0u, 0x03FFFFE0u, 0x03FCFFE0u, 0x03F03FE0u,
+    0x01FFFFE0u, 0x00FFFF80u, 0x01FFFF80u, 0x03FFFFC0u,
+    0x067FFE60u, 0x067FFE60u, 0x0E3DEE60u, 0x0F3FFE40u,
+    0x063F3E00u, 0x003E1E00u, 0x00FE3F80u, 0x01FF7FC0u
 };
 
 void matrix_ui_dismiss_splash(void)
@@ -125,9 +125,9 @@ static void matrix_ui_draw_splash(void)
         }
     }
 
-    /* Cyan Cybernetic Eye (at rx=11, ry=12) */
-    cv_rect(ox + 11 * 3, oy + 12 * 3, 3, 3, C_BLUE_LED);
-    cv_pset(ox + 11 * 3 + 1, oy + 12 * 3 + 1, C_TEXT_WHITE);
+    /* Cyan Cybernetic Eye (at rx=11, ry=15) */
+    cv_rect(ox + 11 * 3, oy + 15 * 3, 3, 3, C_BLUE_LED);
+    cv_pset(ox + 11 * 3 + 1, oy + 15 * 3 + 1, C_TEXT_WHITE);
 
     cv_blit(0, 0);
 
@@ -154,8 +154,8 @@ static void matrix_ui_draw_splash(void)
     cv_text(56, 8, &FONT_L, "MORPHEUS", C_TEXT_WHITE);
 
     /* Subtitles in 16px Font (FONT_S width = N * 8) */
-    /* "FOLLOW THE RABBIT" (17 chars * 8 = 136px, centered at x=52) */
-    cv_text(52, 46, &FONT_S, "FOLLOW THE RABBIT", C_GREEN_LED);
+    /* "VERSION 1.0.0" (13 chars * 8 = 104px, centered at x=68) */
+    cv_text(68, 46, &FONT_S, "VERSION 1.0.0", C_GREEN_LED);
 
     /* "8-TRACK GROOVEBOX" (17 chars * 8 = 136px, centered at x=52) */
     cv_text(52, 66, &FONT_S, "8-TRACK GROOVEBOX", C_ORANGE_LED);

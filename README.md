@@ -1,15 +1,16 @@
 # MORPHEUS // 8-Track ReBirth Groovebox & Matrix Sequencer
 
 <p align="center">
-  <img src="assets/morpheus_banner.png" width="380" alt="MORPHEUS - Follow The White Rabbit">
+  <img src="assets/morpheus_banner.png" width="380" alt="MORPHEUS 8-Track Groovebox Banner">
 </p>
 
 <p align="center">
-  <strong>8-Track ReBirth Groovebox (808, 909, Dual 303s, Amen Breaks, FM Lead, Sub Synth & MIDI) with a Reason Matrix-style Pattern Sequencer and Dual-Phosphor CRT UI for the M-VAVE FM-1.</strong>
+  <strong>8-Track ReBirth Groovebox (808, 909, Dual 303s, Amen Breaks, FM Lead, Sub Synth & MIDI) with a Reason Matrix-style Pattern Sequencer and Dual-Phosphor Matrix UI for the M-VAVE FM-1.</strong>
 </p>
 
 <p align="center">
   <a href="https://github.com/benbadio/morpheus-fm1/actions/workflows/build.yml"><img src="https://github.com/benbadio/morpheus-fm1/actions/workflows/build.yml/badge.svg" alt="Build Status"></a>
+  <img src="https://img.shields.io/badge/Version-v1.0.0-00ff66" alt="Version 1.0.0">
   <a href="https://benbadio.github.io/morpheus-fm1/"><img src="https://img.shields.io/badge/Web%20Emulator-Live%20Demo-00ff66?logo=web&logoColor=black" alt="Live Demo"></a>
   <a href="https://benbadio.github.io/morpheus-fm1/install.html"><img src="https://img.shields.io/badge/Web%20Flasher-1--Click%20Install-ffb700?logo=usb&logoColor=black" alt="Web Flasher"></a>
   <a href="https://benbadio.github.io/morpheus-fm1/manual.html"><img src="https://img.shields.io/badge/Docs-User%20Manual-00d9ff" alt="User Manual"></a>
@@ -74,7 +75,7 @@ When selecting drum tracks (T3 TR-808 or T4 TR-909), MORPHEUS automatically tran
 
 ---
 
-## Dual-Phosphor Matrix CRT Theme & Dynamic Status Bar
+## Dual-Phosphor Matrix Theme & Dynamic Status Bar
 
 <p align="center">
   <img src="assets/morpheus_splash.png" width="280" alt="8-Bit White Rabbit Boot Splash Screen">
@@ -85,8 +86,8 @@ When selecting drum tracks (T3 TR-808 or T4 TR-909), MORPHEUS automatically tran
   <em>Left: Boot Splash Screen (8-Bit White Rabbit & Phosphor Green Glow). Right: Live 8-Track Matrix Sequencer & Translucent Status Bar.</em>
 </p>
 
-- **"Follow The White Rabbit" Boot Screen:** Iconic 8-bit ASCII-style white rabbit with radiant phosphor green glow, cybernetic cyan eye glint, and 48kHz stereo DSP status. Appears for 1.8 seconds on power up, or dismisses instantly when any button or key is pressed.
-- **High-Contrast Dual-Phosphor Visuals:** Designed for maximum legibility on the FM-1's 240x240 LCD. High-contrast amber LEDs represent active playheads, accented gates, and ties, set against a phosphor matrix green CRT grid.
+- **Boot Splash Screen (v1.0.0):** Iconic 8-bit white rabbit with radiant phosphor green glow, cybernetic cyan eye glint, and 48kHz stereo DSP status. Appears for 1.8 seconds on power up, or dismisses instantly when any button or key is pressed.
+- **High-Contrast Dual-Phosphor Visuals:** Designed for maximum legibility on the FM-1's 240x240 LCD. High-contrast amber LEDs represent active playheads, accented gates, and ties, set against a phosphor matrix green LCD grid.
 - **Transient Real-Time Status Bar:** Any knob turn or held button temporarily displays immediate, detailed feedback (e.g. `K1 Cutoff: 84`, `Swing: 54%`, `Queued Bank B`) and smoothly restores the default track status after 1.5 seconds of idle.
 
 ---
