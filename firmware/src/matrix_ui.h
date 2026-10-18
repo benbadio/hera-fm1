@@ -7,6 +7,8 @@
 
 void matrix_ui_init(void);
 void matrix_ui_draw(void);
+void matrix_ui_dismiss_splash(void);
+uint8_t matrix_ui_is_splash_active(void);
 void matrix_ui_notify(const char *msg);
 void matrix_ui_set_held_status(const char *msg);
 void matrix_ui_clear_held_status(void);

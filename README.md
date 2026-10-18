@@ -1,7 +1,7 @@
 # MORPHEUS // 8-Track ReBirth Groovebox & Matrix Sequencer
 
 <p align="center">
-  <img src="assets/screen_preview.png" width="380" alt="MORPHEUS Screen Preview">
+  <img src="assets/morpheus_banner.png" width="380" alt="MORPHEUS - Follow The White Rabbit">
 </p>
 
 <p align="center">
@@ -76,6 +76,16 @@ When selecting drum tracks (T3 TR-808 or T4 TR-909), MORPHEUS automatically tran
 
 ## Dual-Phosphor Matrix CRT Theme & Dynamic Status Bar
 
+<p align="center">
+  <img src="assets/morpheus_splash.png" width="280" alt="8-Bit White Rabbit Boot Splash Screen">
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/screen_preview.png" width="280" alt="Reason Matrix 8-Track Sequencer">
+</p>
+<p align="center">
+  <em>Left: Boot Splash Screen (8-Bit White Rabbit & Phosphor Green Glow). Right: Live 8-Track Matrix Sequencer & Translucent Status Bar.</em>
+</p>
+
+- **"Follow The White Rabbit" Boot Screen:** Iconic 8-bit ASCII-style white rabbit with radiant phosphor green glow, cybernetic cyan eye glint, and 48kHz stereo DSP status. Appears for 1.8 seconds on power up, or dismisses instantly when any button or key is pressed.
 - **High-Contrast Dual-Phosphor Visuals:** Designed for maximum legibility on the FM-1's 240x240 LCD. High-contrast amber LEDs represent active playheads, accented gates, and ties, set against a phosphor matrix green CRT grid.
 - **Transient Real-Time Status Bar:** Any knob turn or held button temporarily displays immediate, detailed feedback (e.g. `K1 Cutoff: 84`, `Swing: 54%`, `Queued Bank B`) and smoothly restores the default track status after 1.5 seconds of idle.
 

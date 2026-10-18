@@ -273,6 +273,11 @@ static void app_main(void)
         uint32_t released = 0;
         uint32_t pressed = fm1_input_edges(&released);
 
+        /* Dismiss splash screen early if user touches buttons or keys */
+        if ((pressed & ~(1u << BTN_PLAY)) || (fm1_in.notes != 0)) {
+            matrix_ui_dismiss_splash();
+        }
+
         /* Button Hold Tracking */
         if (fm1_in.buttons & (1u << BTN_EDIT)) {
             matrix_ui_set_held_status("⚡ SHIFT: +HOME=UNDO +SAVE=REDO +ENV=ENGINE");
@@ -425,6 +430,7 @@ static void app_main(void)
          * ===================================================================== */
         int32_t enc_sel = fm1_enc_take(ENC_SELECT);
         if (enc_sel != 0) {
+            matrix_ui_dismiss_splash();
             if (g_matrix.menu_mode == MENU_FX) {
                 int32_t ms = (int32_t)g_matrix.menu_sel + enc_sel;
                 if (ms < 0) ms = 9;

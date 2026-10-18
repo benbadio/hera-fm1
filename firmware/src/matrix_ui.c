@@ -51,6 +51,123 @@ static const char *const FX_MENU_ITEMS[10] = {
 static char g_transient_msg[32] = {0};
 static uint32_t g_transient_expire_ms = 0;
 static char g_held_msg[32] = {0};
+static uint32_t g_splash_until_ms = 0;
+
+/* 32x32 8-Bit White Rabbit Matrix Icon (128 bytes) */
+static const uint32_t RABBIT_BITS[32] = {
+    0x00000000u, 0x00781E00u, 0x00FC3F00u, 0x00CC3300u,
+    0x00CC3300u, 0x00CC3300u, 0x00CC3300u, 0x00CC3300u,
+    0x00781E00u, 0x003FFC00u, 0x007FFE00u, 0x00FFFF00u,
+    0x01F3FF80u, 0x03F3FF80u, 0x03FFFF00u, 0x01FFFE00u,
+    0x00FFFC00u, 0x01FFFC00u, 0x03FFFE00u, 0x07FFFF00u,
+    0x0FFFFF8Eu, 0x1FFFFFDFu, 0x3FFFFFFFu, 0x3FFFFFFEu,
+    0x7FFFFFFCu, 0x7FFFFFF8u, 0x7F9FFFF0u, 0x7F0FFFC0u,
+    0x7F0FFFC0u, 0x3E07FF80u, 0x1C03FF00u, 0x00000000u
+};
+
+void matrix_ui_dismiss_splash(void)
+{
+    g_splash_until_ms = 0;
+}
+
+uint8_t matrix_ui_is_splash_active(void)
+{
+    return (fm1_ms < g_splash_until_ms);
+}
+
+static void matrix_ui_draw_splash(void)
+{
+    uint32_t ry, rx;
+    const int32_t ox = 72;
+    const int32_t oy = 16;
+
+    /* -------------------------------------------------------------------------
+     * STRIP A: Top Half (y: 0..119, h: 120) - 8-Bit White Rabbit & Phosphor Glow
+     * ------------------------------------------------------------------------- */
+    cv_begin(240, 120, C_BG);
+
+    /* Double Matrix Phosphor Border */
+    cv_rect(2, 2, 236, 1, C_GREEN_LED);
+    cv_rect(2, 2, 1, 118, C_GREEN_LED);
+    cv_rect(237, 2, 1, 118, C_GREEN_LED);
+    cv_rect(4, 4, 232, 1, C_DIVIDER);
+    cv_rect(4, 4, 1, 116, C_DIVIDER);
+    cv_rect(235, 4, 1, 116, C_DIVIDER);
+
+    /* Phosphor glow halo behind rabbit */
+    for (ry = 0; ry < 32; ry++) {
+        uint32_t bits = RABBIT_BITS[ry];
+        if (!bits) continue;
+        for (rx = 0; rx < 32; rx++) {
+            if (bits & (1u << (31 - rx))) {
+                cv_rect(ox + (int32_t)rx * 3 - 2, oy + (int32_t)ry * 3 - 2, 7, 7, RGB(0, 50, 20));
+            }
+        }
+    }
+    for (ry = 0; ry < 32; ry++) {
+        uint32_t bits = RABBIT_BITS[ry];
+        if (!bits) continue;
+        for (rx = 0; rx < 32; rx++) {
+            if (bits & (1u << (31 - rx))) {
+                cv_rect(ox + (int32_t)rx * 3 - 1, oy + (int32_t)ry * 3 - 1, 5, 5, RGB(0, 110, 44));
+            }
+        }
+    }
+
+    /* 8-bit White Rabbit Body */
+    for (ry = 0; ry < 32; ry++) {
+        uint32_t bits = RABBIT_BITS[ry];
+        if (!bits) continue;
+        for (rx = 0; rx < 32; rx++) {
+            if (bits & (1u << (31 - rx))) {
+                cv_rect(ox + (int32_t)rx * 3, oy + (int32_t)ry * 3, 3, 3, C_TEXT_WHITE);
+            }
+        }
+    }
+
+    /* Cyan Cybernetic Eye (at rx=11, ry=12) */
+    cv_rect(ox + 11 * 3, oy + 12 * 3, 3, 3, C_BLUE_LED);
+    cv_pset(ox + 11 * 3 + 1, oy + 12 * 3 + 1, C_TEXT_WHITE);
+
+    cv_blit(0, 0);
+
+    /* -------------------------------------------------------------------------
+     * STRIP B: Bottom Half (y: 120..239, h: 120) - MORPHEUS & System Info
+     * ------------------------------------------------------------------------- */
+    cv_begin(240, 120, C_BG);
+
+    /* Double Matrix Phosphor Border */
+    cv_rect(2, 0, 1, 118, C_GREEN_LED);
+    cv_rect(237, 0, 1, 118, C_GREEN_LED);
+    cv_rect(2, 117, 236, 1, C_GREEN_LED);
+    cv_rect(4, 0, 1, 116, C_DIVIDER);
+    cv_rect(235, 0, 1, 116, C_DIVIDER);
+    cv_rect(4, 115, 232, 1, C_DIVIDER);
+
+    /* "MORPHEUS" in 32px Font (FONT_L width = 8 * 16 = 128px, centered at x=56) */
+    /* Neon green glow shadow */
+    cv_text(55, 8, &FONT_L, "MORPHEUS", C_GREEN_LED);
+    cv_text(57, 8, &FONT_L, "MORPHEUS", C_GREEN_LED);
+    cv_text(56, 7, &FONT_L, "MORPHEUS", C_GREEN_LED);
+    cv_text(56, 9, &FONT_L, "MORPHEUS", C_GREEN_LED);
+    /* White core */
+    cv_text(56, 8, &FONT_L, "MORPHEUS", C_TEXT_WHITE);
+
+    /* Subtitles in 16px Font (FONT_S width = N * 8) */
+    /* "FOLLOW THE RABBIT" (17 chars * 8 = 136px, centered at x=52) */
+    cv_text(52, 46, &FONT_S, "FOLLOW THE RABBIT", C_GREEN_LED);
+
+    /* "8-TRACK GROOVEBOX" (17 chars * 8 = 136px, centered at x=52) */
+    cv_text(52, 66, &FONT_S, "8-TRACK GROOVEBOX", C_ORANGE_LED);
+
+    /* "FM-1 OPEN // ID: 8000013" (24 chars * 8 = 192px, centered at x=24) */
+    cv_text(24, 86, &FONT_S, "FM-1 OPEN // ID: 8000013", C_BLUE_LED);
+
+    /* Status prompt: "[ READY // 48kHz DSP ]" (22 chars * 8 = 176px, centered at x=32) */
+    cv_text(32, 102, &FONT_S, "[ READY // 48kHz DSP ]", C_TEXT_DIM);
+
+    cv_blit(0, 120);
+}
 
 void matrix_ui_notify(const char *msg)
 {
@@ -70,6 +187,7 @@ void matrix_ui_clear_held_status(void)
 
 void matrix_ui_init(void)
 {
+    g_splash_until_ms = fm1_ms + 1800u;
     lcd_fill(0, 0, 240, 240, C_BG);
 }
 
@@ -82,6 +200,11 @@ static void fmt_num(char *buf, uint32_t val)
 
 void matrix_ui_draw(void)
 {
+    if (fm1_ms < g_splash_until_ms) {
+        matrix_ui_draw_splash();
+        return;
+    }
+
     uint8_t trk = g_matrix.active_track;
     matrix_pattern_t *pat = &g_matrix.patterns[trk][g_matrix.cur_bank[trk] * PATS_PER_BANK + g_matrix.cur_pat[trk]];
     uint8_t step_offset = g_matrix.view_page * 16u;

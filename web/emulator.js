@@ -39,8 +39,16 @@
     statusTimer: 0,
     heldStatus: null,
     clipboard: null,
+    hasStarted: false,
+    splashUntil: 0,
     tracks: []
   };
+
+  function dismissSplash() {
+    if (state.splashUntil > 0) {
+      state.splashUntil = 0;
+    }
+  }
 
   const NOTE_NAMES_SHORT = ['C-', 'C#', 'D-', 'D#', 'E-', 'F-', 'F#', 'G-', 'G#', 'A-', 'A#', 'B-'];
   function getNoteName(midiNote) {
@@ -670,7 +678,133 @@
 
   const PIANO_IS_BLACK = [0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0];
 
+  const RABBIT_32 = [
+    "................................",
+    ".........████......████.........",
+    "........██████....██████........",
+    "........██..██....██..██........",
+    "........██..██....██..██........",
+    "........██..██....██..██........",
+    "........██..██....██..██........",
+    "........██..██....██..██........",
+    ".........████......████.........",
+    "..........████████████..........",
+    ".........██████████████.........",
+    "........████████████████........",
+    ".......█████..███████████.......",
+    "......██████..███████████.......",
+    "......██████████████████........",
+    ".......████████████████.........",
+    "........██████████████..........",
+    ".......███████████████..........",
+    "......█████████████████.........",
+    ".....███████████████████........",
+    "....█████████████████████...███.",
+    "...███████████████████████.█████",
+    "..██████████████████████████████",
+    "..█████████████████████████████.",
+    ".█████████████████████████████..",
+    ".████████████████████████████...",
+    ".████████..█████████████████....",
+    ".███████....██████████████......",
+    ".███████....██████████████......",
+    "..█████......████████████.......",
+    "...███........██████████........",
+    "................................"
+  ];
+
+  function drawSplashScreen(ctx, now) {
+    ctx.fillStyle = '#010502';
+    ctx.fillRect(0, 0, 240, 240);
+
+    // CRT Scanlines
+    ctx.fillStyle = 'rgba(0, 24, 8, 0.45)';
+    for (let y = 0; y < 240; y += 2) {
+      ctx.fillRect(0, y, 240, 1);
+    }
+
+    // Double Matrix Border
+    ctx.strokeStyle = '#00ff66';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(2.5, 2.5, 235, 235);
+    ctx.strokeStyle = '#004d1e';
+    ctx.strokeRect(4.5, 4.5, 231, 231);
+
+    // Rabbit Glow Halo (subtle breathing effect)
+    const pulse = Math.sin(now * 0.0035) * 0.15 + 0.85;
+    const radGlow = ctx.createRadialGradient(120, 62, 8, 120, 62, 54);
+    radGlow.addColorStop(0, `rgba(0, 255, 102, ${0.45 * pulse})`);
+    radGlow.addColorStop(0.55, `rgba(0, 200, 80, ${0.18 * pulse})`);
+    radGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = radGlow;
+    ctx.fillRect(50, 8, 140, 110);
+
+    // 8-Bit Pixel Rabbit (32x32 scaled to 96x96, centered at x=72, y=16)
+    const scale = 3;
+    const ox = 72;
+    const oy = 16;
+    ctx.fillStyle = '#ffffff';
+    for (let ry = 0; ry < 32; ry++) {
+      const row = RABBIT_32[ry];
+      for (let rx = 0; rx < 32; rx++) {
+        if (row[rx] === '█') {
+          ctx.fillRect(ox + rx * scale, oy + ry * scale, scale, scale);
+        }
+      }
+    }
+
+    // Cyan Cybernetic Eye Glint (at rx=11, ry=12)
+    ctx.fillStyle = '#00f0ff';
+    ctx.fillRect(ox + 11 * scale, oy + 12 * scale, scale, scale);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(ox + 11 * scale + 1, oy + 12 * scale + 1, 1, 1);
+
+    // "MORPHEUS" Typography
+    ctx.textAlign = 'center';
+    ctx.font = '900 20px "Courier New", monospace';
+    // Green text glow shadow
+    ctx.fillStyle = '#00ff66';
+    ctx.fillText('MORPHEUS', 119, 137);
+    ctx.fillText('MORPHEUS', 121, 137);
+    ctx.fillText('MORPHEUS', 120, 136);
+    ctx.fillText('MORPHEUS', 120, 138);
+    // White text core
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('MORPHEUS', 120, 137);
+
+    // Subtitles
+    ctx.font = 'bold 8.5px "Courier New", monospace';
+    ctx.fillStyle = '#00ff66';
+    ctx.fillText('FOLLOW THE WHITE RABBIT', 120, 159);
+
+    ctx.font = 'bold 8.5px "Courier New", monospace';
+    ctx.fillStyle = '#ffb71a';
+    ctx.fillText('8-TRACK REBIRTH GROOVEBOX', 120, 177);
+
+    ctx.font = 'bold 8px "Courier New", monospace';
+    ctx.fillStyle = '#00f0ff';
+    ctx.fillText('FM-1 OPEN // ID: 8000013', 120, 195);
+
+    // Boot prompt / Ticker
+    if (!state.hasStarted) {
+      const blink = (Math.floor(now / 500) % 2 === 0);
+      ctx.font = 'bold 8px "Courier New", monospace';
+      ctx.fillStyle = blink ? '#50c070' : '#1e4828';
+      ctx.fillText('[ CLICK "SWITCH ON" TO BOOT ]', 120, 222);
+    } else {
+      ctx.font = 'bold 8px "Courier New", monospace';
+      ctx.fillStyle = '#00ff66';
+      ctx.fillText('[ SYSTEM READY // 48kHz STEREO DSP ]', 120, 222);
+    }
+  }
+
   function renderScreen() {
+    const now = performance.now();
+    if (!state.hasStarted || now < state.splashUntil) {
+      drawSplashScreen(ctx, now);
+      return;
+    }
+
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, 240, 240);
 
@@ -1281,6 +1415,14 @@
   canvas.addEventListener('mouseleave', resetHint);
 
   canvas.addEventListener('click', (e) => {
+    if (!state.hasStarted) {
+      if (btnStart) btnStart.click();
+      return;
+    }
+    if (performance.now() < state.splashUntil) {
+      dismissSplash();
+      return;
+    }
     initAudio();
     const rect = canvas.getBoundingClientRect();
     const scale = 240 / rect.width;
@@ -1570,6 +1712,7 @@
   function bindKnob(k, onTurn) {
     let drag = null;
     k.hit.addEventListener("pointerdown", (e) => {
+      dismissSplash();
       e.preventDefault();
       k.hit.setPointerCapture(e.pointerId);
       drag = { y: e.clientY };
@@ -1588,6 +1731,7 @@
     });
 
     k.hit.addEventListener("wheel", (e) => {
+      dismissSplash();
       e.preventDefault();
       onTurn(e.deltaY < 0 ? 3 : -3);
     }, { passive: false });
@@ -1781,6 +1925,7 @@
 
   function bindButton(b, onClick) {
     b.hit.addEventListener("pointerdown", (e) => {
+      dismissSplash();
       e.preventDefault();
       b.g.classList.add("held");
       if (b.label === "EDIT") {
@@ -1925,6 +2070,7 @@
     const midiNote = KEY_NOTES[idx];
 
     k.hit.addEventListener("pointerdown", (e) => {
+      dismissSplash();
       e.preventDefault();
       initAudio();
       k.g.classList.add("held");
@@ -1987,11 +2133,13 @@
     initAudio();
     startOverlay.hidden = true;
     startOverlay.style.display = "none";
+    state.hasStarted = true;
+    state.splashUntil = performance.now() + 1800;
     startSequencer();
     if (statusEl) {
-      statusEl.textContent = "Running. 4-Track Pattern Sequencer & 303 Acid Synth active.";
+      statusEl.textContent = "Running. 8-Track ReBirth Groovebox & Matrix Sequencer active.";
     }
-    showHint("▶️ Sequencer running! Click any square on the screen to add notes, or twist K1 Cutoff.");
+    showHint("▶️ MORPHEUS running! Follow the white rabbit: 808/909 drums & dual 303 synths ready.");
   });
 
   // Bottom bar buttons
