@@ -53,17 +53,7 @@ static uint32_t g_transient_expire_ms = 0;
 static char g_held_msg[32] = {0};
 static uint32_t g_splash_until_ms = 0;
 
-/* 32x32 8-Bit White Rabbit Matrix Icon (128 bytes) */
-static const uint32_t RABBIT_BITS[32] = {
-    0x00000000u, 0x007C0000u, 0x00FE07C0u, 0x00C60FE0u,
-    0x00C60C60u, 0x00C61860u, 0x00C61860u, 0x00C630C0u,
-    0x00C630C0u, 0x006C3180u, 0x006C6300u, 0x00387E00u,
-    0x007FFE00u, 0x01FFFF80u, 0x03FFFFC0u, 0x0373DCE0u,
-    0x0373DCE0u, 0x03FFFFE0u, 0x03FCFFE0u, 0x03F03FE0u,
-    0x01FFFFE0u, 0x00FFFF80u, 0x01FFFF80u, 0x03FFFFC0u,
-    0x067FFE60u, 0x067FFE60u, 0x0E3DEE60u, 0x0F3FFE40u,
-    0x063F3E00u, 0x003E1E00u, 0x00FE3F80u, 0x01FF7FC0u
-};
+#include "rabbit_emoji.h"
 
 void matrix_ui_dismiss_splash(void)
 {
@@ -78,11 +68,9 @@ uint8_t matrix_ui_is_splash_active(void)
 static void matrix_ui_draw_splash(void)
 {
     uint32_t ry, rx;
-    const int32_t ox = 72;
-    const int32_t oy = 16;
 
     /* -------------------------------------------------------------------------
-     * STRIP A: Top Half (y: 0..119, h: 120) - 8-Bit White Rabbit & Glow
+     * STRIP A: Top Half (y: 0..119, h: 120) - Rabbit Emoji 🐇 & Ambient Glow
      * ------------------------------------------------------------------------- */
     cv_begin(240, 120, C_BG);
 
@@ -94,40 +82,17 @@ static void matrix_ui_draw_splash(void)
     cv_rect(4, 4, 1, 116, C_DIVIDER);
     cv_rect(235, 4, 1, 116, C_DIVIDER);
 
-    /* Green glow halo behind rabbit */
-    for (ry = 0; ry < 32; ry++) {
-        uint32_t bits = RABBIT_BITS[ry];
-        if (!bits) continue;
-        for (rx = 0; rx < 32; rx++) {
-            if (bits & (1u << (31 - rx))) {
-                cv_rect(ox + (int32_t)rx * 3 - 2, oy + (int32_t)ry * 3 - 2, 7, 7, RGB(0, 50, 20));
+    /* Rabbit Emoji (70x70 RGB565) centered at x=85, y=24 */
+    const int32_t emoji_ox = 85;
+    const int32_t emoji_oy = 24;
+    for (ry = 0; ry < 70; ry++) {
+        for (rx = 0; rx < 70; rx++) {
+            uint16_t c = RABBIT_EMOJI[ry * 70 + rx];
+            if (c != 0) {
+                cv_pset(emoji_ox + (int32_t)rx, emoji_oy + (int32_t)ry, c);
             }
         }
     }
-    for (ry = 0; ry < 32; ry++) {
-        uint32_t bits = RABBIT_BITS[ry];
-        if (!bits) continue;
-        for (rx = 0; rx < 32; rx++) {
-            if (bits & (1u << (31 - rx))) {
-                cv_rect(ox + (int32_t)rx * 3 - 1, oy + (int32_t)ry * 3 - 1, 5, 5, RGB(0, 110, 44));
-            }
-        }
-    }
-
-    /* 8-bit White Rabbit Body */
-    for (ry = 0; ry < 32; ry++) {
-        uint32_t bits = RABBIT_BITS[ry];
-        if (!bits) continue;
-        for (rx = 0; rx < 32; rx++) {
-            if (bits & (1u << (31 - rx))) {
-                cv_rect(ox + (int32_t)rx * 3, oy + (int32_t)ry * 3, 3, 3, C_TEXT_WHITE);
-            }
-        }
-    }
-
-    /* Cyan Cybernetic Eye (at rx=11, ry=15) */
-    cv_rect(ox + 11 * 3, oy + 15 * 3, 3, 3, C_BLUE_LED);
-    cv_pset(ox + 11 * 3 + 1, oy + 15 * 3 + 1, C_TEXT_WHITE);
 
     cv_blit(0, 0);
 

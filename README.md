@@ -78,7 +78,7 @@ When selecting drum tracks (T3 TR-808 or T4 TR-909), MORPHEUS automatically tran
 ## User Interface & Dynamic Status Bar
 
 <p align="center">
-  <img src="assets/morpheus_splash.png" width="280" alt="8-Bit White Rabbit Boot Splash Screen">
+  <img src="assets/morpheus_splash.png" width="280" alt="Rabbit Emoji Boot Splash Screen">
   &nbsp;&nbsp;&nbsp;&nbsp;
   <img src="assets/screen_preview.png" width="280" alt="Reason Matrix 8-Track Sequencer">
 </p>

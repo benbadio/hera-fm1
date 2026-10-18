@@ -1,70 +1,20 @@
 #!/usr/bin/env python3
-"""Generate crisp SVG vector logos for MORPHEUS 8-Bit White Rabbit with Matrix Green Glow."""
+"""Generate clean SVG vector logos and PNG for MORPHEUS using the Rabbit Emoji 🐇."""
 
 import os
-
-RABBIT_32 = [
-    "................................",
-    ".........█████..................",
-    "........███████......█████......",
-    "........██...██.....███████.....",
-    "........██...██.....██...██.....",
-    "........██...██....██....██.....",
-    "........██...██....██....██.....",
-    "........██...██...██....██......",
-    "........██...██...██....██......",
-    ".........██.██....██...██.......",
-    ".........██.██...██...██........",
-    "..........███....██████.........",
-    ".........██████████████.........",
-    ".......██████████████████.......",
-    "......████████████████████......",
-    "......██.███..████.███..███.....",
-    "......██.███..████.███..███.....",
-    "......█████████████████████.....",
-    "......████████..███████████.....",
-    "......██████......█████████.....",
-    ".......████████████████████.....",
-    "........█████████████████.......",
-    ".......██████████████████.......",
-    "......████████████████████......",
-    ".....██..██████████████..██.....",
-    ".....██..██████████████..██.....",
-    "....███...████.████.███..██.....",
-    "....████..█████████████..█......",
-    ".....██...██████..█████.........",
-    "..........█████....████.........",
-    "........███████...███████.......",
-    ".......█████████.█████████......",
-]
+import subprocess
 
 def generate_svg(filename, width=480, height=480):
     os.makedirs(os.path.dirname(filename), exist_ok=True)
-    scale = 8  # 32 * 8 = 256px rabbit
-    rx_offset = (width - 32 * scale) // 2
-    ry_offset = 32
 
-    rects = []
-    for y in range(32):
-        row = RABBIT_32[y]
-        for x in range(32):
-            if x < len(row) and row[x] == '█':
-                px = rx_offset + x * scale
-                py = ry_offset + y * scale
-                rects.append(f'<rect x="{px}" y="{py}" width="{scale}" height="{scale}" />')
-
-    # Eye position
-    eye_x = rx_offset + 11 * scale
-    eye_y = ry_offset + 15 * scale
-
-    svg_content = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="100%" height="100%" style="background:#050706;">
+    svg_content = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="100%" height="100%" style="background:#020503;">
   <defs>
     <!-- Matrix Grid Lines -->
     <pattern id="scanlines" width="100" height="4" patternUnits="userSpaceOnUse">
-      <line x1="0" y1="0" x2="100" y2="0" stroke="rgba(0,0,0,0.4)" stroke-width="1.5" />
+      <line x1="0" y1="0" x2="100" y2="0" stroke="rgba(0,0,0,0.3)" stroke-width="1.5" />
     </pattern>
 
-    <!-- Neon Matrix Green Glow Filter -->
+    <!-- Neon Green Glow Filter -->
     <filter id="matrixGlow" x="-30%" y="-30%" width="160%" height="160%">
       <feGaussianBlur stdDeviation="12" result="blur1" />
       <feGaussianBlur stdDeviation="6" result="blur2" />
@@ -89,13 +39,19 @@ def generate_svg(filename, width=480, height=480):
       <stop offset="65%" stop-color="#040d07" stop-opacity="0.95" />
       <stop offset="100%" stop-color="#010302" stop-opacity="1" />
     </radialGradient>
+
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00ff66" stop-opacity="0.35" />
+      <stop offset="60%" stop-color="#00ff66" stop-opacity="0.10" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
   </defs>
 
   <!-- Background Layer -->
   <rect width="{width}" height="{height}" fill="url(#matrixVignette)" />
   <rect width="{width}" height="{height}" fill="url(#scanlines)" pointer-events="none" />
 
-  <!-- Cyberpunk Matrix Double Bezel -->
+  <!-- Double Matrix Border -->
   <rect x="12" y="12" width="{width - 24}" height="{height - 24}" fill="none" stroke="#00ff66" stroke-width="2" stroke-opacity="0.8" filter="url(#textGlow)" />
   <rect x="16" y="16" width="{width - 32}" height="{height - 32}" fill="none" stroke="#005522" stroke-width="1" stroke-opacity="0.6" />
 
@@ -105,37 +61,28 @@ def generate_svg(filename, width=480, height=480):
   <path d="M 8,{height-24} L 8,{height-8} L 24,{height-8}" fill="none" stroke="#00ff66" stroke-width="3" />
   <path d="M {width-8},{height-24} L {width-8},{height-8} L {width-24},{height-8}" fill="none" stroke="#00ff66" stroke-width="3" />
 
-  <!-- 8-Bit White Rabbit with Green Glow -->
-  <!-- 1. Ambient Green Glow Halo -->
-  <g fill="#00ff66" filter="url(#matrixGlow)" opacity="0.9">
-    {' '.join(rects)}
-  </g>
+  <!-- Rabbit Ambient Glow Halo -->
+  <circle cx="{width/2}" cy="{height * 0.32}" r="{width * 0.22}" fill="url(#halo)" />
 
-  <!-- 2. Solid Crisp 8-Bit White Rabbit Body -->
-  <g fill="#ffffff">
-    {' '.join(rects)}
-  </g>
-
-  <!-- 3. Cybernetic Cyan Eye -->
-  <rect x="{eye_x}" y="{eye_y}" width="{scale * 2}" height="{scale * 2}" fill="#00f0ff" filter="url(#textGlow)" />
-  <rect x="{eye_x + 2}" y="{eye_y + 2}" width="{scale}" height="{scale}" fill="#ffffff" />
+  <!-- Rabbit Emoji 🐇 -->
+  <text x="{width/2}" y="{height * 0.33}" font-size="{int(width * 0.30)}" text-anchor="middle" dominant-baseline="central">🐇</text>
 
   <!-- Typography: MORPHEUS -->
-  <text x="50%" y="335" text-anchor="middle" font-family="'Courier New', Courier, monospace" font-size="42" font-weight="900" letter-spacing="8" fill="#ffffff" stroke="#00ff66" stroke-width="1.5" filter="url(#matrixGlow)">
+  <text x="50%" y="{height * 0.69}" text-anchor="middle" font-family="'Courier New', Courier, monospace" font-size="{int(width * 0.088)}" font-weight="900" letter-spacing="8" fill="#ffffff" stroke="#00ff66" stroke-width="1.5" filter="url(#matrixGlow)">
     MORPHEUS
   </text>
 
   <!-- Subtitles -->
-  <text x="50%" y="375" text-anchor="middle" font-family="'Courier New', Courier, monospace" font-size="14" font-weight="800" letter-spacing="5" fill="#00ff66" filter="url(#textGlow)">
+  <text x="50%" y="{height * 0.78}" text-anchor="middle" font-family="'Courier New', Courier, monospace" font-size="{int(width * 0.035)}" font-weight="800" letter-spacing="4" fill="#00ff66" filter="url(#textGlow)">
     VERSION 1.0.0
   </text>
 
-  <text x="50%" y="405" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace" font-size="13" font-weight="700" letter-spacing="3" fill="#ffb71a">
-    8-TRACK REBIRTH GROOVEBOX
+  <text x="50%" y="{height * 0.85}" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace" font-size="{int(width * 0.032)}" font-weight="700" letter-spacing="3" fill="#ffb71a">
+    8-TRACK GROOVEBOX
   </text>
 
-  <text x="50%" y="432" text-anchor="middle" font-family="'Courier New', Courier, monospace" font-size="12" font-weight="600" letter-spacing="4" fill="#00f0ff" opacity="0.9">
-    FM-1 OPEN // ID: FM-1_8000013
+  <text x="50%" y="{height * 0.91}" text-anchor="middle" font-family="'Courier New', Courier, monospace" font-size="{int(width * 0.027)}" font-weight="600" letter-spacing="3" fill="#00f0ff" opacity="0.9">
+    FM-1 OPEN // ID: 8000013
   </text>
 </svg>
 '''
@@ -146,3 +93,15 @@ def generate_svg(filename, width=480, height=480):
 if __name__ == '__main__':
     generate_svg("assets/morpheus_logo.svg", 480, 480)
     generate_svg("assets/logo.svg", 480, 480)
+    
+    # Render PNG logo using Chrome headless
+    chrome_bin = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    if os.path.exists(chrome_bin):
+        svg_abs = os.path.abspath("assets/logo.svg")
+        png_out = os.path.abspath("assets/logo.png")
+        subprocess.run([
+            chrome_bin, "--headless", f"--screenshot={png_out}",
+            "--window-size=480,480", "--default-background-color=00000000",
+            f"file://{svg_abs}"
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        print("Generated PNG: assets/logo.png")

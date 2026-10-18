@@ -678,40 +678,7 @@
 
   const PIANO_IS_BLACK = [0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0];
 
-  const RABBIT_32 = [
-    "................................",
-    ".........█████..................",
-    "........███████......█████......",
-    "........██...██.....███████.....",
-    "........██...██.....██...██.....",
-    "........██...██....██....██.....",
-    "........██...██....██....██.....",
-    "........██...██...██....██......",
-    "........██...██...██....██......",
-    ".........██.██....██...██.......",
-    ".........██.██...██...██........",
-    "..........███....██████.........",
-    ".........██████████████.........",
-    ".......██████████████████.......",
-    "......████████████████████......",
-    "......██.███..████.███..███.....",
-    "......██.███..████.███..███.....",
-    "......█████████████████████.....",
-    "......████████..███████████.....",
-    "......██████......█████████.....",
-    ".......████████████████████.....",
-    "........█████████████████.......",
-    ".......██████████████████.......",
-    "......████████████████████......",
-    ".....██..██████████████..██.....",
-    ".....██..██████████████..██.....",
-    "....███...████.████.███..██.....",
-    "....████..█████████████..█......",
-    ".....██...██████..█████.........",
-    "..........█████....████.........",
-    "........███████...███████.......",
-    ".......█████████.█████████......",
-  ];
+
 
   function drawSplashScreen(ctx, now) {
     ctx.fillStyle = '#010502';
@@ -730,34 +697,20 @@
     ctx.strokeStyle = '#004d1e';
     ctx.strokeRect(4.5, 4.5, 231, 231);
 
-    // Rabbit Glow Halo (subtle breathing effect)
+    // Rabbit Ambient Glow Halo (subtle breathing effect)
     const pulse = Math.sin(now * 0.0035) * 0.15 + 0.85;
-    const radGlow = ctx.createRadialGradient(120, 62, 8, 120, 62, 54);
-    radGlow.addColorStop(0, `rgba(0, 255, 102, ${0.45 * pulse})`);
-    radGlow.addColorStop(0.55, `rgba(0, 200, 80, ${0.18 * pulse})`);
+    const radGlow = ctx.createRadialGradient(120, 60, 6, 120, 60, 52);
+    radGlow.addColorStop(0, `rgba(0, 255, 102, ${0.40 * pulse})`);
+    radGlow.addColorStop(0.55, `rgba(0, 200, 80, ${0.15 * pulse})`);
     radGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = radGlow;
     ctx.fillRect(50, 8, 140, 110);
 
-    // 8-Bit Pixel Rabbit (32x32 scaled to 96x96, centered at x=72, y=16)
-    const scale = 3;
-    const ox = 72;
-    const oy = 16;
-    ctx.fillStyle = '#ffffff';
-    for (let ry = 0; ry < 32; ry++) {
-      const row = RABBIT_32[ry];
-      for (let rx = 0; rx < 32; rx++) {
-        if (row[rx] === '█') {
-          ctx.fillRect(ox + rx * scale, oy + ry * scale, scale, scale);
-        }
-      }
-    }
-
-    // Cyan Cybernetic Eye Glint (at rx=11, ry=15)
-    ctx.fillStyle = '#00f0ff';
-    ctx.fillRect(ox + 11 * scale, oy + 15 * scale, scale, scale);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(ox + 11 * scale + 1, oy + 15 * scale + 1, 1, 1);
+    // Rabbit Emoji 🐇
+    ctx.font = '64px -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🐇', 120, 60);
 
     // "MORPHEUS" Typography
     ctx.textAlign = 'center';
