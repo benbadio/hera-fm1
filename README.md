@@ -44,6 +44,26 @@ MORPHEUS transforms the ultra-portable **M-VAVE FM-1** into a standalone hardwar
 
 ---
 
+## Interactive Guided Walkthrough
+
+MORPHEUS features an interactive hardware walkthrough inspired by classic hardware user guides (such as Roland Aira Compact and Akai MPC series). Rather than deciphering complex menus, you can build a complete multi-track acid groove step-by-step:
+
+- **Live On-Screen Hardware Spotlights:** Launch the walkthrough directly in the browser emulator (**[Interactive Walkthrough](https://benbadio.github.io/morpheus-fm1/#walkthrough)**). The physical FM-1 buttons, encoders, and silicone keys are dynamically illuminated with action pins (`[1]`, `[2]`, `[HOLD]`), accompanied by real-time audio and LCD responses.
+- **Illustrated Hardware Action Tables:** Read the step-by-step tutorial cards with Roland-style action callouts, parameter guides, and acoustic listening tips in the **[User Manual Section 3](https://benbadio.github.io/morpheus-fm1/manual.html#step1)**.
+
+### Walkthrough Steps:
+1. **Project Canvas & Tempo Setup:** Lock tempo to 135.0 BPM and initialize 16-step grid.
+2. **Engaging the 303 Engine:** Select the resonant transistor diode ladder bass synth.
+3. **Step Recording with Silicone Keys:** Punch in notes with pitch auditioning and auto-advance.
+4. **Portamento Slides & Accents:** Tie steps for 60ms continuous glides and set velocity > 105 for accent squelch.
+5. **Real-Time Performance:** Sweep Cutoff, Resonance, and Decay live with K1–K4 encoders.
+6. **Modulation Automation:** Draw automated filter cutoff sweeps on the per-step CC 74 Curve track.
+7. **Polymetric Layering:** Add four-on-the-floor 909 drums (T4) and a 7-step polyrhythmic lead (T2).
+8. **Pattern Tools & Undo/Redo:** Safeguard edits with multi-level undo (`EDIT + HOME`) and redo (`EDIT + SAVE`).
+9. **Committing Your Work:** Save directly to hardware flash storage or download a JSON backup.
+
+---
+
 ## Hardware Controls & Panel Mapping
 
 | Hardware Control | Primary Function | With SHIFT (EDIT) / Secondary |

@@ -80,7 +80,385 @@
   </section>
 
   <section>
-    <h2>3. 4-Track Sequencer Engine</h2>
+    <h2>3. Hands-On Creation Tutorial: Building an Acid Groove from Scratch</h2>
+    <p>
+      Follow this step-by-step project tutorial to build a complete multi-track acid groove while learning the workflow and physical controls of MORPHEUS. You can also run the <strong>Interactive Guided Tutorial</strong> directly on the emulator, where every button, knob, and silicone key is dynamically highlighted on the hardware faceplate with real-time audio!
+    </p>
+    <div style="margin: 1.2rem 0 2rem;">
+      <a href="index.html#walkthrough" class="walkthrough-btn walkthrough-btn-primary" style="text-decoration:none; padding:10px 18px; font-size:1rem;">
+        ⚡ Launch Interactive Live Walkthrough in Emulator
+      </a>
+    </div>
+
+    <!-- Step 1 -->
+    <article class="tutorial-card" id="step1">
+      <div class="tutorial-card-header">
+        <span class="step-num">STEP 1</span>
+        <h3>Project Canvas &amp; Tempo Setup</h3>
+      </div>
+      <p>
+        Set the foundational pace of your track. MORPHEUS supports precise tempo control from 50 to 240 BPM (displayed to 0.1 BPM accuracy).
+      </p>
+      <table class="action-table">
+        <thead>
+          <tr><th>Action / Control</th><th>Screen Display</th><th>Functional Outcome</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="knob-pill">TEMPO</span> (Turn encoder)</td>
+            <td><code>TEMPO: 135.0 BPM</code></td>
+            <td>Locks sequencer clock to a driving acid techno tempo (135.0 BPM).</td>
+          </tr>
+          <tr>
+            <td><span class="btn-pill">HOME</span> (or <span class="knob-pill">TRACK</span>)</td>
+            <td><code>TRACK: T1 (303 BASS)</code></td>
+            <td>Focuses the matrix grid and controls on Track 1.</td>
+          </tr>
+          <tr>
+            <td><span class="btn-pill">GLO</span></td>
+            <td><code>LENGTH: 16 STEPS</code></td>
+            <td>Ensures Track 1 is configured to standard 16-step 4/4 bar length.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-hear">
+        🎧 <strong>What You Hear:</strong> Sequencer clock and transport arm at 135.0 BPM.
+      </div>
+      <div style="margin-top: 14px;">
+        <a href="index.html#step1" class="walkthrough-btn walkthrough-btn-primary" style="text-decoration:none; font-size:0.85rem;">⚡ Try Step 1 Live in Emulator</a>
+      </div>
+    </article>
+
+    <!-- Step 2 -->
+    <article class="tutorial-card" id="step2">
+      <div class="tutorial-card-header">
+        <span class="step-num">STEP 2</span>
+        <h3>Engaging the 303 Transistor Bass Engine</h3>
+      </div>
+      <p>
+        MORPHEUS features multiple internal sound generators. For Track 1, we engage the non-linear 303 transistor bass model featuring diode ladder filtering and continuous portamento glides.
+      </p>
+      <table class="action-table">
+        <thead>
+          <tr><th>Action / Control</th><th>Screen Display</th><th>Functional Outcome</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="btn-pill">LFO</span> (Tap Sound button)</td>
+            <td><code>SOUND: 303 ACID BASS</code></td>
+            <td>Cycles track engine from SUB/FM/MUTE to the 303 resonant engine.</td>
+          </tr>
+          <tr>
+            <td><span class="knob-pill">KNOB 1</span> (Cutoff)</td>
+            <td><code>CUTOFF: 45%</code></td>
+            <td>Sets baseline diode ladder filter frequency for a warm, punchy bite.</td>
+          </tr>
+          <tr>
+            <td><span class="knob-pill">KNOB 2</span> (Resonance)</td>
+            <td><code>RESONANCE: 78%</code></td>
+            <td>Dials in self-oscillating peak squelch on note transients.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-hear">
+        🎧 <strong>What You Hear:</strong> Classic saturated transistor sawtooth wave with aggressive diode resonance ringing when notes are struck.
+      </div>
+      <div style="margin-top: 14px;">
+        <a href="index.html#step2" class="walkthrough-btn walkthrough-btn-primary" style="text-decoration:none; font-size:0.85rem;">⚡ Try Step 2 Live in Emulator</a>
+      </div>
+    </article>
+
+    <!-- Step 3 -->
+    <article class="tutorial-card" id="step3">
+      <div class="tutorial-card-header">
+        <span class="step-num">STEP 3</span>
+        <h3>Programming Bassline with Step Recording &amp; Silicone Keys</h3>
+      </div>
+      <p>
+        Step recording lets you punch in notes with pitch auditioning and automatic step advancement, just like classic hardware sequencers.
+      </p>
+      <table class="action-table">
+        <thead>
+          <tr><th>Action / Control</th><th>Screen Display</th><th>Functional Outcome</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="btn-pill">REC</span></td>
+            <td><code>REC ● [STEP 1/16]</code></td>
+            <td>Activates Step Record mode. Active step cursor glows on grid.</td>
+          </tr>
+          <tr>
+            <td><span class="key-pill">C2</span>, <span class="key-pill">C2</span>, <span class="key-pill">D#2</span>, <span class="key-pill">G2</span></td>
+            <td><code>GRID NOTES FILLED</code></td>
+            <td>Assigns notes to steps 1–4 with standard gate velocity (115) and advances cursor.</td>
+          </tr>
+          <tr>
+            <td><span class="knob-pill">SELECT</span> (Turn clockwise)</td>
+            <td><code>STEP 5 &rarr; REST</code></td>
+            <td>Advances the cursor without entering a note, leaving an expressive 16th rest.</td>
+          </tr>
+          <tr>
+            <td><span class="btn-pill">REC</span> (Press again)</td>
+            <td><code>NORMAL PLAY MODE</code></td>
+            <td>Exits Step Record mode and locks in pattern.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-hear">
+        🎧 <strong>What You Hear:</strong> Immediate pitch playback upon key press; punchy rhythmic acid bassline ready for transport playback.
+      </div>
+      <div style="margin-top: 14px;">
+        <a href="index.html#step3" class="walkthrough-btn walkthrough-btn-primary" style="text-decoration:none; font-size:0.85rem;">⚡ Try Step 3 Live in Emulator</a>
+      </div>
+    </article>
+
+    <!-- Step 4 -->
+    <article class="tutorial-card" id="step4">
+      <div class="tutorial-card-header">
+        <span class="step-num">STEP 4</span>
+        <h3>Sculpting Acid Magic: Portamento Slides &amp; Accents</h3>
+      </div>
+      <p>
+        The soul of 303 acid music comes from two physical behaviors: note ties (triggering smooth 60ms analog pitch glides without envelope re-triggers) and velocity accents (exponentially opening cutoff and sharpening decay).
+      </p>
+      <table class="action-table">
+        <thead>
+          <tr><th>Action / Control</th><th>Screen Display</th><th>Functional Outcome</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="knob-pill">SELECT</span> (Scrub to Step 3)</td>
+            <td><code>STEP: 3 (D#2)</code></td>
+            <td>Targets the desired step for modification.</td>
+          </tr>
+          <tr>
+            <td><span class="knob-pill">KNOB 2</span> (Turn clockwise)</td>
+            <td><code>TIE: ON [&rarr;]</code></td>
+            <td>Enables portamento slide into step 4 without re-striking the amplitude envelope.</td>
+          </tr>
+          <tr>
+            <td><span class="btn-hold">HOLD EDIT</span> + <span class="knob-pill">KNOB 1</span></td>
+            <td><code>VELOCITY: 127 [ACCENT]</code></td>
+            <td>Boosts note velocity above 105, engaging accent overdrive and filter snap.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-hear">
+        🎧 <strong>What You Hear:</strong> The bassline seamlessly glides between pitches, punctuated by razor-sharp screaming resonant accent bursts.
+      </div>
+      <div style="margin-top: 14px;">
+        <a href="index.html#step4" class="walkthrough-btn walkthrough-btn-primary" style="text-decoration:none; font-size:0.85rem;">⚡ Try Step 4 Live in Emulator</a>
+      </div>
+    </article>
+
+    <!-- Step 5 -->
+    <article class="tutorial-card" id="step5">
+      <div class="tutorial-card-header">
+        <span class="step-num">STEP 5</span>
+        <h3>Real-Time Performance &amp; Filter Sweeping</h3>
+      </div>
+      <p>
+        Start the transport and manipulate the 4 dedicated hardware encoders in real time while the sequence plays.
+      </p>
+      <table class="action-table">
+        <thead>
+          <tr><th>Action / Control</th><th>Screen Display</th><th>Functional Outcome</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="btn-pill">PLAY</span></td>
+            <td><code>PLAYING ▶ 135.0 BPM</code></td>
+            <td>Starts the master sequencer transport.</td>
+          </tr>
+          <tr>
+            <td><span class="knob-pill">KNOB 1</span> (Turn 0% &rarr; 100%)</td>
+            <td><code>CUTOFF SWEEP</code></td>
+            <td>Sweeps the diode ladder cutoff frequency across the audible spectrum.</td>
+          </tr>
+          <tr>
+            <td><span class="knob-pill">KNOB 2</span> (Resonance)</td>
+            <td><code>RES: 85%</code></td>
+            <td>Pushes the filter feedback into piercing analog self-oscillation.</td>
+          </tr>
+          <tr>
+            <td><span class="knob-pill">KNOB 3</span> (Decay)</td>
+            <td><code>DECAY: 350 ms</code></td>
+            <td>Adjusts the snappy tail length of the envelope filter modulation.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-hear">
+        🎧 <strong>What You Hear:</strong> Deep low-end sub frequencies opening into screaming harmonics and squelchy self-oscillating peaks.
+      </div>
+      <div style="margin-top: 14px;">
+        <a href="index.html#step5" class="walkthrough-btn walkthrough-btn-primary" style="text-decoration:none; font-size:0.85rem;">⚡ Try Step 5 Live in Emulator</a>
+      </div>
+    </article>
+
+    <!-- Step 6 -->
+    <article class="tutorial-card" id="step6">
+      <div class="tutorial-card-header">
+        <span class="step-num">STEP 6</span>
+        <h3>Automating Filter Sweeps with the Modulation Curve Track</h3>
+      </div>
+      <p>
+        MORPHEUS provides a dedicated per-step automation curve track alongside every pattern. You can draw automated filter sweeps (MIDI CC 74) that cycle continuously with hands-free precision.
+      </p>
+      <table class="action-table">
+        <thead>
+          <tr><th>Action / Control</th><th>Screen Display</th><th>Functional Outcome</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="btn-pill">ENV</span></td>
+            <td><code>CURVE VIEW (CC 74)</code></td>
+            <td>Toggles display from note piano roll to the per-step modulation curve editor.</td>
+          </tr>
+          <tr>
+            <td><span class="knob-pill">SELECT</span> + <span class="knob-pill">KNOB 3</span></td>
+            <td><code>STEP CC: 20 &rarr; 118</code></td>
+            <td>Sets modulation curve values step-by-step to craft a rising and falling filter sweep.</td>
+          </tr>
+          <tr>
+            <td><span class="btn-pill">ENV</span> (Press again)</td>
+            <td><code>NOTE GRID VIEW</code></td>
+            <td>Returns to the note pattern matrix while curve automation continues running.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-hear">
+        🎧 <strong>What You Hear:</strong> The resonant filter smoothly breathes, opens, and closes automatically with every repetition of the 16-step bar.
+      </div>
+      <div style="margin-top: 14px;">
+        <a href="index.html#step6" class="walkthrough-btn walkthrough-btn-primary" style="text-decoration:none; font-size:0.85rem;">⚡ Try Step 6 Live in Emulator</a>
+      </div>
+    </article>
+
+    <!-- Step 7 -->
+    <article class="tutorial-card" id="step7">
+      <div class="tutorial-card-header">
+        <span class="step-num">STEP 7</span>
+        <h3>Multi-Track Polymetric Layering (909 Drums + 7-Step Lead)</h3>
+      </div>
+      <p>
+        Build out a full track across MORPHEUS's 4 independent sequencer tracks, leveraging independent polyrhythmic step lengths.
+      </p>
+      <table class="action-table">
+        <thead>
+          <tr><th>Action / Control</th><th>Screen Display</th><th>Functional Outcome</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="knob-pill">TRACK</span> (Scrub to Track 4)</td>
+            <td><code>TRACK: T4 (909 DRUMS)</code></td>
+            <td>Switches focus to Track 4 (MIDI Ch 10 / internal percussion kit).</td>
+          </tr>
+          <tr>
+            <td><span class="key-pill">C1</span> on Steps 1, 5, 9, 13</td>
+            <td><code>FOUR-ON-THE-FLOOR</code></td>
+            <td>Programs a pounding 909-style kick drum on the quarter notes.</td>
+          </tr>
+          <tr>
+            <td><span class="knob-pill">TRACK</span> (Switch to Track 2)</td>
+            <td><code>TRACK: T2 (SUB LEAD)</code></td>
+            <td>Selects Track 2 for an analog melodic lead line.</td>
+          </tr>
+          <tr>
+            <td><span class="knob-pill">KNOB 4</span> (Pattern Length)</td>
+            <td><code>LENGTH: 7 STEPS</code></td>
+            <td>Shortens Track 2 to 7 steps, creating an evolving polymetric motif against the 16-step bassline.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-hear">
+        🎧 <strong>What You Hear:</strong> Complete driving dancefloor groove with locked bass, solid drums, and an ever-evolving polyrhythmic melody.
+      </div>
+      <div style="margin-top: 14px;">
+        <a href="index.html#step7" class="walkthrough-btn walkthrough-btn-primary" style="text-decoration:none; font-size:0.85rem;">⚡ Try Step 7 Live in Emulator</a>
+      </div>
+    </article>
+
+    <!-- Step 8 -->
+    <article class="tutorial-card" id="step8">
+      <div class="tutorial-card-header">
+        <span class="step-num">STEP 8</span>
+        <h3>Performance Tools, Safeguards &amp; Multi-Level Undo / Redo</h3>
+      </div>
+      <p>
+        Explore creative variations without fear of losing your work. MORPHEUS includes a protected Pattern Tools menu and full multi-level Undo/Redo.
+      </p>
+      <table class="action-table">
+        <thead>
+          <tr><th>Action / Control</th><th>Screen Display</th><th>Functional Outcome</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="btn-pill">FX</span></td>
+            <td><code>TOOLS MENU OVERLAY</code></td>
+            <td>Opens Pattern Tools menu (Undo, Redo, Shift &larr;/&rarr;, Transpose &plusmn;1, Alter, Randomize, Clear).</td>
+          </tr>
+          <tr>
+            <td><span class="knob-pill">SELECT</span> &rarr; <span class="btn-pill">HOME</span></td>
+            <td><code>TOOL EXECUTED</code></td>
+            <td>Selects and executes tool (e.g., Shift Left or Alter Notes).</td>
+          </tr>
+          <tr>
+            <td><span class="btn-hold">HOLD EDIT</span> + <span class="btn-pill">HOME</span></td>
+            <td><code>UNDO: Restored Previous</code></td>
+            <td>Instantly reverses the last change. You can undo up to 16 previous actions!</td>
+          </tr>
+          <tr>
+            <td><span class="btn-hold">HOLD EDIT</span> + <span class="btn-pill">SAVE</span></td>
+            <td><code>REDO: Reapplied Change</code></td>
+            <td>Reapplies the previously undone action.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-hear">
+        🎧 <strong>What You Hear:</strong> Dynamic performance variations with immediate single-button recall if you wish to revert.
+      </div>
+      <div style="margin-top: 14px;">
+        <a href="index.html#step8" class="walkthrough-btn walkthrough-btn-primary" style="text-decoration:none; font-size:0.85rem;">⚡ Try Step 8 Live in Emulator</a>
+      </div>
+    </article>
+
+    <!-- Step 9 -->
+    <article class="tutorial-card" id="step9">
+      <div class="tutorial-card-header">
+        <span class="step-num">STEP 9</span>
+        <h3>Committing Your Work: Flash Storage &amp; Backup</h3>
+      </div>
+      <p>
+        Persist your creation directly into non-volatile hardware flash memory, or export it as a clean JSON backup file to share or archive.
+      </p>
+      <table class="action-table">
+        <thead>
+          <tr><th>Action / Control</th><th>Screen Display</th><th>Functional Outcome</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="btn-pill">SAVE</span></td>
+            <td><code>FLASH SAVED: BANK A / PATTERN 1</code></td>
+            <td>Writes all 4 tracks, sound settings, and patterns to on-board flash storage.</td>
+          </tr>
+          <tr>
+            <td><code>Export JSON</code> (Toolbar button)</td>
+            <td><code>morpheus-pattern.json</code></td>
+            <td>Downloads complete pattern database to your computer for backup or sharing.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-hear">
+        🎧 <strong>What You Hear:</strong> Confirmation beep on hardware; all tracks safely preserved across power cycles.
+      </div>
+      <div style="margin-top: 14px;">
+        <a href="index.html#step9" class="walkthrough-btn walkthrough-btn-primary" style="text-decoration:none; font-size:0.85rem;">⚡ Try Step 9 Live in Emulator</a>
+      </div>
+    </article>
+  </section>
+
+  <section>
+    <h2>4. 4-Track Sequencer Engine</h2>
     <p>
       MORPHEUS functions like a rack of 4 synced pattern sequencer units operating simultaneously:
     </p>
@@ -101,7 +479,7 @@
   </section>
 
   <section>
-    <h2>4. Step Recording & Editing</h2>
+    <h2>5. Step Recording &amp; Editing</h2>
     <h3>Step Recording:</h3>
     <ol>
       <li>Press <strong>REC</strong> (LED illuminates).</li>
@@ -119,7 +497,7 @@
       <li>Adjust modulation curve value with <strong>KNOB 3</strong>.</li>
     </ul>
 
-    <h3>Pattern Tools & Multi-Level Undo / Redo:</h3>
+    <h3>Pattern Tools &amp; Multi-Level Undo / Redo:</h3>
     <p>
       To protect your sequences, destructive actions like <strong>Randomize</strong> and <strong>Clear</strong> are safeguarded inside the <strong>Pattern Tools</strong> menu:
     </p>
@@ -133,7 +511,7 @@
   </section>
 
   <section>
-    <h2>5. Built-in Multi-Engine Sound Generator</h2>
+    <h2>6. Built-in Multi-Engine Sound Generator</h2>
     <p>
       Press <strong>LFO</strong> (or Sound) on the hardware to cycle through the internal audio engines:
     </p>
@@ -165,7 +543,7 @@
   </section>
 
   <section>
-    <h2>6. Saving, Import & Export</h2>
+    <h2>7. Saving, Import &amp; Export</h2>
     <p>
       Press <strong>SAVE</strong> on the FM-1 to write all tracks and patterns into the on-board flash storage sector. The firmware automatically reloads your patterns on power-up.
     </p>
@@ -175,7 +553,7 @@
   </section>
 
   <section>
-    <h2 id="usb-rescue">7. Factory Reset & USB Rescue</h2>
+    <h2 id="usb-rescue">8. Factory Reset &amp; USB Rescue</h2>
     <div class="callout">
       <strong>USB Rescue Mode:</strong> Hold the <strong>OCT-</strong> button while turning on the FM-1 power switch. The FM-1 will boot into USB updater rescue mode, allowing you to reinstall firmware or revert to factory state over USB.
     </div>

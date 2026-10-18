@@ -1664,6 +1664,437 @@
     });
   }
 
+  // =========================================================================
+  // INTERACTIVE WALKTHROUGH ENGINE (Roland J-6 & MPC Style Creation Tutorial)
+  // =========================================================================
+  const pinLayer = document.createElement("div");
+  pinLayer.className = "pin-layer";
+  pinLayer.id = "pinLayer";
+  if (deviceEl) deviceEl.appendChild(pinLayer);
+
+  const WALKTHROUGH_STEPS = [
+    {
+      id: 1,
+      badge: "Step 1 of 9",
+      title: "Set Project Tempo & Starting Fresh",
+      desc: "Turn the <strong>TEMPO</strong> knob clockwise to set the master clock to <strong>135.0 BPM</strong>. Watch the LCD screen update in real time with 0.1 BPM precision.",
+      soundTip: "🎧 What You Hear: The internal sequencer master clock locks to a driving acid techno pulse.",
+      spotlight: {
+        turn: ["TEMPO"],
+        pins: [{ label: "1", x: "10.5%", y: "32%", type: "press" }]
+      },
+      applyLive: () => {
+        state.bpm = 135;
+        knobs.TEMPO.angle = ((state.bpm - 50) / 190) * 270 - 135;
+        drawKnob(knobs.TEMPO);
+        showHint("⏱️ Master clock set to 135.0 BPM.");
+        updateButtonVisuals();
+      }
+    },
+    {
+      id: 2,
+      badge: "Step 2 of 9",
+      title: "Engage the 303 Acid Bass Sound Engine",
+      desc: "Press the <strong>LFO</strong> button to cycle the sound generator to the <strong>303 Acid Bass</strong> engine. MORPHEUS models a transistor diode ladder with non-linear saturation.",
+      soundTip: "🎧 What You Hear: Raw, buzzy analog saw waveform with resonant diode-ladder saturation.",
+      spotlight: {
+        press: ["LFO"],
+        pins: [{ label: "1", x: "79.8%", y: "30.9%", type: "press" }]
+      },
+      applyLive: () => {
+        state.soundEngine = 0; // 303
+        showHint("🎛️ Sound Engine set to 303 Acid Bass.");
+        updateButtonVisuals();
+      }
+    },
+    {
+      id: 3,
+      badge: "Step 3 of 9",
+      title: "Record Bassline with Silicone Keys",
+      desc: "Tap <strong>REC</strong> to turn on recording mode, then punch in notes on the <strong>silicone keys</strong> (C2, C2, Eb2, F2, G2, Bb2). Turn <strong>SELECT</strong> forward to insert rests!",
+      soundTip: "🎧 What You Hear: Each silicone key press auditions the note live through the 303 engine and plots directly into the 16-step grid.",
+      spotlight: {
+        press: ["REC"],
+        keys: [0, 3, 5, 7, 10],
+        turn: ["SELECT"],
+        pins: [
+          { label: "1", x: "92.4%", y: "40.6%", type: "press" },
+          { label: "2", x: "50%", y: "78%", type: "press" },
+          { label: "3", x: "21.5%", y: "15.6%", type: "turn" }
+        ]
+      },
+      applyLive: () => {
+        pushUndo("Walkthrough Bassline");
+        const trk = state.tracks[state.activeTrack];
+        const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+        pat.length = 16;
+        const notes = [36, 36, 0, 39, 41, 0, 43, 46, 36, 0, 39, 0, 41, 43, 46, 0];
+        for (let i = 0; i < 16; i++) {
+          pat.steps[i].note = notes[i] ? notes[i] : 36;
+          pat.steps[i].gate = notes[i] ? 110 : 0;
+          pat.steps[i].tie = 0;
+        }
+        state.recMode = false;
+        showHint("🎹 16-step minor pentatonic acid bassline recorded!");
+        updateButtonVisuals();
+      }
+    },
+    {
+      id: 4,
+      badge: "Step 4 of 9",
+      title: "Sculpt Acid Slides (Ties) & Punchy Accents",
+      desc: "Turn <strong>SELECT</strong> to step 4 and turn <strong>KNOB 2 (Resonance / Tie)</strong> to tie it for a smooth acid slide! Next, hold <strong>EDIT</strong> and turn <strong>KNOB 1</strong> to set velocity to 120 on steps 1 & 11 for screaming accents!",
+      soundTip: "🎧 What You Hear: Tied steps glide pitch smoothly at 60ms without re-triggering the envelope. Accents snap the diode filter wide open with bite!",
+      spotlight: {
+        turn: ["KNOB2", "KNOB1", "SELECT"],
+        hold: ["EDIT"],
+        pins: [
+          { label: "1", x: "71.4%", y: "15.6%", type: "turn" },
+          { label: "2", x: "86.1%", y: "30.9%", type: "hold" }
+        ]
+      },
+      applyLive: () => {
+        pushUndo("Walkthrough Slides & Accents");
+        const trk = state.tracks[state.activeTrack];
+        const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+        pat.steps[3].tie = 1;  // Step 4 slides into step 5
+        pat.steps[7].tie = 1;  // Step 8 slides into step 9
+        pat.steps[0].gate = 125; // Accent on step 1
+        pat.steps[10].gate = 120; // Accent on step 11
+        showHint("🌊 Portamento slides added on steps 4 & 8; Accents set on steps 1 & 11!");
+        updateButtonVisuals();
+      }
+    },
+    {
+      id: 5,
+      badge: "Step 5 of 9",
+      title: "Perform with the Diode-Ladder Filter (K1–K4)",
+      desc: "Tap <strong>PLAY</strong> to start playback. Now twist <strong>KNOB 1 (Cutoff)</strong> down to 60 and crank <strong>KNOB 2 (Resonance)</strong> up to 95 for maximum squelch!",
+      soundTip: "🎧 What You Hear: Authentic self-oscillating acid resonance biting through the saturated transistor filter.",
+      spotlight: {
+        press: ["PLAY"],
+        turn: ["KNOB1", "KNOB2"],
+        pins: [
+          { label: "1", x: "86.1%", y: "40.6%", type: "press" },
+          { label: "2", x: "61.0%", y: "15.6%", type: "turn" },
+          { label: "3", x: "71.4%", y: "15.6%", type: "turn" }
+        ]
+      },
+      applyLive: () => {
+        if (!state.isRunning) startSequencer();
+        synthCutoff = 60;
+        synthResonance = 122; // 96%
+        synthDecay = 75;
+        knobs.KNOB1.angle = (synthCutoff / 127) * 270 - 135;
+        drawKnob(knobs.KNOB1);
+        knobs.KNOB2.angle = (synthResonance / 127) * 270 - 135;
+        drawKnob(knobs.KNOB2);
+        knobs.KNOB3.angle = (synthDecay / 127) * 270 - 135;
+        drawKnob(knobs.KNOB3);
+        showHint("⚡ Sequencer started! Filter Cutoff: 60/127, Resonance: 122/127 (Iconic 303 squelch)");
+        updateButtonVisuals();
+      }
+    },
+    {
+      id: 6,
+      badge: "Step 6 of 9",
+      title: "Automate Filter Sweeps on the Modulation Curve Track",
+      desc: "Press <strong>ENV</strong> to switch into <strong>CURVE view</strong>. Turn <strong>KNOB 3 (Curve Value)</strong> while scrubbing steps to draw an ascending 16-step filter envelope assigned to MIDI CC 74!",
+      soundTip: "🎧 What You Hear: Dynamic rhythmic filter opening automated across the bar, simultaneously sent over MIDI CC.",
+      spotlight: {
+        press: ["ENV"],
+        turn: ["KNOB3", "SELECT"],
+        pins: [
+          { label: "1", x: "73.5%", y: "30.9%", type: "press" },
+          { label: "2", x: "81.8%", y: "15.6%", type: "turn" }
+        ]
+      },
+      applyLive: () => {
+        state.viewMode = "curve";
+        const trk = state.tracks[state.activeTrack];
+        const pat = trk.patterns[trk.curBank * 8 + trk.curPat];
+        for (let i = 0; i < 16; i++) {
+          pat.steps[i].curve = Math.min(127, Math.floor(25 + (i * 6.8)));
+        }
+        showHint("📈 Ascending 16-step modulation curve drawn and routed to CC 74 (Cutoff).");
+        updateButtonVisuals();
+      }
+    },
+    {
+      id: 7,
+      badge: "Step 7 of 9",
+      title: "Layer 909 Drums & Polymetric Cross-Rhythms",
+      desc: "Turn <strong>TRACK</strong> to switch to Track 4 (MIDI Channel 10 for drums). Next, switch to Track 2 (Lead Synth) and tap <strong>GLO</strong> to set its length to 7 steps for a hypnotic 7/8 polyrhythm over 4/4!",
+      soundTip: "🎧 What You Hear: Solid kick/snare driving underneath while the 7-step lead phase-shifts across the 16-step bassline.",
+      spotlight: {
+        turn: ["TRACK"],
+        press: ["GLO"],
+        pins: [
+          { label: "1", x: "21.5%", y: "32%", type: "turn" },
+          { label: "2", x: "92.4%", y: "30.9%", type: "press" }
+        ]
+      },
+      applyLive: () => {
+        // T4 drums on Ch 10
+        const t4 = state.tracks[3].patterns[0];
+        t4.length = 16;
+        for (let i = 0; i < 16; i++) {
+          if (i % 4 === 0) { t4.steps[i].note = 36; t4.steps[i].gate = 120; }
+          else if (i % 4 === 2) { t4.steps[i].note = 38; t4.steps[i].gate = 110; }
+          else if (i % 2 === 1) { t4.steps[i].note = 42; t4.steps[i].gate = 90; }
+          else { t4.steps[i].gate = 0; }
+        }
+        // T2 polymetric 7-step lead
+        const t2 = state.tracks[1].patterns[0];
+        t2.length = 7;
+        const leadNotes = [60, 63, 65, 0, 67, 70, 0];
+        for (let i = 0; i < 7; i++) {
+          t2.steps[i].note = leadNotes[i] || 60;
+          t2.steps[i].gate = leadNotes[i] ? 100 : 0;
+        }
+        state.activeTrack = 0;
+        state.viewMode = "keys";
+        showHint("🥁 Drum triggers programmed on T4 (Ch 10); 7-step polymetric lead layered on T2!");
+        updateButtonVisuals();
+      }
+    },
+    {
+      id: 8,
+      badge: "Step 8 of 9",
+      title: "Performance Tools & Multi-Level Undo / Redo",
+      desc: "Tap <strong>FX</strong> to open Pattern Tools (Shift, Transpose, Alter, Randomize). Made an accidental edit? Hold <strong>EDIT</strong> and press <strong>HOME</strong> to instantly Undo! Hold <strong>EDIT</strong> and press <strong>SAVE</strong> to Redo!",
+      soundTip: "🎧 What You Hear: The 8-level undo stack snapshots every edit, allowing fearless real-time improvisation.",
+      spotlight: {
+        press: ["FX"],
+        hold: ["EDIT"],
+        pins: [
+          { label: "1", x: "86.1%", y: "30.9%", type: "hold" },
+          { label: "2", x: "60.9%", y: "40.6%", type: "press" },
+          { label: "3", x: "60.9%", y: "30.9%", type: "press" }
+        ]
+      },
+      applyLive: () => {
+        pushUndo("Pattern Tools Demo");
+        state.menuMode = "fx";
+        state.menuSel = 0;
+        showHint("🛡️ Pattern Tools menu open! Undo/Redo protects your sequences from accidental edits.");
+        updateButtonVisuals();
+      }
+    },
+    {
+      id: 9,
+      badge: "Step 9 of 9",
+      title: "Save to Hardware Flash & Export JSON Library",
+      desc: "Press <strong>SAVE</strong> to write all 128 patterns to hardware flash memory (sector 0xFC000). In the browser, click <strong>Export JSON</strong> to download your full project library as a shareable file!",
+      soundTip: "🎧 What You Hear: Confirmation flash write beep; patterns will now persist through power cycles.",
+      spotlight: {
+        press: ["SAVE"],
+        pins: [{ label: "1", x: "67.2%", y: "40.6%", type: "press" }]
+      },
+      applyLive: () => {
+        try {
+          localStorage.setItem('morpheus_patterns', JSON.stringify(state.tracks));
+        } catch (_) {}
+        state.menuMode = "none";
+        showHint("💾 Project saved to on-board flash storage (sector 0xFC000)!");
+        updateButtonVisuals();
+      }
+    }
+  ];
+
+  let currentStepIdx = 0;
+  let isWalkthroughActive = false;
+
+  function clearSpotlights() {
+    if (deviceEl) deviceEl.classList.remove("tutorial-mode");
+    if (svg) svg.classList.remove("tutorial-dimmed");
+    svg.querySelectorAll(".spotlight-press, .spotlight-hold, .spotlight-turn, .spotlight-key").forEach(el => {
+      el.classList.remove("spotlight-press", "spotlight-hold", "spotlight-turn", "spotlight-key");
+    });
+    if (pinLayer) pinLayer.innerHTML = "";
+  }
+
+  function applyStepSpotlight(step) {
+    clearSpotlights();
+    if (!step || !step.spotlight) return;
+
+    if (deviceEl) deviceEl.classList.add("tutorial-mode");
+    if (svg) svg.classList.add("tutorial-dimmed");
+
+    const sp = step.spotlight;
+
+    if (sp.press) {
+      sp.press.forEach(name => {
+        const btn = buttons[name];
+        if (btn && btn.g) btn.g.classList.add("spotlight-press");
+        const knb = knobs[name];
+        if (knb && knb.g) knb.g.classList.add("spotlight-press");
+      });
+    }
+
+    if (sp.hold) {
+      sp.hold.forEach(name => {
+        const btn = buttons[name];
+        if (btn && btn.g) btn.g.classList.add("spotlight-hold");
+      });
+    }
+
+    if (sp.turn) {
+      sp.turn.forEach(name => {
+        const knb = knobs[name];
+        if (knb && knb.g) knb.g.classList.add("spotlight-press");
+      });
+    }
+
+    if (sp.keys) {
+      sp.keys.forEach(kIdx => {
+        const k = keys[kIdx];
+        if (k && k.g) k.g.classList.add("spotlight-key");
+      });
+    }
+
+    if (sp.pins && pinLayer) {
+      sp.pins.forEach(pin => {
+        const pEl = document.createElement("div");
+        pEl.className = "tutorial-pin" + (pin.type === "hold" ? " pin-hold" : "");
+        pEl.textContent = pin.label || "1";
+        pEl.style.left = pin.x;
+        pEl.style.top = pin.y;
+        pinLayer.appendChild(pEl);
+      });
+    }
+  }
+
+  function renderWalkthroughHud() {
+    const hud = document.getElementById("walkthroughHud");
+    if (!hud) return;
+
+    if (!isWalkthroughActive) {
+      hud.style.display = "none";
+      clearSpotlights();
+      return;
+    }
+
+    hud.style.display = "flex";
+    const step = WALKTHROUGH_STEPS[currentStepIdx];
+    applyStepSpotlight(step);
+
+    let dotsHtml = WALKTHROUGH_STEPS.map((s, idx) => {
+      let cls = "walkthrough-dot";
+      if (idx === currentStepIdx) cls += " active";
+      else if (idx < currentStepIdx) cls += " completed";
+      return `<span class="${cls}" data-idx="${idx}" title="Step ${idx+1}: ${s.title}"></span>`;
+    }).join("");
+
+    hud.innerHTML = `
+      <div class="walkthrough-header">
+        <div class="walkthrough-badge">🎓 Walkthrough &bull; ${step.badge}</div>
+        <div class="walkthrough-progress-track">${dotsHtml}</div>
+        <button class="walkthrough-btn-close" id="btnWalkthroughClose" type="button">Exit Walkthrough</button>
+      </div>
+      <h3 class="walkthrough-title">${step.title}</h3>
+      <div class="walkthrough-body">${step.desc}</div>
+      <div class="walkthrough-sound-tip">${step.soundTip}</div>
+      <div class="walkthrough-actions">
+        <div class="walkthrough-nav">
+          <button class="walkthrough-btn" id="btnWalkthroughPrev" type="button" ${currentStepIdx === 0 ? "disabled" : ""}>&larr; Previous</button>
+          <button class="walkthrough-btn" id="btnWalkthroughNext" type="button" ${currentStepIdx === WALKTHROUGH_STEPS.length - 1 ? "disabled" : ""}>Next Step &rarr;</button>
+        </div>
+        <button class="walkthrough-btn walkthrough-btn-primary" id="btnWalkthroughTry" type="button">▶ Perform Step Live</button>
+      </div>
+    `;
+
+    const btnClose = document.getElementById("btnWalkthroughClose");
+    if (btnClose) btnClose.addEventListener("click", stopWalkthrough);
+
+    const btnPrev = document.getElementById("btnWalkthroughPrev");
+    if (btnPrev) btnPrev.addEventListener("click", prevStep);
+
+    const btnNext = document.getElementById("btnWalkthroughNext");
+    if (btnNext) btnNext.addEventListener("click", nextStep);
+
+    const btnTry = document.getElementById("btnWalkthroughTry");
+    if (btnTry) btnTry.addEventListener("click", () => {
+      step.applyLive();
+    });
+
+    hud.querySelectorAll(".walkthrough-dot").forEach(dot => {
+      dot.addEventListener("click", (e) => {
+        goToStep(parseInt(e.target.dataset.idx, 10));
+      });
+    });
+  }
+
+  function startWalkthrough(initialStep = 0) {
+    isWalkthroughActive = true;
+    currentStepIdx = initialStep;
+    renderWalkthroughHud();
+    const btn = document.getElementById("btnStartWalkthrough");
+    if (btn) btn.classList.add("active-toggle");
+    showHint(`🎓 Interactive Walkthrough active: Step ${currentStepIdx+1} of ${WALKTHROUGH_STEPS.length}. Click the highlighted controls or tap 'Perform Step Live'!`);
+  }
+
+  function stopWalkthrough() {
+    isWalkthroughActive = false;
+    clearSpotlights();
+    const hud = document.getElementById("walkthroughHud");
+    if (hud) hud.style.display = "none";
+    const btn = document.getElementById("btnStartWalkthrough");
+    if (btn) btn.classList.remove("active-toggle");
+    showHint("Exited walkthrough mode. Free play active.");
+  }
+
+  function nextStep() {
+    if (currentStepIdx < WALKTHROUGH_STEPS.length - 1) {
+      currentStepIdx++;
+      renderWalkthroughHud();
+    }
+  }
+
+  function prevStep() {
+    if (currentStepIdx > 0) {
+      currentStepIdx--;
+      renderWalkthroughHud();
+    }
+  }
+
+  function goToStep(idx) {
+    if (idx >= 0 && idx < WALKTHROUGH_STEPS.length) {
+      currentStepIdx = idx;
+      renderWalkthroughHud();
+    }
+  }
+
+  const btnStartWalkthrough = document.getElementById("btnStartWalkthrough");
+  if (btnStartWalkthrough) {
+    btnStartWalkthrough.addEventListener("click", () => {
+      if (isWalkthroughActive) {
+        stopWalkthrough();
+      } else {
+        startWalkthrough(0);
+      }
+    });
+  }
+
+  // Check URL hash for direct deep-link into tutorial steps (e.g. #walkthrough or #step3)
+  if (window.location.hash.includes("walkthrough") || window.location.hash.includes("step")) {
+    const match = window.location.hash.match(/step(\d+)/);
+    const startIdx = match ? Math.max(0, parseInt(match[1], 10) - 1) : 0;
+    setTimeout(() => {
+      startWalkthrough(startIdx);
+    }, 400);
+  }
+
+  window.MorpheusWalkthrough = {
+    start: startWalkthrough,
+    stop: stopWalkthrough,
+    next: nextStep,
+    prev: prevStep,
+    goToStep: goToStep,
+    getSteps: () => WALKTHROUGH_STEPS,
+    isActive: () => isWalkthroughActive
+  };
+
   // Kick off screen rendering loop
   loop();
   updateButtonVisuals();

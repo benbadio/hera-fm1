@@ -40,6 +40,9 @@
     </div>
   </div>
 
+  <!-- Interactive Guided Walkthrough HUD (Step-by-step tutorial with live control highlights) -->
+  <div class="walkthrough-hud" id="walkthroughHud" style="display:none;" role="region" aria-label="Interactive Walkthrough Guide"></div>
+
   <!-- Live Dynamic Hint Banner (updates on hover/touch) -->
   <div class="hint-banner" id="hintBanner">
     <span class="hint-icon">💡</span>
@@ -81,7 +84,8 @@
       <button id="btnClear" type="button" title="Clear notes in active pattern">Clear Pattern</button>
     </div>
     <div class="toolbar-group">
-      <span class="toolbar-label">LCD Interaction:</span>
+      <span class="toolbar-label">Tutorial & Screen:</span>
+      <button id="btnStartWalkthrough" type="button" class="btn-walkthrough-toggle" title="Launch guided interactive tutorial on the live synthesizer">🎓 Interactive Walkthrough</button>
       <button id="btnToggleScreenEdit" type="button" aria-pressed="false" title="Toggle interactive mouse editing directly on the 240x240 LCD screen (Disabled by default for hardware fidelity)">
         🖱️ Screen Edit: <span id="screenEditState">OFF (Hardware Faithful)</span>
       </button>
