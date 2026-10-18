@@ -1,115 +1,162 @@
-# MORPHEUS // M-VAVE FM-1 Pattern Sequencer & Synthesizer
+# MORPHEUS // 8-Track ReBirth Groovebox & Matrix Sequencer
 
 <p align="center">
-  <strong>4-Track Pattern Sequencer & Synthesizer, inspired by classic matrix pattern sequencers, featuring a built-in 303 Acid Synth Engine, Multi-Engine Sound Generator, and 240x240 Color LCD UI.</strong>
+  <img src="assets/screen_preview.png" width="380" alt="MORPHEUS Screen Preview">
 </p>
 
 <p align="center">
-  <img src="assets/screen_preview.png" width="360" alt="MORPHEUS Screen Preview">
+  <strong>8-Track ReBirth Groovebox (808, 909, Dual 303s, Amen Breaks, FM Lead, Sub Synth & MIDI) with a Reason Matrix-style Pattern Sequencer and Dual-Phosphor CRT UI for the M-VAVE FM-1.</strong>
 </p>
 
-MORPHEUS transforms the ultra-portable **M-VAVE FM-1** into a standalone hardware pattern sequencer workstation and synthesizer rack inspired by classic matrix pattern sequencers.
-
-- 📖 **[User Manual](web/manual.html)** &bull; 💾 **[Installation Guide](web/install.html)** &bull; 🎛️ **[Live Web Demo](https://benbadio.github.io/morpheus-fm1/)**
+<p align="center">
+  <a href="https://github.com/benbadio/morpheus-fm1/actions/workflows/build.yml"><img src="https://github.com/benbadio/morpheus-fm1/actions/workflows/build.yml/badge.svg" alt="Build Status"></a>
+  <a href="https://benbadio.github.io/morpheus-fm1/"><img src="https://img.shields.io/badge/Web%20Emulator-Live%20Demo-00ff66?logo=web&logoColor=black" alt="Live Demo"></a>
+  <a href="https://benbadio.github.io/morpheus-fm1/install.html"><img src="https://img.shields.io/badge/Web%20Flasher-1--Click%20Install-ffb700?logo=usb&logoColor=black" alt="Web Flasher"></a>
+  <a href="https://benbadio.github.io/morpheus-fm1/manual.html"><img src="https://img.shields.io/badge/Docs-User%20Manual-00d9ff" alt="User Manual"></a>
+  <img src="https://img.shields.io/badge/Platform-FM--1__8000013-00ff66" alt="Platform FM-1 Open">
+  <img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg" alt="GPL-3.0 License">
+</p>
 
 ---
 
-## Key Features
+## Overview
 
-- **4 Simultaneous Independent Tracks (T1 – T4):**
-  - Drive up to 4 external hardware synths, drum machines, or DAW tracks simultaneously over USB-MIDI and 3.5mm TRS-MIDI on distinct channels.
-  - Per-track polyrhythmic sequence lengths (1 to 32 steps).
-  - Independent step resolution (1/2, 1/4, 1/8, 1/16, 1/32, plus triplet modes 1/4T, 1/8T, 1/16T).
-  - Global and per-track shuffle/swing (0% to 75%).
-- **High-Contrast Matrix UI Emulation:**
-  - Designed for the FM-1's 240x240 color LCD.
-  - 120px 16-step grid with interactive piano roll view.
-  - Dual modes: **KEYS** (Note Pitch + Velocity Bars + Tied Step Bridges) and **CURVE** (Bipolar/Unipolar CV Modulation Curves for filter cutoffs, automation, and MIDI CC).
-  - Bank (A–D) & Pattern (1–8) selector with 32 patterns per track (128 total patterns).
-  - Quick pattern operations: Shift Left/Right, Transpose Octave Up/Down, Randomize, Alter, Copy/Paste.
-- **Built-in Multi-Engine Sound Generator (Real-time Q15 DSP):**
-  - **303 Acid Bass Engine:** Non-linear resonant diode-ladder filter with saturation, accent overdrive, and portamento pitch slide across tied steps.
-  - **Subtractive Lead/Chord Engine:** Dual-oscillator analog emulation with pulse-width modulation and 24dB ladder filter.
-  - **2-OP FM Engine:** Dynamic frequency modulation for bells, metallic plucks, and FM percussion.
-  - **MUTE Engine:** Zero-latency silent mode for pure MIDI sequencing to external hardware without internal audio overhead.
-- **Factory Demo Grooves:**
-  - Bank A pre-loaded with a cohesive 4-track acid techno / electronic groove:
-    - **Track 1:** 303 Acid Bassline (MIDI Ch 1)
-    - **Track 2:** Syncopated Synthesizer Lead (MIDI Ch 2)
-    - **Track 3:** Arpeggiator (MIDI Ch 3)
-    - **Track 4:** Drum Trigger Pattern (MIDI Ch 10 - Kick, Snare, Hi-Hat)
-- **In-Browser Web Emulator:**
-  - Interactive Web Audio demo in `web/` with SVG front panel, canvas LCD screen, draggable knobs, and 27 playable silicone keys.
-  - Automatic deployment to GitHub Pages.
+**MORPHEUS** transforms the ultra-portable **M-VAVE FM-1** into a standalone, battery-powered **8-track acid techno & electronic groovebox workstation**, blending the legendary multi-machine workflow of Propellerhead ReBirth RB-338 with the iconic visual sequencing paradigm of the Reason Matrix pattern sequencer.
+
+- 🎛️ **[Live Web Audio Emulator](https://benbadio.github.io/morpheus-fm1/)** &mdash; Full in-browser simulation with SVG hardware chassis, playable silicone keyboard, draggable potentiometers, and audio engine.
+- ⚡ **[1-Click Web MIDI Flasher](https://benbadio.github.io/morpheus-fm1/install.html)** &mdash; Flash the bare-metal firmware directly to your FM-1 over USB from Google Chrome or Microsoft Edge with zero command-line tools required.
+- 📖 **[Interactive User Manual & Tutorial](https://benbadio.github.io/morpheus-fm1/manual.html)** &mdash; Complete hardware manual featuring MPC/Roland-style illustrated action tables and step-by-step walkthroughs.
+
+---
+
+## 8-Track Multi-Engine ReBirth Architecture
+
+Each of the 8 tracks functions as an independent machine with its own pattern storage, polyrhythmic sequence length, step resolution, and dedicated MIDI output channel:
+
+| Track | Engine / Role | Synthesis Model & Routing | MIDI Out Channel |
+| :--- | :--- | :--- | :--- |
+| **Track 1** | **TB-303 A** | Transistor diode-ladder acid bass with non-linear resonance, Devilfish envelope mod, and RAT overdrive | Channel 1 |
+| **Track 2** | **TB-303 B** | Second independent 303 voice for counterpoint basslines, acid arps, and squelchy leads | Channel 2 |
+| **Track 3** | **TR-808 Kit** | Analog circuit drum model: Kick, Snare, Low/Mid/Hi Toms, Congas, Rim Shot, Claves, Clap, Cowbell, Maracas, Hats, Cymbal | Channel 10 |
+| **Track 4** | **TR-909 Kit** | Hybrid punchy drum model: Tuned Kick, Snappy Snare, Toms, Rim, Clap, and 6-bit sampled metallic Hi-Hats/Cymbals | Channel 10 |
+| **Track 5** | **Amen Breaks** | 8-slice breakbeat loop player with real-time tempo pitch resampling and generative slice shuffling | Channel 5 |
+| **Track 6** | **FM Lead** | Dynamic 2-operator frequency modulation synth for bright digital plucks, bells, and aggressive leads | Channel 6 |
+| **Track 7** | **Sub Synth** | Analog-style sub-bass synthesizer with saturation and low-end reinforcement | Channel 7 |
+| **Track 8** | **MIDI Master** | Pure external MIDI sequencer track with zero internal audio overhead for controlling external hardware | Channel 8 |
+
+---
+
+## 12-Lane Drum Matrix Mode
+
+When selecting drum tracks (T3 TR-808 or T4 TR-909), MORPHEUS automatically transforms the 16-step matrix sequencer into a **12-Lane Drum Matrix**:
+
+```text
+ ┌───┬────────────────────────────────┐
+ │ACC│  ·   ·   ·   ·   ·   ·   ·   · │ Total Accent
+ │CH │ [█] [█] [█] [█] [█] [█] [█] [█]│ Closed Hi-Hat
+ │OH │  ·   ·  [█]  ·   ·   ·  [█]  · │ Open Hi-Hat
+ │CY │  ·   ·   ·   ·   ·   ·   ·  [█]│ Crash / Ride Cymbal
+ │CB │  ·   ·   ·   ·  [█]  ·   ·   · │ Cowbell
+ │CP │  ·   ·  [█]  ·   ·   ·  [█]  · │ Hand Clap / Maracas
+ │RS │  ·   ·   ·   ·   ·   ·   ·   · │ Rim Shot / Claves
+ │HT │  ·   ·   ·   ·   ·  [█]  ·   · │ High Tom / Conga
+ │MT │  ·   ·   ·  [█]  ·   ·   ·   · │ Mid Tom / Conga
+ │LT │  ·  [█]  ·   ·   ·   ·   ·   · │ Low Tom / Conga
+ │SD │  ·   ·  [█]  ·   ·   ·  [█]  · │ Snare Drum
+ │BD │ [█]  ·   ·   ·  [█]  ·   ·   · │ Bass Drum
+ └───┴────────────────────────────────┘
+        1   2   3   4   5   6   7   8   (Page 1 / Page 2: 1-16 / 17-32)
+```
+
+- **K1 (Select Lane):** Scroll through the 12 drum instruments.
+- **K2 (Toggle Trigger):** Turn active drum voice on/off on the selected step.
+- **K4 (Toggle Accent):** Enable total accent boost on that step.
+
+---
+
+## Dual-Phosphor Matrix CRT Theme & Dynamic Status Bar
+
+- **High-Contrast Dual-Phosphor Visuals:** Designed for maximum legibility on the FM-1's 240x240 LCD. High-contrast amber LEDs represent active playheads, accented gates, and ties, set against a phosphor matrix green CRT grid.
+- **Transient Real-Time Status Bar:** Any knob turn or held button temporarily displays immediate, detailed feedback (e.g. `K1 Cutoff: 84`, `Swing: 54%`, `Queued Bank B`) and smoothly restores the default track status after 1.5 seconds of idle.
+
+---
+
+## Sequencer & Performance Features
+
+- **Polyrhythmic Step Lengths:** Each track can have its own independent sequence length (1 to 32 steps) for intricate polyrhythms and evolving phase loops.
+- **Variable Clock Resolutions:** 1/2, 1/4, 1/8, 1/16, 1/32, plus triplet modes (1/4T, 1/8T, 1/16T).
+- **Global & Track Swing:** Authentic MPC-style shuffle from 0% (straight) up to 75% (heavy triplet swing).
+- **Dual Matrix Modes:**
+  - **KEYS View:** Pitch piano roll, velocity gate bars, and tied legato slide bridges.
+  - **CURVE View:** Bipolar (-64..+63) or Unipolar (0..127) per-step CV automation curves for filter cutoff sweeps or MIDI CC parameters.
+- **Pattern Memory:** 2 Banks (Bank A & B) &times; 8 Patterns = 16 patterns per track (128 total patterns). Seamless bar-synchronized pattern queuing.
+- **Master FX Bus:** Stereo send reverb (4 comb filters + 2 allpasses), tempo-synced stereo delay, and master glue compressor with kick-ducking sidechain PUMP.
+- **Pattern Tools & Multi-Level Undo/Redo:**
+  - Shift Left/Right (`FX + SELECT`)
+  - Octave / Semitone Transpose (`EDIT + SELECT`)
+  - Musical Alteration & Randomize (`Shift + FX`)
+  - Multi-level Undo (`EDIT + HOME`) and Redo (`EDIT + SAVE`)
+  - Flash persistence with 1-click JSON backup/restore in the emulator.
+
+---
+
+## Hardware Panel Mapping (M-VAVE FM-1)
+
+| Hardware Control | Primary Function | With SHIFT (EDIT held) |
+| :--- | :--- | :--- |
+| **27 Silicone Keys** | Audition notes / Step record in REC mode | Select Step Jump (1&ndash;16 / 17&ndash;32) |
+| **K1 (Cutoff)** | Synth Cutoff / Step Note Pitch / Select Drum Lane | Step Gate Velocity (0&ndash;127) |
+| **K2 (Resonance)** | Synth Resonance / Gate Length / Toggle Drum Step | Tied Note Slide (On / Off) |
+| **K3 (Decay)** | Envelope Decay / Curve Modulation Value | MIDI CC Modulation Depth |
+| **K4 (Accent)** | 303 Accent / Pattern Length / Drum Accent | Step Resolution (1/16, 1/8T, 1/32...) |
+| **TEMPO Knob** | Sequencer Tempo (50 &ndash; 240 BPM) | Shuffle / Swing (0 &ndash; 75%) |
+| **SELECT Knob** | Scrub Active Step (1 &ndash; 32) | Pattern Transpose (&plusmn;12 Semitones) |
+| **PLAY** | Start / Stop Sequencer Transport | Restart from Step 1 |
+| **REC** | Step Record Mode (Audition + Step Auto-Advance) | Clear Active Step |
+| **FX** | Open/Close Pattern Tools Menu | **Shift+FX:** Deliberate Musical Randomize |
+| **HOME** | Cycle Active Track (T1 &rarr; T8) / Execute Menu Option | **Shift+HOME:** Multi-Level Undo |
+| **SAVE** | Save all patterns & tracks to Flash Storage | **Shift+SAVE:** Multi-Level Redo |
+| **EDIT** | Toggle KEYS (Notes/Drums) / CURVE (Modulation) View | Hold as SHIFT modifier |
+| **SEL (Page)** | Toggle Page 1 (Steps 1&ndash;16) / Page 2 (Steps 17&ndash;32) | Set Loop End Point |
+| **ENV / LFO** | Cycle Engine: 303A &rarr; 303B &rarr; 808 &rarr; 909 &rarr; BRK &rarr; FM &rarr; SUB &rarr; MIDI | Engine Parameters |
+| **OCT- / OCT+** | Scroll Piano Roll Octave (C1 &hellip; B5) | Track Octave Transpose |
+| **ARP / SEQ** | Cycle Bank A&ndash;B / Pattern 1&ndash;8 | Pattern Copy / Paste |
 
 ---
 
 ## Interactive Guided Walkthrough
 
-MORPHEUS features an interactive hardware walkthrough inspired by classic hardware user guides (such as Roland Aira Compact and Akai MPC series). Rather than deciphering complex menus, you can build a complete multi-track acid groove step-by-step:
+MORPHEUS features a hardware walkthrough inspired by classic instrument user guides (Akai MPC and Roland Aira series). You can build a complete multi-track acid groove step-by-step:
 
-- **Live On-Screen Hardware Spotlights:** Launch the walkthrough directly in the browser emulator (**[Interactive Walkthrough](https://benbadio.github.io/morpheus-fm1/#walkthrough)**). The physical FM-1 buttons, encoders, and silicone keys are dynamically illuminated with action pins (`[1]`, `[2]`, `[HOLD]`), accompanied by real-time audio and LCD responses.
-- **Illustrated Hardware Action Tables:** Read the step-by-step tutorial cards with Roland-style action callouts, parameter guides, and acoustic listening tips in the **[User Manual Section 3](https://benbadio.github.io/morpheus-fm1/manual.html#step1)**.
-
-### Walkthrough Steps:
-1. **Project Canvas & Tempo Setup:** Lock tempo to 135.0 BPM and initialize 16-step grid.
-2. **Engaging the 303 Engine:** Select the resonant transistor diode ladder bass synth.
-3. **Step Recording with Silicone Keys:** Punch in notes with pitch auditioning and auto-advance.
-4. **Portamento Slides & Accents:** Tie steps for 60ms continuous glides and set velocity > 105 for accent squelch.
-5. **Real-Time Performance:** Sweep Cutoff, Resonance, and Decay live with K1–K4 encoders.
-6. **Modulation Automation:** Draw automated filter cutoff sweeps on the per-step CC 74 Curve track.
-7. **Polymetric Layering:** Add four-on-the-floor 909 drums (T4) and a 7-step polyrhythmic lead (T2).
-8. **Pattern Tools & Undo/Redo:** Safeguard edits with multi-level undo (`EDIT + HOME`) and redo (`EDIT + SAVE`).
-9. **Committing Your Work:** Save directly to hardware flash storage or download a JSON backup.
+- **Live On-Screen Hardware Spotlights:** Launch the walkthrough directly in the browser emulator (**[Interactive Walkthrough](https://benbadio.github.io/morpheus-fm1/#walkthrough)**). The physical FM-1 buttons, encoders, and silicone keys illuminate with action pins (`[1]`, `[2]`, `[HOLD]`) alongside real-time audio and LCD responses.
+- **Illustrated Action Tables:** Follow the illustrated cards with Roland-style action callouts, parameter guides, and listening tips in the **[User Manual Section 3](https://benbadio.github.io/morpheus-fm1/manual.html#step1)**.
 
 ---
 
-## Hardware Controls & Panel Mapping
+## Host Simulator & Unit Tests
 
-| Hardware Control | Primary Function | With SHIFT (EDIT) / Secondary |
-|---|---|---|
-| **27 Silicone Keys** | Audition / Play notes, Step Record in REC mode | Step Jump (1-16 / 17-32) |
-| **K1 (Cutoff)** | Synth Filter Cutoff / Active Step Note Pitch | Step Velocity |
-| **K2 (Resonance)** | Synth Resonance / Active Step Gate Length | Step Tie (On/Off) |
-| **K3 (Decay)** | Filter Envelope Decay / Curve Value | CC Modulation Depth |
-| **K4 (Accent)** | 303 Accent Intensity / Pattern Length (1-32) | Track Resolution |
-| **TEMPO Knob** | Sequencer Tempo (50 - 240 BPM) | Shuffle / Swing (0 - 75%) |
-| **SELECT Knob** | Scrub Active Step (1 - 32) / Menu Navigation | Pattern Transpose (±12) |
-| **PLAY** | Start / Stop Sequencer | Restart from Step 1 |
-| **REC** | Step Record Mode (Audition + Step Advance) | Clear Active Step |
-| **FX** | Open/Close Pattern Tools (Undo, Redo, Shift, Transpose, Alter, Randomize, Clear) | **Shift+FX:** Deliberate Randomize |
-| **HOME** | Cycle Active Track (T1 -> T2 -> T3 -> T4) / Execute Menu Option | **Shift+HOME:** Multi-Level Undo |
-| **SAVE** | Save all tracks & patterns to Flash / Storage | **Shift+SAVE:** Multi-Level Redo |
-| **EDIT** | Toggle KEYS (Notes) / CURVE (Modulation) View | Hold as SHIFT modifier |
-| **SEL (Page)** | Toggle Page 1 (Steps 1-16) / Page 2 (Steps 17-32) | Set Pattern Length |
-| **ENV / LFO** | Cycle Engine: 303 Acid -> SUB -> FM -> MUTE | Engine Parameters |
-| **OCT- / OCT+** | Grid Octave Scroll (C1..B5) | Track Octave Transpose |
-| **ARP / SEQ** | Cycle Bank A–D / Pattern 1–8 | Pattern Copy / Paste |
-
----
-
-## Testing & Host Mode Simulation
-
-You can test MORPHEUS on your computer (macOS or Linux) without an FM-1 hardware device:
+You can test and verify MORPHEUS on your computer (macOS or Linux) without hardware:
 
 ```sh
-# Run host test suite (renders audio WAV and generates LCD screenshots)
+# Run host test suite (renders 44.1 kHz audio WAV and generates LCD screenshots)
 ./tests/run_host.sh
 ```
 
 Outputs generated in `build/host/`:
-- `morpheus.wav`: 44.1 kHz 16-bit stereo audio render of the 4-track sequencer.
+- `morpheus.wav`: 44.1 kHz 16-bit stereo audio render of the 8-track ReBirth groove.
 - `morpheus-500.png`: LCD screenshot at 500 ms (Keys View).
-- `morpheus-3500.png`: LCD screenshot at 3500 ms (Curve View).
-- `morpheus-5000.png`: LCD screenshot at 5000 ms (Subtractive Engine).
+- `morpheus-2000.png`: LCD screenshot at 2000 ms (303 B View).
+- `morpheus-2800.png`: LCD screenshot at 2800 ms (12-Lane Drum Matrix View).
+- `morpheus-3500.png`: LCD screenshot at 3500 ms (Curve Modulation View).
+- `morpheus-5000.png`: LCD screenshot at 5000 ms (Subtractive Engine View).
 
 ---
 
 ## Building the Physical Firmware (`.fwsc`)
 
-To build the hardware binary package for installation on the M-VAVE FM-1:
+To compile the bare-metal package for the M-VAVE FM-1:
 
-### 1. Requirements (Linux x86_64 or GitHub Actions)
+### 1. Requirements (Linux x86_64 or GitHub Actions runner)
 ```sh
 pip3 install Pillow mido python-rtmidi
 tools/get_toolchain.sh
@@ -121,31 +168,30 @@ git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 \
 ```sh
 ./build.sh
 ```
-Outputs `build/morpheus.fwsc` with identity `FM-1_8000013`.
+Outputs `build/morpheus.fwsc` with official FM-1 Open platform identity `FM-1_8000013`.
 
 ### 3. Installation to M-VAVE FM-1
-- **Via USB cable:**
+- **1-Click Web MIDI Flasher (Recommended):** Visit [https://benbadio.github.io/morpheus-fm1/install.html](https://benbadio.github.io/morpheus-fm1/install.html) in Chrome or Edge and click **Install MORPHEUS**.
+- **Command-line USB Cable:**
   ```sh
   python3 tools/fm1_install.py build/morpheus.fwsc
   ```
-- **Via Web MIDI:**
-  Flash `build/morpheus.fwsc` through Web MIDI in Google Chrome or Edge.
 
 ---
 
-## In-Browser Interactive Demo
+## Platform Identity & Compatibility
 
-A standalone web emulator is available in the `web/` directory:
-- Open `web/index.html` in any modern web browser, or run:
-  ```sh
-  python3 -m http.server 8000 --directory web
-  ```
-- Access at `http://localhost:8000`.
+MORPHEUS complies with the **FM-1 Open platform standard**:
+- **Product ID:** `FM-1_8000013`
+- Compatible with official M-VAVE tools, third-party firmware hubs, and open-source Web MIDI flashers.
+- Safely reversible: The installer includes a 1-click restore function to revert to M-VAVE factory stock firmware V15 at any time.
 
 ---
 
-## License
+## License & Attribution
 
-GPL-3.0-only. See [LICENSE](LICENSE) and [LICENSING.md](LICENSING.md).
-Based on the Felucca / SLOOP platform by Leo Kuroshita (@kurogedelic) & isod89.
-Firmware concept inspired by classic hardware matrix pattern sequencers.
+MORPHEUS is free software licensed under the **GNU General Public License v3.0** (`GPL-3.0-only`). See [LICENSE](LICENSE) and [LICENSING.md](LICENSING.md) for full details.
+
+- **MORPHEUS Application & UI:** Ben Badio & Contributors.
+- **ReBirth Multi-Engine DSP Suite:** Based on the X0X DSP suite by Leo Kuroshita (@kurogedelic), Robin Schmidt (Open303), schwung-303, dm-Rat (davemollen), 8W8/sc808, 9W9/ER-99 (Matthew Cieplak), and schwung-breakbeat (mestela).
+- **Platform & Hardware HAL:** Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments ([Felucca](https://github.com/hugelton/Felucca)), with changes from [SLOOP](https://github.com/isod89/sloop-fm1) (isod89).
