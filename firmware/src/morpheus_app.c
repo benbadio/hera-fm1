@@ -5,7 +5,7 @@
 #define APP_NAME "MORPHEUS"
 #endif
 #ifndef FELUCCA_ID
-#define FELUCCA_ID "FM-1_945"
+#define FELUCCA_ID "FM-1_988"
 #endif
 
 #include "platform.c"

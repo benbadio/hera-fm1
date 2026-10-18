@@ -4,23 +4,23 @@
 #include "matrix_core.h"
 #include "matrix_synth.h"
 
-/* Colors (RGB565) */
-#define C_BG           RGB(8, 10, 12)
-#define C_TOPBAR       RGB(20, 24, 28)
-#define C_DIVIDER      RGB(34, 40, 48)
-#define C_GRID_BG      RGB(12, 15, 18)
-#define C_GRID_LINE    RGB(22, 26, 30)
-#define C_BEAT_LINE    RGB(38, 46, 54)
-#define C_RED_LED      RGB(255, 55, 0)
-#define C_ORANGE_LED   RGB(255, 120, 0)
-#define C_BLUE_LED     RGB(0, 140, 255)
-#define C_PLAY_HL      RGB(255, 240, 225)
-#define C_GREEN_LED    RGB(0, 230, 118)
-#define C_PURPLE_LED   RGB(140, 50, 210)
-#define C_TEXT_WHITE   RGB(230, 235, 240)
-#define C_TEXT_DIM     RGB(112, 120, 130)
-#define C_KEY_WHITE    RGB(215, 220, 225)
-#define C_KEY_BLACK    RGB(25, 28, 32)
+/* Colors (RGB565) - Matrix Green with Warm Glow Theme */
+#define C_BG           RGB(5, 12, 7)
+#define C_TOPBAR       RGB(8, 20, 12)
+#define C_DIVIDER      RGB(18, 48, 26)
+#define C_GRID_BG      RGB(7, 16, 9)
+#define C_GRID_LINE    RGB(14, 34, 18)
+#define C_BEAT_LINE    RGB(28, 68, 36)
+#define C_RED_LED      RGB(0, 255, 90)     /* Primary Matrix Phosphor Green */
+#define C_ORANGE_LED   RGB(155, 255, 45)   /* Warm Phosphor Lime-Gold Glow */
+#define C_BLUE_LED     RGB(40, 255, 180)   /* Mint Phosphor Green (Curve mode) */
+#define C_PLAY_HL      RGB(245, 255, 205)  /* Warm Incandescent Phosphor Flash */
+#define C_GREEN_LED    RGB(0, 255, 100)    /* Bright Matrix Green */
+#define C_PURPLE_LED   RGB(10, 220, 110)   /* Emerald Matrix Badge */
+#define C_TEXT_WHITE   RGB(220, 255, 230)  /* Phosphor Bright Text */
+#define C_TEXT_DIM     RGB(60, 125, 80)    /* Dim Matrix Green Text */
+#define C_KEY_WHITE    RGB(190, 230, 200)  /* Phosphor Ivory Key */
+#define C_KEY_BLACK    RGB(10, 22, 14)     /* Dark Charcoal Green Key */
 
 static const char *const SOUND_NAMES[4] = {
     "303", "SUB", "FM", "MUTE"
@@ -166,7 +166,7 @@ void matrix_ui_draw(void)
     for (s_idx = 0; s_idx < 16; s_idx++) {
         uint8_t actual_step = step_offset + s_idx;
         if (actual_step >= pat->length) {
-            cv_rect(grid_x + s_idx * col_w + 1, 1, col_w - 1, 118, RGB(6, 8, 10));
+            cv_rect(grid_x + s_idx * col_w + 1, 1, col_w - 1, 118, RGB(4, 9, 5));
             continue;
         }
 

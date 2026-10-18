@@ -121,7 +121,7 @@ git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 \
 ```sh
 ./build.sh
 ```
-Outputs `build/morpheus.fwsc` with identity `FM-1_945`.
+Outputs `build/morpheus.fwsc` with identity `FM-1_988`.
 
 ### 3. Installation to M-VAVE FM-1
 - **Via USB cable:**

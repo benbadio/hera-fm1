@@ -369,7 +369,7 @@
   const PIANO_IS_BLACK = [0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0];
 
   function renderScreen() {
-    ctx.fillStyle = '#080a0c';
+    ctx.fillStyle = '#050c07';
     ctx.fillRect(0, 0, 240, 240);
 
     const trkIdx = state.activeTrack;
@@ -379,51 +379,51 @@
     const curPlayStep = trk.curStep;
 
     // 1. Top Header Bar (y: 0..25)
-    ctx.fillStyle = '#14181c';
+    ctx.fillStyle = '#08140c';
     ctx.fillRect(0, 0, 240, 25);
-    ctx.fillStyle = '#222830';
+    ctx.fillStyle = '#12301a';
     ctx.fillRect(0, 25, 240, 1);
 
     // Track Badge: [T1]
-    ctx.fillStyle = '#f0a043';
+    ctx.fillStyle = '#00ff66';
     ctx.fillRect(4, 4, 20, 17);
-    ctx.fillStyle = '#0a0c0e';
+    ctx.fillStyle = '#041206';
     ctx.font = 'bold 10px monospace';
     ctx.textAlign = 'center';
     ctx.fillText(`T${trkIdx + 1}`, 14, 16);
 
     for (let t = 0; t < 4; t++) {
-      ctx.fillStyle = (t === trkIdx) ? '#f0a043' : '#444d56';
+      ctx.fillStyle = (t === trkIdx) ? '#00ff66' : '#1b3b24';
       ctx.fillRect(28 + t * 6, 10, 4, 5);
     }
 
     // Pattern Badge: A1
-    ctx.fillStyle = '#222830';
+    ctx.fillStyle = '#12301a';
     ctx.fillRect(54, 4, 18, 17);
-    ctx.fillStyle = '#e0e6ed';
+    ctx.fillStyle = '#dcfae2';
     ctx.font = 'bold 9px monospace';
     ctx.fillText(`${String.fromCharCode(65 + trk.curBank)}${trk.curPat + 1}`, 63, 16);
 
     // Sound Mode badge
-    ctx.fillStyle = '#ff9900';
+    ctx.fillStyle = '#0abd6e';
     ctx.fillRect(76, 4, 34, 17);
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = '#021408';
     ctx.font = 'bold 8px monospace';
     ctx.fillText(SOUND_MODES[state.soundEngine], 93, 16);
 
     // View Mode badge
-    ctx.fillStyle = state.viewMode === 'keys' ? '#00cc88' : '#3399ff';
+    ctx.fillStyle = state.viewMode === 'keys' ? '#00ff66' : '#33ffcc';
     ctx.fillRect(114, 4, 42, 17);
-    ctx.fillStyle = '#0a0c0e';
+    ctx.fillStyle = '#041206';
     ctx.fillText(state.viewMode === 'keys' ? 'KEYS' : 'CURV', 135, 16);
 
     // MIDI CH
-    ctx.fillStyle = '#808b96';
+    ctx.fillStyle = '#558b66';
     ctx.font = '8px monospace';
     ctx.fillText(`CH${pat.midiCh < 10 ? '0' + pat.midiCh : pat.midiCh}`, 174, 16);
 
     // Run / Stop
-    ctx.fillStyle = state.isRunning ? '#00e676' : '#607080';
+    ctx.fillStyle = state.isRunning ? '#00ff66' : '#2d4d35';
     ctx.beginPath();
     ctx.arc(205, 12, 3.5, 0, Math.PI * 2);
     ctx.fill();
@@ -438,29 +438,29 @@
     const colW = 13;
 
     // Piano Keyboard Rail on Left
-    ctx.fillStyle = '#14181c';
+    ctx.fillStyle = '#08140c';
     ctx.fillRect(0, 26, gridX, 122);
-    ctx.fillStyle = '#222830';
+    ctx.fillStyle = '#12301a';
     ctx.fillRect(gridX - 1, 26, 1, 122);
 
     for (let r = 0; r < 12; r++) {
       const ky = 26 + r * rowH;
       if (PIANO_IS_BLACK[r]) {
-        ctx.fillStyle = '#191c20';
+        ctx.fillStyle = '#0a160e';
         ctx.fillRect(0, ky, 13, rowH - 1);
-        ctx.fillStyle = '#14181c';
+        ctx.fillStyle = '#08140c';
         ctx.fillRect(13, ky, gridX - 14, rowH - 1);
       } else {
-        ctx.fillStyle = '#d7dce1';
+        ctx.fillStyle = '#c8eed0';
         ctx.fillRect(0, ky, gridX - 2, rowH - 1);
       }
     }
 
     // Grid Area
-    ctx.fillStyle = '#0c0f12';
+    ctx.fillStyle = '#071009';
     ctx.fillRect(gridX, 26, gridW, 120);
 
-    ctx.strokeStyle = '#181d22';
+    ctx.strokeStyle = '#122618';
     ctx.lineWidth = 1;
     for (let r = 0; r <= 12; r++) {
       ctx.beginPath();
@@ -470,7 +470,7 @@
     }
 
     for (let c = 0; c <= 16; c++) {
-      ctx.strokeStyle = (c % 4 === 0) ? '#28303a' : '#181d22';
+      ctx.strokeStyle = (c % 4 === 0) ? '#1e4028' : '#122618';
       ctx.beginPath();
       ctx.moveTo(gridX + c * colW, 26);
       ctx.lineTo(gridX + c * colW, 146);
@@ -481,7 +481,7 @@
     for (let sIdx = 0; sIdx < 16; sIdx++) {
       const actualStep = stepOffset + sIdx;
       if (actualStep >= pat.length) {
-        ctx.fillStyle = '#06080a';
+        ctx.fillStyle = '#040905';
         ctx.fillRect(gridX + sIdx * colW, 26, colW, 120);
         continue;
       }
@@ -489,12 +489,12 @@
       const st = pat.steps[actualStep];
 
       if (state.isRunning && actualStep === curPlayStep) {
-        ctx.fillStyle = 'rgba(240, 160, 67, 0.15)';
+        ctx.fillStyle = 'rgba(0, 255, 102, 0.16)';
         ctx.fillRect(gridX + sIdx * colW, 26, colW, 120);
       }
 
       if (actualStep === state.activeStep) {
-        ctx.strokeStyle = '#f0a043';
+        ctx.strokeStyle = '#00ff66';
         ctx.lineWidth = 1.5;
         ctx.strokeRect(gridX + sIdx * colW + 1, 27, colW - 2, 118);
       }
@@ -507,29 +507,46 @@
 
           if (noteOct === state.viewOctave && rowIdx >= 0 && rowIdx < 12) {
             const ny = 26 + rowIdx * rowH;
-            ctx.fillStyle = (actualStep === state.activeStep) ? '#fff' : (st.gate > 105 ? '#ff9900' : '#f0a043');
+            if (state.isRunning && actualStep === curPlayStep) {
+              ctx.shadowColor = '#00ff66';
+              ctx.shadowBlur = 8;
+              ctx.fillStyle = '#f4ffe0';
+            } else if (actualStep === state.activeStep) {
+              ctx.shadowColor = '#00ff66';
+              ctx.shadowBlur = 5;
+              ctx.fillStyle = '#ffffff';
+            } else if (st.gate > 105) {
+              ctx.shadowColor = '#a3ff3b';
+              ctx.shadowBlur = 4;
+              ctx.fillStyle = '#a3ff3b';
+            } else {
+              ctx.shadowColor = '#00ff66';
+              ctx.shadowBlur = 2;
+              ctx.fillStyle = '#00ff66';
+            }
             ctx.fillRect(gridX + sIdx * colW + 2, ny + 2, colW - 3, rowH - 3);
+            ctx.shadowBlur = 0;
 
             if (st.tie && sIdx < 15) {
-              ctx.fillStyle = '#ffb366';
+              ctx.fillStyle = '#88ff33';
               ctx.fillRect(gridX + sIdx * colW + colW - 2, ny + 4, 3, 3);
             }
           }
         }
       } else {
         const cvY = 146 - (st.curve / 127) * 116;
-        ctx.fillStyle = '#3399ff';
+        ctx.fillStyle = '#33ffcc';
         ctx.fillRect(gridX + sIdx * colW + 2, cvY - 2, colW - 3, 5);
       }
     }
 
     // 3. Lower Section: Velocity Bars / Tied Bridges (y: 150..218)
-    ctx.fillStyle = '#101418';
+    ctx.fillStyle = '#060e08';
     ctx.fillRect(0, 148, 240, 72);
-    ctx.fillStyle = '#222830';
+    ctx.fillStyle = '#12301a';
     ctx.fillRect(0, 148, 240, 1);
 
-    ctx.fillStyle = '#808b96';
+    ctx.fillStyle = '#558b66';
     ctx.font = '8px monospace';
     ctx.textAlign = 'left';
     ctx.fillText('GATE', 2, 160);
@@ -546,33 +563,50 @@
         const barH = (st.gate / 127) * 58;
         const by = 216 - barH;
 
-        ctx.fillStyle = (actualStep === state.activeStep) ? '#ffffff' : (st.gate > 105 ? '#ff9900' : '#f0a043');
+        if (state.isRunning && actualStep === curPlayStep) {
+          ctx.shadowColor = '#00ff66';
+          ctx.shadowBlur = 6;
+          ctx.fillStyle = '#f4ffe0';
+        } else if (actualStep === state.activeStep) {
+          ctx.shadowColor = '#00ff66';
+          ctx.shadowBlur = 4;
+          ctx.fillStyle = '#ffffff';
+        } else if (st.gate > 105) {
+          ctx.shadowColor = '#a3ff3b';
+          ctx.shadowBlur = 4;
+          ctx.fillStyle = '#a3ff3b';
+        } else {
+          ctx.shadowColor = '#00ff66';
+          ctx.shadowBlur = 2;
+          ctx.fillStyle = '#00ff66';
+        }
         ctx.fillRect(bx + 2, by, colW - 4, barH);
+        ctx.shadowBlur = 0;
 
         if (st.tie && sIdx < 15) {
-          ctx.fillStyle = '#ff6600';
+          ctx.fillStyle = '#88ff33';
           ctx.fillRect(bx + colW - 3, by + 4, 5, 4);
         }
       } else {
-        ctx.fillStyle = '#26303c';
+        ctx.fillStyle = '#12301a';
         ctx.fillRect(bx + 2, 214, colW - 4, 2);
       }
     }
 
     // 4. Bottom Status Bar (y: 220..240)
-    ctx.fillStyle = '#14181c';
+    ctx.fillStyle = '#08140c';
     ctx.fillRect(0, 220, 240, 20);
-    ctx.fillStyle = '#222830';
+    ctx.fillStyle = '#12301a';
     ctx.fillRect(0, 220, 240, 1);
 
-    ctx.fillStyle = '#f0a043';
+    ctx.fillStyle = '#a3ff3b';
     ctx.font = 'bold 9px monospace';
     ctx.fillText(`P${state.viewPage + 1} OCT:${state.viewOctave}`, 6, 233);
 
-    ctx.fillStyle = '#e0e6ed';
+    ctx.fillStyle = '#dcfae2';
     ctx.fillText(`${formatBpm(state.bpm)}BPM`, 82, 233);
 
-    ctx.fillStyle = '#808b96';
+    ctx.fillStyle = '#558b66';
     ctx.fillText(state.screenEditEnabled ? 'TOUCH:EDIT' : 'K1-4:EDIT', 148, 233);
 
     // 5. Modal Pattern Tools Overlay (when FX menu is open)
@@ -582,16 +616,16 @@
       const mx = (240 - menuW) / 2;
       const my = 38;
 
-      ctx.fillStyle = 'rgba(10, 12, 16, 0.92)';
+      ctx.fillStyle = 'rgba(4, 10, 6, 0.94)';
       ctx.fillRect(0, 26, 240, 194);
 
-      ctx.fillStyle = '#181d22';
+      ctx.fillStyle = '#09160d';
       ctx.fillRect(mx, my, menuW, menuH);
-      ctx.strokeStyle = '#f0a043';
+      ctx.strokeStyle = '#00ff66';
       ctx.lineWidth = 1;
       ctx.strokeRect(mx + 0.5, my + 0.5, menuW - 1, menuH - 1);
 
-      ctx.fillStyle = '#f0a043';
+      ctx.fillStyle = '#a3ff3b';
       ctx.font = 'bold 9px monospace';
       ctx.textAlign = 'center';
       ctx.fillText('-- PATTERN TOOLS --', 120, my + 13);
@@ -599,11 +633,11 @@
       for (let m = 0; m < FX_MENU_ITEMS.length; m++) {
         const iy = my + 18 + m * 13;
         if (state.menuSel === m) {
-          ctx.fillStyle = '#2d3540';
+          ctx.fillStyle = '#12331c';
           ctx.fillRect(mx + 4, iy, menuW - 8, 12);
-          ctx.fillStyle = '#ffb366';
+          ctx.fillStyle = '#b8ff5c';
         } else {
-          ctx.fillStyle = '#c5cdd6';
+          ctx.fillStyle = '#98cfa6';
         }
         ctx.font = 'bold 8px monospace';
         ctx.textAlign = 'left';
@@ -946,7 +980,7 @@
   // SVG Front Panel & Controls Generation (1:1 with M-VAVE FM-1)
   // ===========================================================================
   const NS = "http://www.w3.org/2000/svg";
-  const BODY = "#2e3238", TRAY = "#212428", KEY_W = "#5e636b", KEY_B = "#484d54", KNOB = "#1b1d20", BTNC = "#272a2e", LABEL = "#d0d4da";
+  const BODY = "#161e18", TRAY = "#0e1510", KEY_W = "#405448", KEY_B = "#233329", KNOB = "#101812", BTNC = "#1b2720", LABEL = "#b2dfc0";
   const WHITE_K = [0, 2, 4, 6, 7, 9, 11, 12, 14, 16, 18, 19, 21, 23, 24, 26];
   const BLACK_K = [1, 3, 5, 8, 10, 13, 15, 17, 20, 22, 25];
   const BLACK_AFTER = [0, 1, 2, 4, 5, 7, 8, 9, 11, 12, 14];
@@ -976,15 +1010,15 @@
   el("rect", { x: 4, y: 4, width: 992, height: 632, rx: 44, fill: BODY });
 
   // 2. Center Screen Bezel
-  el("rect", { x: 300, y: 44, width: 236, height: 236, rx: 26, fill: "#111214" });
+  el("rect", { x: 300, y: 44, width: 236, height: 236, rx: 26, fill: "#08100a" });
 
   // 3. Knobs Builder
   const knobs = {};
   function knob(x, y, r, label, role) {
     const g = el("g", { class: "ctl knob" });
     el("circle", { cx: x, cy: y, r: r + 5, fill: TRAY }, g);
-    el("circle", { cx: x, cy: y, r, fill: KNOB, stroke: "#44474c", "stroke-width": 2 }, g);
-    const ind = el("line", { x1: x, y1: y - r + 5, x2: x, y2: y - r + 15, stroke: LABEL, "stroke-width": 3, "stroke-linecap": "round" }, g);
+    el("circle", { cx: x, cy: y, r, fill: KNOB, stroke: "#283b30", "stroke-width": 2 }, g);
+    const ind = el("line", { x1: x, y1: y - r + 5, x2: x, y2: y - r + 15, stroke: "#00ff66", "stroke-width": 3, "stroke-linecap": "round" }, g);
     text(g, x, y - r - 12, label, 16);
     el("circle", { cx: x, cy: y, r: r + 14, fill: "transparent" }, g);
     knobs[label] = {
@@ -1008,7 +1042,7 @@
   const buttons = {};
   function button(x, y, w, h, label, two) {
     const g = el("g", { class: "ctl" });
-    el("rect", { x, y, width: w, height: h, rx: 9, fill: BTNC, stroke: "#4a4d52", "stroke-width": 1.5, class: "btnface" }, g);
+    el("rect", { x, y, width: w, height: h, rx: 9, fill: BTNC, stroke: "#283b30", "stroke-width": 1.5, class: "btnface" }, g);
     if (two) {
       text(g, x + w / 2, y + h / 2 - 1, label, 12);
       text(g, x + w / 2, y + h / 2 + 12, two, 12);
