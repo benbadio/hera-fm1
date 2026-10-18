@@ -316,7 +316,7 @@ const TEXT = {
     warn: "書き込み中は USB を抜かないでください。",
     install: "MORPHEUS をインストール", other: "English",
     manual: "マニュアル",
-    untested: "MORPHEUS は 4 トラックのパターンシーケンサー & 303 アシッドシンセです。",
+    untested: "MORPHEUS は 8 トラックの ReBirth グルーヴボックス（808/909/303/Breaks/FM）& Reason Matrix パターンシーケンサーです。",
     direct: "USB ケーブルはパソコンに直接つないでください。ハブや変換機を介さず直接接続を推奨します。",
     brick: "万一 FM-1 が起動しなくなった場合は、USB 経由で復旧できます:",
     bricklink: "起動しない FM-1 の復旧（マニュアル）",
@@ -355,7 +355,7 @@ const TEXT = {
     warn: "Do not unplug the USB cable while writing.",
     install: "Install MORPHEUS", other: "日本語",
     manual: "The manual",
-    untested: "MORPHEUS is a 4-track matrix pattern sequencer and 303 acid synth workstation.",
+    untested: "MORPHEUS is an 8-track ReBirth groovebox (808, 909, dual 303s, breakbeats, FM, sub & MIDI) with Reason Matrix pattern sequencing.",
     direct: "Connect the USB cable directly to the computer. No probe or Transporter is needed.",
     brick: "If the FM-1 no longer starts, you can recover it over USB:",
     bricklink: "recovering an FM-1 that won't start (manual)",
@@ -429,7 +429,7 @@ function sayPct(k, pct) {
 
 const log = (t) => { $("log").textContent += t + "\n"; };
 let image = null;
-const meta = {"version": "1.0.0", "product": "FM-1_988", "pkg": "firmware/morpheus.fwsc"};
+const meta = {"version": "1.0.0", "product": "FM-1_8000013", "pkg": "firmware/morpheus.fwsc"};
 
 let writing = false;
 window.addEventListener("beforeunload", (e) => { if (writing) { e.preventDefault(); e.returnValue = t("leave"); } });
@@ -438,12 +438,14 @@ window.addEventListener("beforeunload", (e) => { if (writing) { e.preventDefault
   if (!navigator.requestMIDIAccess) { sayK("nomidi"); return; }
   say("Loading MORPHEUS firmware package...");
   try {
-    const r = await fetch(meta.pkg);
+    const r = await fetch(meta.pkg + "?v=" + Date.now());
     if (!r.ok) throw new Error(`${meta.pkg}: HTTP ${r.status}`);
     const pkg = new Uint8Array(await r.arrayBuffer());
-    if (productOf(pkg) !== meta.product) { sayK("badpkg"); return; }
+    const prod = productOf(pkg);
+    if (!prod || !prod.startsWith("FM-1_")) { sayK("badpkg"); return; }
+    meta.product = prod;
     image = logicalImage(pkg);
-    say(`MORPHEUS ${meta.version} ready. Connect FM-1 and click Install.`);
+    say(`MORPHEUS ready (${prod}). Connect FM-1 and click Install.`);
     $("go").disabled = false;
   } catch (e) {
     sayK("loadfail", e.message);
