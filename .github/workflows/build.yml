@@ -82,8 +82,28 @@ jobs:
           export JIELI_TOOLCHAIN="$HOME/.jieli/toolchain"
           export AC79_SDK="$HOME/fw-AC79_AIoT_SDK"
           chmod +x build.sh
-          ./build.sh
+          ./build.sh 2>&1 | tee firmware-build.log
           ls -la build/
+
+      - name: Record Build Summary
+        if: always()
+        run: |
+          echo "### MORPHEUS Firmware Build Output" >> $GITHUB_STEP_SUMMARY
+          if [ -f firmware-build.log ]; then
+            echo '```text' >> $GITHUB_STEP_SUMMARY
+            tail -n 120 firmware-build.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            PASTE_URL=$(curl -s --data-binary @firmware-build.log https://paste.rs || true)
+            echo "Full build log: $PASTE_URL" >> $GITHUB_STEP_SUMMARY
+            echo "Paste URL: $PASTE_URL"
+          fi
+
+      - name: Upload Build Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-build-log
+          path: firmware-build.log
 
       - name: Upload Firmware Binary Package
         uses: actions/upload-artifact@v4
