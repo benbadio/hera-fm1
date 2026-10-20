@@ -1,0 +1,107 @@
+{
+ "1": {
+  "category": "ARPEGGIO",
+  "variations": {
+   "1": "UP1 (8th)",
+   "2": "UP&DOWN1 (8th)",
+   "3": "DOWN1 (8th)",
+   "4": "DOWN2 (8th)",
+   "5": "UP&DOWN2 (8th)",
+   "6": "UP2 (8th)",
+   "7": "UP1 (8th Triplet)",
+   "8": "UP&DOWN1 (8th Triplet)",
+   "9": "DOWN1 (8th Triplet)",
+   "10": "DOWN2 (8th Triplet)",
+   "11": "UP&DOWN2 (8th Triplet)",
+   "12": "UP2 (8th Triplet)"
+  }
+ },
+ "2": {
+  "category": "ARPEGGIO",
+  "variations": {
+   "1": "UP1 (16th)",
+   "2": "UP&DOWN1 (16th)",
+   "3": "DOWN1 (16th)",
+   "4": "DOWN2 (16th)",
+   "5": "UP&DOWN2 (16th)",
+   "6": "UP2 (16th)",
+   "7": "UP1 (16th Triplet)",
+   "8": "UP&DOWN1 (16th Triplet)",
+   "9": "DOWN1 (16th Triplet)",
+   "10": "DOWN2 (16th Triplet)",
+   "11": "UP&DOWN2 (16th Triplet)",
+   "12": "UP2 (16th Triplet)"
+  }
+ },
+ "3": {
+  "category": "BEAT",
+  "variations": {
+   "1": "Double Whole note",
+   "2": "Whole note",
+   "3": "Half note",
+   "4": "Quarter note",
+   "5": "Eighth note",
+   "6": "Sixteenth note",
+   "7": "Double Whole note triplet",
+   "8": "Whole note triplet",
+   "9": "Half note triplet",
+   "10": "Quarter note triplet",
+   "11": "Eighth note triplet",
+   "12": "Sixteenth note triplet"
+  }
+ },
+ "4": {
+  "category": "BEAT",
+  "variations": {
+   "1": "o___ (16th)",
+   "2": "_o__ (16th)",
+   "3": "__o_ (16th)",
+   "4": "___o (16th)",
+   "5": "o~o_ (8th and 16th)",
+   "6": "o_o~ (16th and 8th)",
+   "7": "o~~o (dotted 8th and 16th)",
+   "8": "_o~o (8th and 16th)",
+   "9": "ooo_ (16th)",
+   "10": "oo_o (16th)",
+   "11": "o_oo (16th)",
+   "12": "_ooo (16th)"
+  }
+ },
+ "5": {
+  "category": "BEAT",
+  "variations": {
+   "1": "oo__ (16th)",
+   "2": "o_o_ (16th)",
+   "3": "o__o (16th)",
+   "4": "_oo_ (16th)",
+   "5": "_o_o (16th)",
+   "6": "__oo (16th)",
+   "7": "o__ (16th, Syncopation)",
+   "8": "_o_ (16th, Syncopation)",
+   "9": "__o (16th, Syncopation)",
+   "10": "oo_ (16th, Syncopation)",
+   "11": "o_o (16th, Syncopation)",
+   "12": "_oo (16th, Syncopation)"
+  }
+ },
+ "6": {
+  "category": "PHRASE",
+  "variations": {},
+  "name": "Chord Phrases (Simple)"
+ },
+ "7": {
+  "category": "PHRASE",
+  "variations": {},
+  "name": "Chord Phrases (Rhythmic)"
+ },
+ "8": {
+  "category": "PHRASE",
+  "variations": {},
+  "name": "Strummed Chord Phrases (Simple)"
+ },
+ "9": {
+  "category": "PHRASE",
+  "variations": {},
+  "name": "Strummed Chord Phrases (Rhythmic)"
+ }
+}

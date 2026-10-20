@@ -1,12 +1,14 @@
 # Licensing
 
-MORPHEUS is free software under the GNU General Public License, version 3 only (`GPL-3.0-only`, full text in `LICENSE`). You may use, study, change and share it. If you give someone a firmware built from it, give them its complete source under the same licence too.
+HERA is free software under the GNU General Public License, version 3 only (`GPL-3.0-only`, full text in `LICENSE`). You may use, study, change and share it. If you give someone a firmware built from it, give them its complete source under the same licence too.
 
 ## Who made what
 
 | Component | Authors & Projects |
 | :--- | :--- |
-| **MORPHEUS Application & Architecture** | Ben Badio & Contributors: 8-track ReBirth groovebox architecture, Reason Matrix 240x240 LCD sequencer UI, transient status bar, 12-lane Drum Matrix, multi-engine routing, WebAudio interactive emulator, 1-click web flasher, and guided manual. |
+| **HERA** | Ben Badio: the J-6-style engine (`firmware/src/j6/`: chord sets, phrase styles, 64-pattern sequencer, synth, glue), the HERA app and screen (`firmware/src/hera_*.c`), the J-6 capture tools (`capture/`) and the data tools in `tools/`. A clean-room recreation of the Roland J-6's behaviour from its owner's manual and MIDI measurements; no Roland code, firmware or samples. |
+| **JUNO voice** | Juno-style voice and BBD chorus after Clipper (`eng_juno.c`, `dsp.c`, `fx.c`), Copyright (C) 2026 3dSam, GPL-3.0 ([clipper-fm1](https://github.com/isod89/clipper-fm1)). |
+| **MORPHEUS** (the base this repository grew from) | Ben Badio & Contributors: 8-track ReBirth groovebox architecture, Reason Matrix 240x240 LCD sequencer UI, transient status bar, 12-lane Drum Matrix, multi-engine routing, WebAudio interactive emulator, 1-click web flasher, and guided manual. |
 | **ReBirth Multi-Engine DSP Suite** | Based on X0X DSP suite by Leo Kuroshita (@kurogedelic):<br>&bull; **TB-303:** Robin Schmidt (Open303, MIT) and schwung-303 (GPL-3.0), dm-Rat distortion (davemollen, GPL-3.0).<br>&bull; **TR-808:** Analog circuit model (8W8 / sc808, GPL-3.0).<br>&bull; **TR-909:** Hybrid synthesis & sample model (9W9 / ER-99 by Matthew Cieplak, GPL-3.0).<br>&bull; **Breaks:** 8-slice player & BB Gen generator ported from schwung-breakbeat by mestela (GPL-3.0).<br>&bull; **FX Bus & Master:** 9W9 send reverb, tempo delay, and glue compressor. |
 | **Platform & Hardware HAL** | Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments ([Felucca](https://github.com/hugelton/Felucca)), with changes from [SLOOP](https://github.com/isod89/sloop-fm1) (isod89): `firmware/hal/`, `firmware/loader/`, `crt0.S`, `app.ld`, `firmware/src/` (`usb.c`, `ota.c`, `recovery.c`, `lcd.c`, `gfx.c`, `libc.c`), and `tools/`. |
 
@@ -19,4 +21,4 @@ MORPHEUS is free software under the GNU General Public License, version 3 only (
 
 ## Trademarks
 
-"Felucca" and "Hügelton Instruments" are names of Hügelton Instruments; "M-VAVE" and "FM-1" belong to their respective owners; "Propellerhead", "Reason", and "ReBirth" are trademarks of their respective owners. MORPHEUS is not made, affiliated with, or endorsed by them.
+"Felucca" and "Hügelton Instruments" are names of Hügelton Instruments; "M-VAVE" and "FM-1" belong to their respective owners; "Propellerhead", "Reason", and "ReBirth" are trademarks of their respective owners. "Roland", "J-6", "JUNO" and "AIRA" are trademarks of Roland Corporation. HERA is not made, affiliated with, or endorsed by any of them.

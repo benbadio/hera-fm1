@@ -1,24 +1,18 @@
-name: Build Firmware & Deploy Pages
+name: Build HERA
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "**" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+  contents: read
 
 jobs:
   host-test:
-    name: Host Simulator & Unit Tests
+    name: Engine tests and host simulator
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -27,30 +21,29 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y netpbm ffmpeg
+          sudo apt-get install -y clang python3-pil
 
-      - name: Run Host Simulator Test Suite
+      - name: J-6 engine tests (chord, phrase, sequencer, synth, glue)
         run: |
-          chmod +x tests/run_host.sh
-          sh -x ./tests/run_host.sh 2>&1 | tee host-test.log
+          set -o pipefail
+          CC=clang J6_RENDER=1 sh tests/j6/run_tests.sh 2>&1 | tee engine-tests.log
 
-      - name: Upload Test Logs
+      - name: HERA host simulator (every page as a PNG, the session as a WAV)
+        run: sh tests/run_hera_host.sh
+
+      - name: Upload test logs, screenshots and audio
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: host-test-log
-          path: host-test.log
-
-      - name: Upload Test Audio and Screenshots
-        uses: actions/upload-artifact@v4
-        with:
-          name: host-test-artifacts
+          name: hera-host-test
           path: |
-            build/host/*.wav
-            build/host/*.png
+            engine-tests.log
+            build/hera/*.png
+            build/hera/hera.wav
+            build/j6/demo.wav
 
   firmware-build:
-    name: Build MORPHEUS .fwsc Package
+    name: Build HERA .fwsc package
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -62,21 +55,19 @@ jobs:
           python-version: "3.11"
 
       - name: Install Python dependencies
-        run: |
-          python3 -m pip install --upgrade pip
-          pip3 install Pillow mido python-rtmidi
+        run: pip3 install Pillow
 
-      - name: Download JieLi Toolchain
+      - name: Download the JieLi toolchain
         run: |
           chmod +x tools/get_toolchain.sh
           tools/get_toolchain.sh "$HOME/.jieli"
 
-      - name: Clone JieLi AC79 SDK
+      - name: Clone the JieLi AC79 SDK
         run: |
           git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 \
             https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$HOME/fw-AC79_AIoT_SDK"
 
-      - name: Build MORPHEUS Firmware
+      - name: Build HERA
         run: |
           set -eo pipefail
           export JIELI_TOOLCHAIN="$HOME/.jieli/toolchain"
@@ -85,75 +76,29 @@ jobs:
           ./build.sh 2>&1 | tee firmware-build.log
           ls -la build/
 
-      - name: Record Build Summary
+      - name: Build summary
         if: always()
         run: |
-          echo "### MORPHEUS Firmware Build Output" >> $GITHUB_STEP_SUMMARY
+          echo "### HERA firmware build" >> "$GITHUB_STEP_SUMMARY"
           if [ -f firmware-build.log ]; then
-            echo '```text' >> $GITHUB_STEP_SUMMARY
-            tail -n 120 firmware-build.log >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            PASTE_URL=$(curl -s --data-binary @firmware-build.log https://paste.rs || true)
-            echo "Full build log: $PASTE_URL" >> $GITHUB_STEP_SUMMARY
-            echo "Paste URL: $PASTE_URL"
-            
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git checkout --orphan ci-debug-log
-            git rm -rf . || true
-            cp firmware-build.log build.log
-            git add build.log
-            git commit -m "ci: firmware build log [skip ci]" || true
-            git push -f origin ci-debug-log || true
+            echo '```text' >> "$GITHUB_STEP_SUMMARY"
+            tail -n 80 firmware-build.log >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Upload Build Log
+      - name: Upload the build log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: firmware-build-log
+          name: hera-firmware-build-log
           path: firmware-build.log
 
-      - name: Upload Firmware Binary Package
+      - name: Upload the firmware package
         uses: actions/upload-artifact@v4
         with:
-          name: morpheus-firmware-fwsc
+          name: hera-firmware
           path: |
-            build/morpheus.fwsc
-            build/morpheus.bin
+            build/hera.fwsc
+            build/hera.bin
+            build/hera.dis
           if-no-files-found: error
-
-  deploy-pages:
-    name: Deploy MORPHEUS Web Demo & Firmware to GitHub Pages
-    if: github.ref == 'refs/heads/main'
-    needs: [host-test, firmware-build]
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download Built Firmware
-        uses: actions/download-artifact@v4
-        with:
-          name: morpheus-firmware-fwsc
-          path: build-artifacts
-
-      - name: Stage Firmware for Web Installation
-        run: |
-          mkdir -p web/firmware
-          cp build-artifacts/morpheus.fwsc web/firmware/morpheus.fwsc
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: 'web'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

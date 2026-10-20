@@ -1,0 +1,55 @@
+# Hera host scenario: every page, as tests/run_hera_host.sh renders it
+# buttons: OCT- 0  OCT+ 1  FX 2  SCL 3  ENV 4  LFO 5  EDIT 6  GLO 7  HOME 8  SAVE 9  ARP 10  SEQ 11  PLAY 12  REC 13
+# keys: bit k = FM-1 key k (0 = F3, 7 = C4, 9 = D4, 11 = E4)
+1500 shot
+1600 hold 3
+1650 release 3
+1700 keys 0x80
+2000 shot
+2300 keys 0
+2400 hold 10
+2450 release 10
+2500 enc 0 5
+2600 keys 0x80
+3200 shot
+3600 keys 0
+3700 hold 3
+4400 release 3
+4500 enc 6 11
+4600 keys 0x800
+4800 shot
+5000 keys 0
+5100 hold 10
+5800 release 10
+6000 shot
+6100 btn 11
+6200 keys 0x1
+6300 keys 0
+6400 keys 0x80
+6500 keys 0
+6600 enc 6 4
+6700 keys 0x200
+6800 keys 0
+7000 shot
+7100 btn 11
+7200 hold 12
+7250 release 12
+7800 shot
+7900 hold 7
+7950 btn 11
+8000 release 7
+8200 shot
+8300 btn 5
+8400 enc 6 3
+8600 shot
+8700 btn 2
+8800 enc 4 10
+9000 shot
+9100 btn 6
+9200 enc 6 12
+9400 shot
+9500 btn 8
+9600 hold 12
+10300 release 12
+10400 shot
+10600 end
