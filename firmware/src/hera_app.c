@@ -9,7 +9,7 @@
  *   PLAY        tap: play / stop          hold 0.6 s: full stop (all sound off)    GLO+PLAY: play from step
  *   REC         record                    SCL tap: CHORD on/off   hold (or GLO+SCL): the chord map
  *   ARP tap     STYLE (phrase) on/off     hold: the phrase page    ENV: HOLD (in step edit: tie)
- *   HOME        play page   SEQ: sequencer (GLO+SEQ: patterns)   LFO: sounds   FX: effects   EDIT: settings
+ *   HOME        play page   SEQ: sequencer, again: patterns   LFO: sounds   FX: effects   EDIT: settings
  *   SAVE        write the pattern (GLO+SAVE: all)                OCT -/+: octave (GLO: key; sequencer: page)
  *   K1..K4      filter, envelope, delay, reverb (GLO: resonance, attack, delay time, reverb time)
  *   SELECT      style 1..9     ALGORITHM: variation 1..12    PRESETS: tempo, or what the page browses
@@ -168,7 +168,8 @@ static void enc_presets(int32_t d, const j6_status_t *s)
     } else if (pg == PG_SOUNDS) {              /* a sound a detent, GLO a bank */
         j6_engine_set(J6_P_SOUND, clampi(j6_engine_get(J6_P_SOUND) + d * (ui.glo ? 8 : 1), 0, (int32_t)J6_SOUNDS - 1));
     } else if (pg == PG_PATTERNS) {
-        j6_engine_cmd(J6_CMD_PATTERN, clampi((int32_t)s->pattern + d, 0, (int32_t)J6_PATTERNS - 1));
+        int32_t q = s->queued != J6_NONE ? (int32_t)s->queued : (int32_t)s->pattern;   /* a pattern a detent, GLO a bank */
+        j6_engine_cmd(J6_CMD_PATTERN, clampi(q + d * (ui.glo ? 8 : 1), 0, (int32_t)J6_PATTERNS - 1));
     } else if (pg == PG_SEQ && s->sel_step != J6_NONE) {
         int32_t n = clampi((int32_t)s->sel_step + d, 0, (int32_t)J6_STEPS - 1);
         j6_engine_cmd(J6_CMD_STEP_SELECT, n);
@@ -237,12 +238,7 @@ static uint32_t page_key(uint32_t key, const j6_status_t *s)
         return 0;                              /* step edit: the key enters notes */
     }
     if (w < 0) return 0;
-    if (ui.page == PG_PATTERNS) {
-        int32_t p = w < 8 ? (int32_t)(s->pattern / 8u) * 8 + w : (w - 8) * 8 + (int32_t)(s->pattern % 8u);
-        j6_engine_cmd(J6_CMD_PATTERN, p);
-        return 1;
-    }
-    return 0;                                  /* the sounds page: keys play, so you hear each sound */
+    return 0;                                  /* sounds and patterns pages: keys play, so you hear what you pick */
 }
 
 static void keys(const j6_status_t *s)
@@ -312,8 +308,8 @@ static void buttons(const j6_status_t *s)
     }
     if (pr & BTN(BTN_HOME)) ui_page(PG_PLAY);
     if (pr & BTN(BTN_SEQ)) {
-        if (ui.glo) ui_page(PG_PATTERNS);
-        else if (ui.page == PG_SEQ && s->sel_step != J6_NONE) j6_engine_cmd(J6_CMD_STEP_SELECT, -1);
+        if (ui.page == PG_SEQ && s->sel_step != J6_NONE) j6_engine_cmd(J6_CMD_STEP_SELECT, -1);
+        else if (ui.page == PG_SEQ || ui.glo) ui_page(PG_PATTERNS);   /* SEQ again: the pattern grid */
         else ui_page(PG_SEQ);
     }
     if (pr & BTN(BTN_LFO)) ui_page(PG_SOUNDS);

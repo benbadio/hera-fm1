@@ -452,7 +452,7 @@ const REF = [
   ['SCL', 'Tap: chord mode on / off. Hold (or GLO + SCL): the chord map.'],
   ['ARP', 'Tap: phrase (STYLE) on / off. Hold: the phrase page.'],
   ['ENV', 'HOLD: notes keep playing after you let go. In step edit: a tie to the next step.'],
-  ['HOME · SEQ · LFO · FX · EDIT', 'Pages: play, sequencer (GLO + SEQ: patterns), sounds, effects, settings.'],
+  ['HOME · SEQ · LFO · FX · EDIT', 'Pages: play, sequencer (SEQ again: patterns), sounds, effects, settings.'],
   ['SAVE', 'Save the pattern (GLO + SAVE: all patterns).'],
   ['OCT − / +', 'Octave. GLO: key transpose. On the sequencer page: steps 1–16 / 17–32 / 33–48 / 49–64.'],
   ['K1 – K4', 'Filter, envelope (release), delay level, reverb level. GLO: resonance, attack, delay time, reverb time.'],

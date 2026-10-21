@@ -72,7 +72,7 @@ const LESSONS = [
         <p>Turn <b>PRESETS</b> to move to the next step and add another chord, then press <b>SEQ</b> to finish editing.</p>`,
     done: () => st().sel === ID().J6_NONE && H().pattern(st().pattern).steps.some((s) => s.notes.length) },
   { ch: 'Sequencer', t: 'Play it', target: '#btn12',
-    x: `<p><b>Tap PLAY</b> (or <kbd>Space</kbd>). The green frame follows the playhead. Tap PLAY again to stop.</p>`,
+    x: `<p><b>Tap PLAY</b> (or <kbd>Space</kbd>). The yellow frame follows the playhead. Tap PLAY again to stop.</p>`,
     done: () => st().seq === ID().J6_SEQ_PLAYING },
   { ch: 'Sequencer', t: 'Full stop', target: '#btn12',
     x: `<p>While it plays, <b>hold PLAY</b> for half a second: everything stops, and all sound fades out, delay and reverb tails included. Handy when a phrase is still holding.</p>`,
@@ -86,8 +86,8 @@ const LESSONS = [
         <p>On the FM-1 it is kept through power-off. In the browser, use the Project tab to keep it.</p>`,
     done: () => !((st().pattern < 32 ? st().dirty0 >>> st().pattern : st().dirty1 >>> (st().pattern - 32)) & 1) && st().rec === 0 },
   { ch: 'Patterns', t: 'All 64 patterns', target: '#btn11',
-    x: `<p>Hold <b>GLO</b> (<kbd>Shift</kbd>) and press <b>SEQ</b>: the pattern grid, 8 banks of 8. White keys 1–8 pick a pattern, 9–16 a bank.</p>
-        <p>While a pattern plays, a pattern you pick waits for the next step (a green frame), so changes stay in time.</p>`,
+    x: `<p>Press <b>SEQ</b> again (on the sequencer page): the pattern grid, 8 banks of 8. Turn <b>PRESETS</b> to pick a pattern; hold <b>GLO</b> (<kbd>Shift</kbd>) while turning to jump a bank. The keys keep playing.</p>
+        <p>While a pattern plays, a pattern you pick waits for the next step (a yellow frame), so changes stay in time. Press <b>SEQ</b> once more to go back to the steps.</p>`,
     done: () => st().page === PG.PATTERNS },
 
   { ch: 'Settings', t: 'Settings in plain words', target: '#btn6',

@@ -17,10 +17,14 @@
 #define H_LINE RGB(56, 56, 70)
 #define H_DIM RGB(120, 120, 136)
 #define H_TXT RGB(236, 236, 242)
-#define H_ACC RGB(255, 124, 26)          /* Juno orange */
-#define H_ACCD RGB(96, 44, 10)
-#define H_OK RGB(80, 220, 130)
-#define H_REC RGB(240, 64, 64)
+/* the colours: the J-6's blue leads; the rest are the Juno-60 panel's muted section and button colours */
+#define H_ACC RGB(0, 160, 232)           /* J-6 blue: selection, the current thing */
+#define H_ACCD RGB(52, 76, 132)          /* Juno DCO/chorus blue: pop-ups */
+#define H_OK RGB(216, 192, 92)           /* Juno yellow button: playing, playhead, queued, external clock */
+#define H_JORG RGB(216, 128, 16)         /* Juno orange button (ARPEGGIO): phrases */
+#define H_JRED RGB(196, 62, 48)          /* Juno VCF/ENV red: filter and envelope, unsaved */
+#define H_CREAM RGB(216, 208, 168)       /* Juno cream button (KEY HOLD), the keys */
+#define H_REC H_JRED
 #define H_BLACKKEY RGB(18, 18, 22)
 #define H_WHITEKEY RGB(52, 52, 62)
 
@@ -320,6 +324,7 @@ static void draw_bottom(void)
     for (k = 0; k < 4u; k++) {
         int32_t x = (int32_t)k * 60;
         uint32_t pi = knob_param(k, ui.glo);
+        cv_rect(x + 8, 1, 44, 2, k < 2u ? H_JRED : H_ACCD);   /* the Juno's section bars: VCF/ENV red, effects blue */
         h_text_c(x + 30, 4, KNOB_LABEL[ui.glo ? 1 : 0][k], ui.glo ? H_ACC : H_DIM, H_BG, 1u);
         h_bar(x + 8, 26, 44, 6, knobv[pi], 127, ui.glo ? H_ACC : H_TXT);
         if (k) cv_rect(x, 4, 1, 32, H_LINE);
@@ -369,9 +374,9 @@ static void body_play(void)
     {
         int32_t x = 10;
         char k[12];
-        x = h_pill(x, (int32_t)y, "PHRASE", st.style_on, H_OK);
+        x = h_pill(x, (int32_t)y, "PHRASE", st.style_on, H_JORG);
         x = h_pill(x, (int32_t)y, "CHORD", st.chord, H_ACC);
-        x = h_pill(x, (int32_t)y, "HOLD", st.hold, H_ACC);
+        x = h_pill(x, (int32_t)y, "HOLD", st.hold, H_CREAM);
         if (j6_engine_get(J6_P_KEY)) {
             p = h_cat(k, "K");
             h_signed(p, j6_engine_get(J6_P_KEY));
@@ -431,8 +436,8 @@ static void body_chords(void)
         uint32_t black = (0x54Au >> k) & 1u, now = st.chord && ci == k;
         uint16_t bg = now ? H_ACC : black ? H_BLACKKEY : H_WHITEKEY, fg = now ? H_BG : H_TXT;
         cv_rect(x, y, 111, 20, bg);
-        cv_rect(x, y, 30, 20, now ? H_ACC : black ? RGB(4, 4, 6) : RGB(200, 200, 206));
-        h_text_c(x + 15, y + 2, NOTE_NM[k], now ? H_BG : black ? H_TXT : H_BG, now ? H_ACC : black ? RGB(4, 4, 6) : RGB(200, 200, 206), 1u);
+        cv_rect(x, y, 30, 20, now ? H_ACC : black ? RGB(4, 4, 6) : H_CREAM);
+        h_text_c(x + 15, y + 2, NOTE_NM[k], now ? H_BG : black ? H_TXT : H_BG, now ? H_ACC : black ? RGB(4, 4, 6) : H_CREAM, 1u);
         h_cat(b, j6_chord_name(set, k));
         b[9] = 0;
         h_text(x + 36, y + 2, b, fg, bg);
@@ -459,7 +464,7 @@ static void body_phrase(void)
     p = h_cat(p, " / Variation ");
     h_num(p, (int32_t)var);
     h_text(10, 4, b, H_DIM, H_BG);
-    h_pill(186, 2, st.style_on ? "ON" : "OFF", st.style_on, H_OK);
+    h_pill(186, 2, st.style_on ? "ON" : "OFF", st.style_on, H_JORG);
     h_text_c(120, 26, HERA_STYLE_NAME[style], H_ACC, H_BG, 2u);
     h_text_c(120, 64, HERA_VAR_NAME[style][var], H_TXT, H_BG, 1u);
     /* a piano-roll preview of the J-6 table (styles 6..9: the captured loops, 3 held notes) */
@@ -475,12 +480,12 @@ static void body_phrase(void)
             int32_t y = 86 + 52 - (int32_t)tone * 22;
             if (w < 2u) w = 2u;
             if (x0 + w > 224u) w = 224u - x0;
-            cv_rect(8 + (int32_t)x0, y, (int32_t)w, 14, (e->src & J6_PEV_ACCENT) ? H_ACC : H_TXT);
+            cv_rect(8 + (int32_t)x0, y, (int32_t)w, 14, (e->src & J6_PEV_ACCENT) ? H_JORG : H_TXT);
         }
         p = h_num(b, (int32_t)beats);
         h_cat(p, beats == 1u ? "-beat loop" : "-beat loop");
         h_text(10, 160, b, H_DIM, H_BG);
-        cv_rect(160, 164, 10, 8, H_ACC);
+        cv_rect(160, 164, 10, 8, H_JORG);
         h_text_r(230, 160, "accent", H_DIM, H_BG);
     } else {
         h_text_c(120, 112, "Arpeggio / rhythm style", H_DIM, H_PANEL, 1u);
@@ -568,7 +573,7 @@ static void body_seq(void)
             }
         }
         if (sp->flags & J6_STF_TIE) cv_rect(x - 2, y + 44, 8, 3, sel ? H_BG : H_ACC);
-        if (j6_phr_on(sp->phrase)) cv_rect(x + 11, y + 50, 6, 4, H_OK);
+        if (j6_phr_on(sp->phrase)) cv_rect(x + 11, y + 50, 6, 4, H_JORG);
     }
     if (st.sel_step != J6_NONE) {
         if (ui.glo) {
@@ -580,7 +585,7 @@ static void body_seq(void)
         }
     } else {
         h_text(4, 150, "White keys: pick a step", H_DIM, H_BG);
-        h_text(4, 164, "OCT: page   GLO+SEQ: patterns", H_DIM, H_BG);
+        h_text(4, 164, "OCT: page   SEQ: patterns", H_DIM, H_BG);
     }
 }
 static uint32_t key_seq(void)
@@ -622,10 +627,10 @@ static void body_patterns(void)
             uint16_t bg = cur ? H_ACC : pat_has_notes(idx) ? H_PANEL2 : H_PANEL;
             cv_rect(x, y, 20, 15, bg);
             if (q) h_frame(x, y, 20, 15, H_OK);
-            if (dirty) cv_rect(x + 15, y + 2, 3, 3, cur ? H_BG : H_ACC);
+            if (dirty) cv_rect(x + 15, y + 2, 3, 3, cur ? H_BG : H_JRED);
         }
     }
-    h_text(8, 162, "Keys 1-8 pattern   9-16 bank", H_DIM, H_BG);
+    h_text(8, 162, "PRESETS: pattern +GLO: bank", H_DIM, H_BG);
 }
 static uint32_t key_patterns(void)
 {

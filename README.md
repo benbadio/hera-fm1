@@ -77,7 +77,7 @@ For the chord and strum styles (6–9), a **piano roll** draws the actual phrase
 ### Sequencer
 <img src="docs/screens/sequencer-edit.png" width="240" align="right" alt="Sequencer page, editing a step">
 
-- **Layout:** 64 steps in 4 pages of 16, shown as a grid of chords and notes. Ties, per-step phrases (a green mark) and the last step are all visible. **OCT − / +** turns pages.
+- **Layout:** 64 steps in 4 pages of 16, shown as a grid of chords and notes. Ties, per-step phrases (an orange mark) and the last step are all visible. **OCT − / +** turns pages.
 - **Entering steps:** pick a step with a white key, play keys to enter notes or chords, and press **SEQ** when done.
 - **Moving and editing:** **PRESETS** moves to the next step. Holding **GLO** shows the step tools: copy, paste, insert, clear, double.
 
@@ -85,16 +85,16 @@ For the chord and strum styles (6–9), a **piano roll** draws the actual phrase
 
 <img src="docs/screens/sequencer.png" width="240" align="right" alt="Sequencer page while playing">
 
-While it plays, a green frame follows the playhead. The key lights show which steps hold notes.
+While it plays, a yellow frame follows the playhead. The key lights show which steps hold notes.
 
 <br clear="right">
 
 ### Patterns
 <img src="docs/screens/patterns.png" width="240" align="right" alt="Patterns page">
 
-All 64 patterns, 8 banks × 8, on one grid (**GLO + SEQ**).
-- **Shown:** the current pattern, patterns with notes, unsaved ones (a dot), and a queued next one (a green frame).
-- **Choosing:** white keys 1–8 pick a pattern, and 9–16 pick a bank.
+All 64 patterns, 8 banks × 8, on one grid (press **SEQ** twice).
+- **Shown:** the current pattern, patterns with notes, unsaved ones (a dot), and a queued next one (a yellow frame).
+- **Choosing:** turn **PRESETS** (GLO + PRESETS jumps a bank). The keys keep playing.
 
 <br clear="right">
 
@@ -147,7 +147,7 @@ To run it locally, build it with `sh web/build.sh` (needs LLVM with wasm32: `bre
 | **SCL** | Tap: chord mode on/off. **Hold** (or GLO + SCL): the **chord map**, i.e. which chord is on which key |
 | **ARP** | Tap: phrase (STYLE) on/off. Hold: the phrase page |
 | **ENV** | HOLD (in step edit: tie) |
-| **HOME / SEQ / LFO / FX / EDIT** | Pages: play, sequencer (GLO+SEQ: patterns), sounds, effects, settings |
+| **HOME / SEQ / LFO / FX / EDIT** | Pages: play, sequencer (SEQ again: patterns), sounds, effects, settings |
 | **SAVE** | Save the pattern (GLO + SAVE: all patterns) |
 | **OCT − / +** | Octave (GLO: key transpose; on the sequencer page: steps page) |
 | **K1–K4** | Filter, envelope (release), delay level, reverb level. GLO: resonance, attack, delay time, reverb time |
