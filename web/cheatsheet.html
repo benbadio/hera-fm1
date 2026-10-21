@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HERA cheat sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&display=swap">
+<style>
+  :root { --bg: #0b0b10; --panel: #15151d; --line: #2c2c3a; --txt: #ececf2; --dim: #9a9aaa; --acc: #00a0e8; --red: #ff6a5a; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--txt); font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .sheet { max-width: 1100px; margin: 0 auto; padding: 18px 16px 28px; }
+  header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+  h1 { font: 900 34px/1 "Playfair Display", Georgia, serif; color: var(--acc); margin: 0; letter-spacing: .03em; }
+  header p { margin: 0; color: var(--dim); }
+  header a { margin-left: auto; color: var(--acc); font-size: 12px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px 10px; break-inside: avoid; }
+  .card h2 { margin: 0 0 5px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--acc); }
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 2.5px 0; vertical-align: top; border-bottom: 1px solid #22222d; }
+  tr:last-child td { border-bottom: 0; }
+  td:first-child { white-space: nowrap; padding-right: 9px; width: 1%; }
+  kbd { display: inline-block; font: 600 11px ui-monospace, Menlo, monospace; background: #22222d; border: 1px solid #33333f; border-radius: 4px; padding: 0 5px; line-height: 1.5; color: #fff; }
+  kbd.g { border-color: var(--acc); }
+  .dim { color: var(--dim); }
+  ol { margin: 4px 0 0; padding-left: 18px; }
+  li { margin: 1px 0; }
+  .legend span { display: inline-block; min-width: 62px; color: var(--acc); font-weight: 600; }
+  .note { margin: 8px 0 0; color: var(--dim); font-size: 11.5px; }
+  footer { margin-top: 12px; color: var(--dim); font-size: 11.5px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  @media print {
+    @page { size: letter landscape; margin: 9mm; }
+    :root { --bg: #fff; --panel: #fff; --line: #bbb; --txt: #111; --dim: #555; --acc: #0070a8; }
+    body { font-size: 10.5px; } .sheet { padding: 0; max-width: none; } h1 { font-size: 28px; }
+    td { border-bottom-color: #ddd; } kbd { background: #f1f1f1; border-color: #aaa; color: #000; } header a { display: none; }
+    .grid { gap: 7px; } .card { padding: 6px 8px 7px; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>HERA</h1><p>Cheat sheet · the J-6-inspired chord groovebox for the M-VAVE FM-1 · <kbd class="g">GLO</kbd> is the shift button: hold it, then press or turn</p>
+    <a href="index.html">Open the Workbench</a>
+  </header>
+  <div class="grid">
+
+    <div class="card"><h2>Play, stop, record</h2><table>
+      <tr><td><kbd>PLAY</kbd> tap</td><td>play from step 1 / stop</td></tr>
+      <tr><td><kbd>PLAY</kbd> hold</td><td>full stop: all sound off</td></tr>
+      <tr><td><kbd class="g">GLO</kbd> <kbd>PLAY</kbd></td><td>play from the selected step</td></tr>
+      <tr><td><kbd>REC</kbd>, <kbd>PLAY</kbd></td><td>record: <i>Press PLAY</i>, then play along. Notes go into the step that is playing</td></tr>
+      <tr><td><kbd>REC</kbd> while playing</td><td>punch in; again = punch out</td></tr>
+      <tr><td><kbd>PLAY</kbd> while recording</td><td>stops both</td></tr></table></div>
+
+    <div class="card"><h2>Chords and phrases</h2><table>
+      <tr><td><kbd>SEL</kbd> tap</td><td>chord mode on / off (a key = a whole chord)</td></tr>
+      <tr><td><kbd>SEL</kbd> hold</td><td>the chord map: which chord is on which key</td></tr>
+      <tr><td><kbd>ARP</kbd> tap</td><td>phrase on / off (plays while keys are held)</td></tr>
+      <tr><td><kbd>ARP</kbd> hold</td><td>the phrase page (piano roll)</td></tr>
+      <tr><td>SELECT knob</td><td>phrase style 1 to 9</td></tr>
+      <tr><td>ALGORITHM knob</td><td>phrase variation 1 to 12</td></tr>
+      <tr><td><kbd>ENV</kbd></td><td>HOLD: notes keep sounding (a tie when editing a step)</td></tr>
+      <tr><td><kbd>OCT−</kbd> <kbd>OCT+</kbd></td><td>octave; with <kbd class="g">GLO</kbd>: key transpose</td></tr></table></div>
+
+    <div class="card"><h2>Pages</h2><table>
+      <tr><td><kbd>HOME</kbd></td><td>Play</td></tr>
+      <tr><td><kbd>SEQ</kbd></td><td>Sequencer (16 steps at a time)</td></tr>
+      <tr><td><kbd>SEQ</kbd> again</td><td>Patterns: all 64 on one grid</td></tr>
+      <tr><td><kbd>LFO</kbd></td><td>Sounds: 64 in 8 banks</td></tr>
+      <tr><td><kbd>FX</kbd></td><td>Effects: delay and reverb</td></tr>
+      <tr><td><kbd>EDIT</kbd></td><td>Settings (EDIT again leaves and saves)</td></tr>
+      <tr><td><kbd>SEL</kbd> / <kbd>ARP</kbd> hold</td><td>Chord map / Phrase</td></tr></table>
+      <p class="note">The keys play on every page, so you hear what you pick.</p></div>
+
+    <div class="card"><h2>Knobs</h2><table>
+      <tr><td></td><td><b>alone</b></td><td><b>+ <kbd class="g">GLO</kbd></b></td></tr>
+      <tr><td>K1</td><td>filter</td><td>resonance</td></tr>
+      <tr><td>K2</td><td>release</td><td>attack</td></tr>
+      <tr><td>K3</td><td>delay level</td><td>delay time</td></tr>
+      <tr><td>K4</td><td>reverb level</td><td>reverb time</td></tr>
+      <tr><td>MASTER</td><td colspan="2">volume</td></tr></table></div>
+
+    <div class="card"><h2>The PRESETS knob</h2><table>
+      <tr><td>Play, Phrase, FX</td><td>tempo (<kbd class="g">GLO</kbd>: 0.1 BPM)</td></tr>
+      <tr><td>Chord map</td><td>the 100 chord sets</td></tr>
+      <tr><td>Sounds</td><td>sound (<kbd class="g">GLO</kbd>: a bank of 8)</td></tr>
+      <tr><td>Patterns</td><td>pattern (<kbd class="g">GLO</kbd>: a bank of 8)</td></tr>
+      <tr><td>Sequencer</td><td>the step to edit (first turn = step 1)</td></tr>
+      <tr><td>Settings</td><td>choose a setting; <b>K1</b> changes it</td></tr></table></div>
+
+    <div class="card"><h2>Edit a step</h2>
+      <ol><li>Turn <b>PRESETS</b>: pick a step</li><li>Play a key or a chord: it goes in (a chord replaces, a note adds, up to 4)</li><li><kbd>ENV</kbd>: tie to the next step</li><li><kbd>SEQ</kbd>: done</li></ol>
+      <table style="margin-top:5px"><tr><td><kbd class="g">GLO</kbd> + F3 G3 A3 B3 C4</td><td>copy, paste, insert, clear the step, double the pattern</td></tr>
+      <tr><td><kbd>OCT−</kbd> <kbd>OCT+</kbd></td><td>page of 16 steps (no step selected)</td></tr></table>
+      <p class="note legend"><span>lit</span> step has notes<br><span>flashing</span> playing now<br><span>blinking</span> being edited</p></div>
+
+    <div class="card"><h2>Save, clear, reset</h2><table>
+      <tr><td><kbd>SAVE</kbd></td><td>save this pattern</td></tr>
+      <tr><td><kbd class="g">GLO</kbd> <kbd>SAVE</kbd></td><td>save all patterns</td></tr>
+      <tr><td>Settings → RESET</td><td><b>Clear pattern</b>: empties its steps. <b>Factory reset</b>: erases everything. Choose with PRESETS, then <b>hold <kbd>SAVE</kbd></b></td></tr></table>
+      <p class="note">A <b>*</b> after the pattern name means unsaved. Unsaved changes are lost at power-off.</p></div>
+
+    <div class="card"><h2>Good to know</h2><table>
+      <tr><td>Switch on holding <kbd>OCT−</kbd></td><td>USB rescue: install any firmware again</td></tr>
+      <tr><td>Keys</td><td>27: F3 to G5</td></tr>
+      <tr><td>Patterns</td><td>64 in banks A to H, each remembers its steps, sound, tempo and phrase</td></tr>
+      <tr><td>A step</td><td>lasts 4 beats by default (Settings → Step length)</td></tr></table></div>
+
+    <div class="card"><h2>First chords in a minute</h2>
+      <ol><li><kbd>SEL</kbd>: chord mode on</li><li>Hold <kbd>SEL</kbd>, turn <b>PRESETS</b>: pick a chord set, play keys</li><li><kbd>ARP</kbd>: phrase on, turn <b>SELECT</b> and <b>ALGORITHM</b></li><li><kbd>LFO</kbd>, <b>PRESETS</b>: pick a sound</li><li><kbd>SEQ</kbd>, <b>PRESETS</b>, a chord: build a loop, <kbd>PLAY</kbd></li></ol></div>
+
+  </div>
+  <footer><span>Full guide and manual: github.com/benbadio/hera-fm1 · Not affiliated with Roland.</span><span>Print it: landscape, one page.</span></footer>
+</div>
+</body>
+</html>

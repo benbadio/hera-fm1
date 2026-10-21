@@ -1,6 +1,6 @@
 # HERA manual
 
-Everything HERA does, control by control, and the history of each version. New to HERA? Start with the [guide](GUIDE.md) or the guided tour in the [Workbench](https://benbadio.github.io/hera-fm1/). The Workbench also has this manual with screenshots: [manual.html](https://benbadio.github.io/hera-fm1/manual.html).
+Everything HERA does, control by control, and the history of each version. New to HERA? Start with the [guide](GUIDE.md) or the guided tour in the [Workbench](https://benbadio.github.io/hera-fm1/). There's also a one-page [cheat sheet](https://benbadio.github.io/hera-fm1/cheatsheet.html). The Workbench has this manual with screenshots: [manual.html](https://benbadio.github.io/hera-fm1/manual.html).
 
 ## Contents
 

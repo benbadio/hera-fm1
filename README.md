@@ -9,6 +9,7 @@
 <a href="https://benbadio.github.io/hera-fm1/install.html">Install on your FM-1</a> ·
 <a href="GUIDE.md">Guide</a> ·
 <a href="HERA.md">Manual</a> ·
+<a href="https://benbadio.github.io/hera-fm1/cheatsheet.html">Cheat sheet</a> ·
 <a href="../../releases">Releases</a> ·
 <a href="../../issues">Report a bug</a>
 </p>
@@ -173,6 +174,7 @@ If something goes wrong, hold **OCT −** while switching on for the USB rescue.
 ## Documentation
 
 - [GUIDE.md](GUIDE.md): a written guide, from your first chord to a finished pattern
+- [The cheat sheet](https://benbadio.github.io/hera-fm1/cheatsheet.html): every control on one printable page
 - [HERA.md](HERA.md): the manual: every control, page and setting, and the version history
 - [The Workbench manual](https://benbadio.github.io/hera-fm1/manual.html): the same, with "to do this, press that" tables and screenshots
 - [BUILDING.md](BUILDING.md): building HERA yourself, and running the tests
