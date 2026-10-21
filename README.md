@@ -4,7 +4,14 @@
 
 *An independent project. Not made, endorsed or supported by Roland.*
 
-**[Play it in your browser](https://benbadio.github.io/hera-fm1/)** · [Manual](https://benbadio.github.io/hera-fm1/manual.html) · [Install on your FM-1](https://benbadio.github.io/hera-fm1/install.html) · Version 0.1 (identity `FM-1_4300100`), a preview before 1.0
+<p align="center">
+<a href="https://benbadio.github.io/hera-fm1/"><b>Try it in your browser</b></a> ·
+<a href="https://benbadio.github.io/hera-fm1/install.html">Install on your FM-1</a> ·
+<a href="GUIDE.md">Guide</a> ·
+<a href="HERA.md">Manual</a> ·
+<a href="../../releases">Releases</a> ·
+<a href="../../issues">Report a bug</a>
+</p>
 
 HERA turns the FM-1 into a J-6-style chord machine:
 - **100 chord sets**, each mapping a chord to every key.
@@ -14,32 +21,28 @@ HERA turns the FM-1 into a J-6-style chord machine:
 
 Juno's Greek counterpart is Hera.
 
+> **Version 0.1.** A preview: expect rough edges, and please [tell us](../../issues) what you find.
+
+<p align="center"><img src="docs/screens/all-pages.png" width="720" alt="Every HERA page on the FM-1 screen"></p>
+
 ## How it compares with the J-6
 
 | | Roland J-6 | HERA on the FM-1 |
 |---|---|---|
 | Chord sets | 100 | The same 100 voicings |
-| Phrase styles | 9 × 12 variations | The same 9 × 12 (styles 6–9 timed from a J-6) |
-| Sequencer | 64 patterns × 64 steps | The same, with 16 steps on screen at a time |
+| Phrase styles | 9 × 12 variations | The same 9 × 12, with a name for every style and variation |
+| Sequencer | 64 patterns × 64 steps | The same: a 16-step page on screen, plus a **Patterns** page that shows all 64 patterns at once |
 | Display | 4-character LED | 240 × 240 colour screen with plain-word menus |
 | See which chord is on which key | No | Yes: the chord map page |
 | Preview a phrase before playing it | No | Yes: a piano roll of the phrase |
-| Keyboard | 13 keys | 27 keys (more than two octaves) |
-| Full stop | Not documented | Hold PLAY: all sound off, with no click |
 | Extra settings | — | Hold on step edit, Chord legato |
-| Sound | Roland's JUNO-60 model (ACB) | An open-source Juno-style voice (after Clipper) |
-
-It is an independent, clean-room recreation of the Roland J-6's *behaviour*. No Roland code, firmware or samples are used. The chord voicings come from the J-6 owner's manual, and the phrase timing for styles 6–9 was measured from a J-6 over MIDI (`capture/`, `tools/derive_phrases.py`). It is not made by, affiliated with or endorsed by Roland.
-
-<p align="center"><img src="docs/screens/all-pages.png" width="720" alt="Every HERA page on the FM-1 screen"></p>
+| Sound | Roland's JUNO-60 model (ACB) | A 4-voice Juno-style synth: saw, pulse and sub oscillators, a 24 dB ladder filter, chorus, delay and reverb |
 
 ## Features
 
 The FM-1's colour screen shows everything in plain words.
 - **Top bar:** pattern (with `*` when unsaved), page name, tempo and transport.
 - **Bottom bar:** what the four knobs do, or a short pop-up after any change.
-
-The screenshots come from the host simulator (`tests/run_hera_host.sh`).
 
 ### Play
 <img src="docs/screens/play-phrase.png" width="240" align="right" alt="Play page with a phrase running">
@@ -70,7 +73,7 @@ Which chord is on which key, something the J-6 can't show. Hold **SEL** to open 
 
 Turn **SELECT** for the style and **ALGORITHM** for the variation. Hold **ARP** to open the page.
 
-For the chord and strum styles (6–9), a **piano roll** draws the actual phrase: the timing measured from a J-6, with accents in orange. You can see a variation's rhythm before you hear it.
+For the chord and strum styles (6–9), a **piano roll** draws the actual phrase, with accents in orange. You can see a variation's rhythm before you hear it.
 
 <br clear="right">
 
@@ -79,6 +82,7 @@ For the chord and strum styles (6–9), a **piano roll** draws the actual phrase
 
 - **Layout:** 64 steps in 4 pages of 16, shown as a grid of chords and notes. Ties, per-step phrases (an orange mark) and the last step are all visible. **OCT − / +** turns pages.
 - **Entering steps:** turn **PRESETS** to pick a step, play keys to enter notes or chords, and press **SEQ** when done. The lights under the white keys are the 16 steps of the page: lit = has notes, flashing = playing now, blinking = being edited.
+- **Recording:** press **REC**, then **PLAY**, and play along. Your notes go into the step that is playing.
 - **Moving and editing:** **PRESETS** moves to the next step. Holding **GLO** shows the step tools: copy, paste, insert, clear, double.
 
 <br clear="right">
@@ -103,10 +107,10 @@ All 64 patterns, 8 banks × 8, on one grid (press **SEQ** twice).
 
 64 Juno-style sounds in 8 banks: pads, strings, brass, keys, bass, leads, plucks and effects (**LFO**). Browse them with **PRESETS** (GLO + PRESETS jumps a bank) while the keys keep playing, so you hear each one as you go.
 
-The voice is after Clipper's Juno engine:
+The engine is a 4-voice Juno-style synth:
 - saw, pulse and sub oscillators, plus noise;
 - a 4-position high-pass;
-- a 24 dB transistor-ladder filter;
+- a 24 dB ladder filter;
 - chorus I, II and I+II.
 
 <br clear="right">
@@ -127,23 +131,23 @@ Every J-6 menu item in plain words, grouped as Pattern, Keys and chords, MIDI, S
 
 <br clear="right">
 
-## The Workbench (in your browser)
+## The Workbench
 
-**Open it at [benbadio.github.io/hera-fm1](https://benbadio.github.io/hera-fm1/).** `web/` is the **HERA Workbench**, modelled on M-VAVE's FM1 Open Workbench:
-- **The real firmware in the browser:** HERA compiled to WebAssembly on a virtual FM-1 with the real panel layout (the same knobs, buttons and 27 keys), playable with the mouse, touch, the computer keyboard or a MIDI keyboard. Hover any control to see what it does.
-- **An editor** with tabs for sounds, chord sets (with every chord's notes), phrases (with piano rolls), the 64-step grid, settings, and projects (save in the browser, export / import files).
+**[Open the HERA Workbench](https://benbadio.github.io/hera-fm1/)**: HERA running in your browser, modelled on M-VAVE's FM1 Open Workbench.
+- **The real firmware** on a virtual FM-1 with the real panel layout. Play it with the mouse, touch, your computer keyboard or a MIDI keyboard, and hover any control to see what it does.
 - **A guided tour** in the order of the J-6 manual. It highlights each control and moves on by itself when you've done the step.
-- **A manual** (`manual.html`) with "to do this, press that" tables.
-- **A Web MIDI installer** (`install.html`) for HERA and for restoring the factory V15.
-
-To run it locally, build it with `sh web/build.sh` (needs LLVM with wasm32: `brew install llvm lld`), then serve `web/` with any static server, e.g. `python3 -m http.server --directory web`. CI also packages it as the `hera-workbench` artifact, and every push to `main` publishes it to GitHub Pages with the latest firmware in the installer.
+- **An editor** for sounds, chord sets (with every chord's notes), phrases (with piano rolls), the 64-step grid, settings and projects (save in the browser, or export and import files).
+- **A [manual](https://benbadio.github.io/hera-fm1/manual.html)** with "to do this, press that" tables.
+- **An installer** for HERA, and for putting the factory firmware back.
 
 ## Using it
+
+**New here? Start with the guided tour in the [Workbench](https://benbadio.github.io/hera-fm1/) (the Guided tour button), or read the [Guide](GUIDE.md).** Once you know your way around, this is the whole control list:
 
 | FM-1 | HERA |
 |---|---|
 | **PLAY** | Tap: play / stop. **Hold**: full stop (all sound off). GLO + PLAY: play from the selected step |
-| **REC** | Record (real time) |
+| **REC** | Record (real time): REC, then PLAY, then play |
 | **SEL** | Tap: chord mode on/off. **Hold** (or GLO + SEL): the **chord map**, i.e. which chord is on which key |
 | **ARP** | Tap: phrase (STYLE) on/off. Hold: the phrase page |
 | **ENV** | HOLD (in step edit: tie) |
@@ -157,30 +161,64 @@ To run it locally, build it with `sh web/build.sh` (needs LLVM with wasm32: `bre
 
 The settings page uses plain words: MIDI channel, clock source, hold on step edit, chord legato, count-in, tune and more. Leaving the page saves them.
 
-## Building
-
-- **GitHub Actions** (`.github/workflows/build.yml`, Ubuntu) builds `hera.fwsc` with JieLi's Linux toolchain and uploads it.
-- **Releases:** the version lives in `VERSION` (now `0.1`). The package identity follows it: `FM-1_43` + X + YY + ZZ, so 0.1 is `FM-1_4300100` and 1.0 is `FM-1_4310000`. Push a matching tag, e.g. `git tag v0.1 && git push origin v0.1`, and `.github/workflows/release.yml` builds and signs the package on GitHub with the Firmware Hub's shared workflow, then attaches `hera-0.1.fwsc` to the release.
-- **Locally on Linux x86-64:**
-  1. `tools/get_toolchain.sh`
-  2. Clone the AC79 SDK (tag `AC79NN_SDK_V1.2.1_2023-12-13`) to `~/fw-AC79_AIoT_SDK`.
-  3. Run `./build.sh`, which writes `build/hera.fwsc`.
-
-Tests run on macOS or Linux:
-- `tests/j6/run_tests.sh`: the engine (chords, phrases, sequencer, synth, glue), about 800,000 checks.
-- `tests/run_hera_host.sh`: the whole firmware in a simulator. It writes a PNG of every page and a WAV of a scripted session to `build/hera/`.
-
 ## Installing
 
-Install it like any open FM-1 firmware:
-- the Web MIDI installer, or
-- `python3 tools/fm1_install.py build/hera.fwsc`.
+1. Connect the FM-1 with a USB data cable and open the **[installer](https://benbadio.github.io/hera-fm1/install.html)** in Chrome or Edge.
+2. Press install. The same page puts the factory firmware back, if you ever want it.
 
-The factory V15 restore and the USB rescue (hold **OCT −** while switching on) stay available. HERA includes Felucca's update loader, so any other firmware, or V15, installs on top of it in the usual way.
+If something goes wrong, hold **OCT −** while switching on for the USB rescue. HERA carries the standard FM-1 update loader, so any other firmware (or the factory one) installs on top of it in the usual way.
 
-### What HERA keeps
+**What HERA keeps:** its 64 patterns and its settings, in its own area of the FM-1's flash. It doesn't read the projects, presets or samples of the factory firmware or of other firmwares, and installing another firmware can overwrite HERA's patterns. There's no way yet to copy patterns off the FM-1, so treat them as temporary for now.
 
-HERA keeps its 64 patterns and its global settings in its own area of the FM-1's flash (65 sectors of 4 KiB). It doesn't read the projects, presets or samples of V15 or of other firmwares. Installing another firmware can overwrite HERA's patterns, and there's no way yet to copy them off the FM-1, so treat patterns on the device as temporary for now.
+## Documentation
 
-## Credits and licence
-GPL-3.0-only. See `LICENSING.md`.
+- [GUIDE.md](GUIDE.md): a written guide, from your first chord to a finished pattern
+- [HERA.md](HERA.md): the manual: every control, page and setting, and the version history
+- [The Workbench manual](https://benbadio.github.io/hera-fm1/manual.html): the same, with "to do this, press that" tables and screenshots
+- [BUILDING.md](BUILDING.md): building HERA yourself, and running the tests
+- [docs/MIDI.md](docs/MIDI.md): what HERA sends and receives over MIDI
+- [LICENSING.md](LICENSING.md): the licences of the code and the assets
+- [Releases](../../releases): every version, with what's new and fixed
+
+## Contributing
+
+- **Bugs and ideas:** [open an issue](../../issues): what you did, what you expected, what happened, and the version shown on the splash screen when you switch on.
+- **Pull requests** are welcome. Keep the style of the code around your change, run `tests/j6/run_tests.sh` (see [BUILDING.md](BUILDING.md)), and keep the firmware free of floating point.
+- By contributing you agree that your code is released under GPL-3.0, like the rest of HERA.
+
+## Credits
+
+- **Ben Badio**: HERA.
+- **[Felucca](https://github.com/hugelton/Felucca)** by **Leo Kuroshita** (@kurogedelic) / **Hügelton Instruments**: the platform HERA runs on (hardware access, USB, the update loader), through **Dinghy**.
+- **[SLOOP](https://github.com/isod89/sloop-fm1)** by isod89: improvements to that platform, and the model for these docs.
+- **[Clipper](https://github.com/isod89/clipper-fm1)** by 3dSam: HERA's Juno-style voice and chorus.
+- **MORPHEUS**, the firmware this repository grew from.
+- **[The Firmware Hub](https://thefirmwarehub.com)** (zvenson), and everyone who documented the FM-1.
+- Font: Terminus (SIL OFL 1.1).
+
+The full list, with licences, is in [LICENSING.md](LICENSING.md).
+
+## Licence
+
+GPL-3.0-only: see [LICENSE](LICENSE). No warranty.
+
+## For nerds
+
+How it's built, and where the details are.
+
+- **Engine:** the whole J-6 logic is a portable, integer-only C module in `firmware/src/j6/` (chords, phrases, sequencer, synth and the glue), with no floating point, so it runs on the FM-1's core without an FPU. The app and screen are `firmware/src/hera_app.c` and `hera_ui.c`.
+- **Timing:** 96 ticks per quarter note; audio is rendered in 256-frame blocks at 44.1 kHz, in Q15.
+- **Tests:** about 800,000 engine checks (`tests/j6/run_tests.sh`), and a host simulator (`tests/run_hera_host.sh`) that runs the whole firmware on a computer and writes a PNG of every page and a WAV of a scripted session. Both run in CI on every push.
+- **The Workbench** is the same firmware compiled to WebAssembly (`web/build.sh`). To run it locally: `sh web/build.sh` (needs LLVM with wasm32: `brew install llvm lld`), then serve `web/` with any static server, e.g. `python3 -m http.server --directory web`. Every release also has the Workbench as a zip.
+- **Package identity:** `FM-1_43` + X + YY + ZZ for version X.Y.Z, so 0.1 is `FM-1_4300100` and 1.0 will be `FM-1_4310000`.
+- **Build, release and install from the command line:** [BUILDING.md](BUILDING.md). Each [release](../../releases) carries the signed `hera-X.Y.fwsc` package for other installers.
+- **MIDI:** [docs/MIDI.md](docs/MIDI.md). HERA doesn't handle SysEx: it belongs to the FM-1's updater.
+- **Specification and design:** [docs/J6_SPEC.md](docs/J6_SPEC.md) (the behaviour, rule by rule), [docs/J6_ENGINE_DESIGN.md](docs/J6_ENGINE_DESIGN.md), [docs/J6_DECISIONS.md](docs/J6_DECISIONS.md) (where HERA chooses differently on purpose).
+- **Platform:** [docs/API.md](docs/API.md) (the functions the app can call), [docs/RULES.md](docs/RULES.md) (what the FM-1 allows), [docs/MAKE-IT-YOURS.md](docs/MAKE-IT-YOURS.md) (turning this into your own firmware).
+- **Layout:** `firmware/` (engine, app, platform), `web/` (the Workbench), `tools/` (build, packaging, data generators), `tests/`, `capture/` (the tools used to gather data), `data/` (chord sets and phrases).
+
+## Legal
+
+HERA is a behavioral recreation of the Roland AIRA Compact J-6. It contains no Roland code, firmware or samples, and it is not made by, affiliated with or endorsed by Roland Corporation.
+
+"Roland", "AIRA", "J-6" and "JUNO" are trademarks of Roland Corporation; "M-VAVE" and "FM-1" belong to their owners. These names are used only to say what HERA works like and what it runs on.

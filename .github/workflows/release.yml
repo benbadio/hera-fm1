@@ -1,9 +1,11 @@
 name: Release HERA
 
-# Push a tag vX.Y (matching the VERSION file) and the hub's shared workflow builds HERA on GitHub,
-# signs a build attestation for the package and attaches it to the release of that tag.
-# The Firmware Hub then shows "Built from source on GitHub" (thefirmwarehub.com/kb/#sign).
-# Do not replace or add the .fwsc by hand afterwards: the hub checks its SHA-256 against the signed one.
+# Push a tag vX.Y (matching the VERSION file). Then:
+#  1. the Firmware Hub's shared workflow builds HERA on GitHub, signs a build attestation for the package
+#     and attaches hera-X.Y.fwsc to the release of that tag (thefirmwarehub.com/kb/#sign).
+#     Do not replace or add the .fwsc by hand afterwards: the hub checks its SHA-256 against the signed one.
+#  2. the release notes are taken from the version's section of HERA.md (Version history).
+#  3. the Workbench is attached as hera-workbench-X.Y.zip, to run offline.
 
 on:
   push:
@@ -20,3 +22,50 @@ jobs:
       build: ./build.sh --release "${GITHUB_REF_NAME#v}"
       packages: build/*.fwsc
       test: CC=clang sh tests/j6/run_tests.sh
+
+  notes-and-workbench:
+    name: Release notes and the Workbench zip
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Release notes from HERA.md
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eo pipefail
+          VER="${GITHUB_REF_NAME#v}"
+          # the section "### X.Y" of the version history, up to the next heading
+          awk -v v="$VER" '
+            $0 ~ "^### " v "([ ]|$)" { on = 1; next }
+            on && /^#+ / { exit }
+            on { print }
+          ' HERA.md > notes.md
+          [ -s notes.md ] || { echo "HERA.md has no '### $VER' section in the version history"; exit 1; }
+          {
+            echo
+            echo "---"
+            echo "**Install:** open the [installer](https://benbadio.github.io/hera-fm1/install.html) in Chrome or Edge with the FM-1 connected. \`hera-$VER.fwsc\` below is the signed package, for other installers. The Workbench zip runs HERA in a browser, offline (serve the folder with any static web server)."
+            echo "**Full manual and version history:** [HERA.md](https://github.com/${{ github.repository }}/blob/main/HERA.md)"
+          } >> notes.md
+          gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --notes-file notes.md
+
+      - name: Install clang and lld (wasm32)
+        run: sudo apt-get update && sudo apt-get install -y clang lld zip
+
+      - name: Build and attach the Workbench
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eo pipefail
+          VER="${GITHUB_REF_NAME#v}"
+          WASM_CC=clang sh web/build.sh
+          mkdir -p web/firmware
+          gh release download "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --pattern '*.fwsc' --dir web/firmware
+          mv web/firmware/hera-*.fwsc web/firmware/hera.fwsc    # the installer page looks for this name
+          rm -rf web/src web/build.sh
+          (cd web && zip -qr "../hera-workbench-$VER.zip" .)
+          gh release upload "$GITHUB_REF_NAME" "hera-workbench-$VER.zip" --repo "$GITHUB_REPOSITORY"
