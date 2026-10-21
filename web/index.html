@@ -1,172 +1,145 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MORPHEUS // 8-Track ReBirth Groovebox & Matrix Sequencer</title>
-  <meta name="description" content="In-browser interactive emulator for MORPHEUS: 8-track ReBirth groovebox (808, 909, dual 303s, break slicer, FM lead, sub synth) & matrix pattern sequencer for the M-VAVE FM-1.">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎛️</text></svg>">
-  <link rel="stylesheet" href="style.css?v=20261017e">
-  <style>
-    body { background: #131518; color: #e6e8eb; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    .devicebox { overflow-x: auto; overscroll-behavior-x: contain; }
-    .device { position: relative; width: 100%; min-width: 560px; aspect-ratio: 1000 / 640; background: #2e3238; border-radius: 4.4% / 6.9%; }
-    .device svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-    .device canvas { position: absolute; left: 31.8%; top: 9.6875%; width: 20%; height: 31.25%; image-rendering: pixelated; background: #080a0c; border-radius: 4px; cursor: default; }
-    .device.screen-edit-active canvas { cursor: crosshair; }
-    .start { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(10, 11, 13, .55); border-radius: 4.4% / 6.9%; z-index: 50; }
-    .start[hidden] { display: none !important; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HERA Workbench</title>
+<link rel="stylesheet" href="hera.css">
 </head>
 <body>
-<main>
-  <header>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <img src="assets/logo.svg" width="38" height="38" alt="MORPHEUS White Rabbit Logo" style="filter:drop-shadow(0 0 8px rgba(0,255,102,0.6));flex-shrink:0;">
-      <div>
-        <h1>MORPHEUS</h1>
-        <p>8-track ReBirth groovebox & matrix pattern sequencer for the M-VAVE FM-1</p>
+<header class="top">
+  <h1>HE<span>RA</span> Workbench</h1>
+  <div class="sub">The J-6-style chord groovebox for the M-VAVE FM-1, running in your browser</div>
+  <div class="spacer"></div>
+  <button class="btn acc" id="audioBtn">▶ Start audio</button>
+  <button class="btn" id="tourBtn">Guided tour</button>
+  <button class="btn" id="midiBtn">Connect MIDI</button>
+  <a class="btn" href="install.html">Install on the FM-1</a>
+</header>
+
+<main class="wb">
+  <section>
+    <div class="device" id="device">
+      <div class="row encs" id="encs"></div>
+      <div class="mid">
+        <div class="btns" id="btnsL"></div>
+        <div class="screen-wrap"><canvas id="screen" width="240" height="240"></canvas></div>
+        <div class="btns" id="btnsR"></div>
+      </div>
+      <div class="keyboard" id="keyboard"></div>
+      <div class="devbar">
+        <div class="master"><input type="range" id="master" min="0" max="100" value="70"><div class="label">Master</div></div>
+        <span id="devStatus">Audio off: press <b>Start audio</b></span>
       </div>
     </div>
-    <nav aria-label="Navigation">
-      <a href="manual.html">Manual</a>
-      <a href="install.html">Install</a>
-      <a href="https://github.com/benbadio/morpheus-fm1" target="_blank" rel="noreferrer">Source</a>
-    </nav>
-  </header>
+    <p class="hint" style="color:var(--dim);font-size:12px;margin-top:8px">
+      Play with the mouse, or the computer keyboard: <b>Z S X D C V G B H N J M ,</b> = C4 to C5, <b>Q 2 W 3 E R 5 T</b> = C5 up.
+      <b>Space</b> = PLAY, <b>Shift</b> = GLO. Knobs: drag up and down, or scroll. This is the real HERA firmware, compiled to WebAssembly.
+    </p>
+  </section>
 
-  <div class="devicebox">
-    <div class="device" id="device" role="group" aria-label="M-VAVE FM-1 Hardware" tabindex="-1">
-      <svg id="panel" viewBox="0 0 1000 640" aria-hidden="true" focusable="false"></svg>
-      <canvas id="matrixCanvas" width="240" height="240" role="img" aria-label="MORPHEUS 240x240 LCD Screen"></canvas>
-      <div class="controls" id="controls"></div>
-      <div class="start" id="start"><button id="btnStart" type="button">Switch on</button></div>
-      <div hidden id="descs"></div>
+  <section class="editor">
+    <div class="tabs" id="tabs">
+      <div class="tab on" data-pane="sounds">Sounds</div>
+      <div class="tab" data-pane="chords">Chords</div>
+      <div class="tab" data-pane="phrases">Phrases</div>
+      <div class="tab" data-pane="seq">Sequencer</div>
+      <div class="tab" data-pane="settings">Settings</div>
+      <div class="tab" data-pane="project">Project</div>
+      <div class="tab" data-pane="ref">Controls</div>
     </div>
-  </div>
 
-  <!-- Interactive Guided Walkthrough HUD (Step-by-step tutorial with live control highlights) -->
-  <div class="walkthrough-hud" id="walkthroughHud" style="display:none;" role="region" aria-label="Interactive Walkthrough Guide"></div>
-
-  <!-- Live Dynamic Hint Banner (updates on hover/touch) -->
-  <div class="hint-banner" id="hintBanner">
-    <span class="hint-icon">💡</span>
-    <span class="hint-text" id="hintText">Hover or touch any knob, button, silicone key, or the screen to see what it does. Click "Switch on" to start!</span>
-  </div>
-
-  <!-- Bottom Transport Bar -->
-  <div class="bar">
-    <span id="status" role="status">Off. Click "Switch on" to initialize Web Audio and start the Matrix sequencer.</span>
-    <button id="muteBtn" type="button" aria-pressed="false">Mute Audio</button>
-    <button id="resetBtn" type="button" title="Reload factory patterns">Factory Reset</button>
-    <span class="cpu" id="statusInfo">128 BPM &bull; 8 Tracks &bull; ReBirth 303/808/909</span>
-  </div>
-
-  <!-- Demo Groove Presets Bar -->
-  <div class="presets-bar">
-    <span class="presets-label">⚡ Groove Styles:</span>
-    <button class="preset-btn active" id="presetAcid" type="button">Acid Techno (Default)</button>
-    <button class="preset-btn" id="presetElectro" type="button">Detroit Electro</button>
-    <button class="preset-btn" id="presetDub" type="button">Ambient Dub</button>
-    <button class="preset-btn" id="presetPolymetric" type="button">Polymetric 7/8</button>
-  </div>
-
-  <!-- Pattern Library & Actions Toolbar -->
-  <div class="toolbar-box">
-    <div class="toolbar-group">
-      <span class="toolbar-label">Pattern Library:</span>
-      <button id="btnExportJson" type="button" title="Download all tracks and patterns as a JSON file">Export JSON</button>
-      <button id="btnImportJson" type="button" title="Load custom patterns from a JSON file">Import JSON</button>
-      <input type="file" id="fileImportJson" accept=".json" style="display:none;">
-      <button id="btnCopyPat" type="button" title="Copy active pattern to clipboard">Copy</button>
-      <button id="btnPastePat" type="button" title="Paste copied pattern to active slot">Paste</button>
+    <div class="pane on" id="pane-sounds">
+      <h2>Sounds</h2>
+      <p class="hint">64 Juno-style sounds in 8 banks. Click one to load it into the current pattern; the sliders are the eight panel knobs (K1–K4, and with GLO).</p>
+      <div class="toolbar" id="bankTabs"></div>
+      <div class="grid8" id="soundGrid"></div>
+      <div class="knobs8" id="knobs8"></div>
     </div>
-    <div class="toolbar-group">
-      <span class="toolbar-label">Quick Actions:</span>
-      <button id="btnUndo" type="button" title="Undo last change (Ctrl+Z / Cmd+Z)" disabled>↶ Undo</button>
-      <button id="btnRedo" type="button" title="Redo change (Ctrl+Y / Cmd+Shift+Z)" disabled>↷ Redo</button>
-      <button id="btnRandomize" type="button" title="Generate musical pattern variation (Shift+FX on device)">Randomize</button>
-      <button id="btnClear" type="button" title="Clear notes in active pattern">Clear Pattern</button>
-    </div>
-    <div class="toolbar-group">
-      <span class="toolbar-label">Tutorial & Screen:</span>
-      <button id="btnStartWalkthrough" type="button" class="btn-walkthrough-toggle" title="Launch guided interactive tutorial on the live synthesizer">🎓 Interactive Walkthrough</button>
-      <button id="btnToggleScreenEdit" type="button" aria-pressed="false" title="Toggle interactive mouse editing directly on the 240x240 LCD screen (Disabled by default for hardware fidelity)">
-        🖱️ Screen Edit: <span id="screenEditState">OFF (Hardware Faithful)</span>
-      </button>
-    </div>
-  </div>
 
-  <!-- Quick Start Guide (4 Cards) -->
-  <div class="guide-grid">
-    <div class="guide-card">
-      <div class="guide-card-header">
-        <span class="guide-badge">STEP 1</span>
-        <h3>Start & Play</h3>
+    <div class="pane" id="pane-chords">
+      <h2>Chord sets</h2>
+      <p class="hint">All 100 J-6 chord sets. Pick a set, then click a chord to hear it (chord mode turns on).</p>
+      <div class="toolbar">
+        <button class="btn small" id="csPrev">◀</button>
+        <select id="csSel"></select>
+        <button class="btn small" id="csNext">▶</button>
+        <span class="pill" id="csMode">CHORD off</span>
+        <button class="btn small" id="csToggle">Chord mode on/off</button>
       </div>
-      <p>Click <strong>Switch on</strong>, then tap <strong>PLAY</strong>. All 8 tracks start jamming together: T1 303 A, T2 303 B, T3 808 Drums, T4 909 Drums, T5 Breaks, T6 FM, T7 Sub, and T8 MIDI.</p>
+      <div class="chordcards" id="chordCards"></div>
     </div>
 
-    <div class="guide-card">
-      <div class="guide-card-header">
-        <span class="guide-badge">STEP 2</span>
-        <h3>Twist the Knobs</h3>
+    <div class="pane" id="pane-phrases">
+      <h2>Phrases</h2>
+      <p class="hint">9 styles × 12 variations. Styles 6–9 show the phrase itself, as measured from a J-6 (orange = accent).</p>
+      <div class="toolbar">
+        <span class="pill" id="phOn">PHRASE off</span>
+        <button class="btn small" id="phToggle">Phrase on/off</button>
+        <label>Held notes <select id="phSize"><option>1</option><option>2</option><option selected>3</option><option>4</option></select></label>
+        <button class="btn small acc" id="phTry">Audition (C–E–G, 2 bars)</button>
       </div>
-      <p>Drag <strong>K1 Cutoff</strong> and <strong>K2 Res</strong> up and down to hear the 303 diode-ladder filter bite and scream. Drag <strong>TEMPO</strong> to adjust BPM.</p>
+      <div class="stylelist" id="styleList"></div>
+      <div class="varlist" id="varList"></div>
+      <div class="roll" id="roll"></div>
     </div>
 
-    <div class="guide-card">
-      <div class="guide-card-header">
-        <span class="guide-badge">STEP 3</span>
-        <h3>Compose & Edit</h3>
+    <div class="pane" id="pane-seq">
+      <h2>Sequencer</h2>
+      <p class="hint">The current pattern's 64 steps. Click a step to edit it on the device (then play keys to enter notes, SEQ to finish).</p>
+      <div class="toolbar">
+        <button class="btn small acc" id="sqPlay">▶ / ■</button>
+        <button class="btn small" id="sqRec">● REC</button>
+        <button class="btn small" id="sqStop">Full stop</button>
+        <label>Pattern <select id="patSel"></select></label>
+        <label>Tempo <input type="number" id="tempo" min="40" max="300" step="0.1" style="width:80px"></label>
+        <label>Last step <input type="number" id="last" min="1" max="64" style="width:60px"></label>
+        <button class="btn small" id="sqSave">Save pattern</button>
+        <button class="btn small" id="sqClear">Clear pattern</button>
       </div>
-      <p>Compose using panel knobs &amp; silicone keys in <strong>REC</strong> mode (or enable <strong>Screen Edit</strong> above to click and draw directly on the LCD grid!).</p>
+      <div class="steps" id="steps"></div>
     </div>
 
-    <div class="guide-card">
-      <div class="guide-card-header">
-        <span class="guide-badge">STEP 4</span>
-        <h3>Record with Keys</h3>
+    <div class="pane" id="pane-settings">
+      <h2>Settings</h2>
+      <p class="hint">The same list as the device's settings page (EDIT).</p>
+      <div class="setlist" id="setList"></div>
+    </div>
+
+    <div class="pane" id="pane-project">
+      <h2>Project</h2>
+      <p class="hint">The 64 patterns and the settings. Saved in this browser, or as a file.</p>
+      <div class="toolbar">
+        <button class="btn" id="prSave">Save in this browser</button>
+        <button class="btn" id="prLoad">Load from this browser</button>
+        <button class="btn" id="prExport">Export file (.hera)</button>
+        <label class="btn">Import file<input type="file" id="prImport" accept=".hera" hidden></label>
+        <button class="btn" id="prReset">Factory reset</button>
       </div>
-      <p>Tap <strong>REC</strong>, then press the <strong>27 silicone keys</strong>. The note pitch is punched into the step, and the sequencer automatically steps forward!</p>
+      <div class="log" id="prLog">Nothing saved yet.</div>
+      <h2 style="margin-top:18px">MIDI</h2>
+      <p class="hint">Play the browser HERA from a MIDI keyboard, and send its notes and clock to another app or synth.</p>
+      <div class="toolbar">
+        <label>In <select id="midiIn"><option value="">(none)</option></select></label>
+        <label>Out <select id="midiOut"><option value="">(none)</option></select></label>
+      </div>
+      <div class="log" id="midiLog">MIDI not connected.</div>
     </div>
-  </div>
 
-  <!-- Detailed Help Reference -->
-  <section class="help">
-    <div>
-      <h2>Hardware Panel Controls</h2>
-      <ul>
-        <li><strong>MASTER:</strong> Output volume.</li>
-        <li><strong>SELECT:</strong> Scrubs active step (1&ndash;32) or transposes pattern with EDIT.</li>
-        <li><strong>TEMPO:</strong> Sequencer speed (50&ndash;240 BPM). With EDIT: Swing (0&ndash;75%).</li>
-        <li><strong>TRACK:</strong> Switch active track (T1..T8: 303A, 303B, D808, D909, BRK, FM, SUB, MIDI).</li>
-        <li><strong>K1 (Cutoff):</strong> 303 Filter Cutoff frequency / note pitch.</li>
-        <li><strong>K2 (Resonance):</strong> Squelchy diode-ladder resonance / gate length & tie.</li>
-        <li><strong>K3 (Decay):</strong> Envelope decay / curve modulation value.</li>
-        <li><strong>K4 (Accent):</strong> Accent overdrive intensity / pattern length.</li>
-        <li><strong>OCT- / OCT+:</strong> Scroll grid octave window (C1..B5).</li>
-        <li><strong>16 White Keys:</strong> Direct 16-step drum programming (1–16 or 17–32) on 808/909 tracks, and pitched note playing. Integrated LEDs illuminate pressed keys and active steps.</li>
-      </ul>
-    </div>
-    <div>
-      <h2>Pro Tips & Acid Tricks</h2>
-      <ul>
-        <li><strong>Acid Slides:</strong> When two consecutive steps have notes and the first step has <em>Tie</em> enabled, the pitch glides smoothly (portamento) without re-triggering attack!</li>
-        <li><strong>Punchy Accents:</strong> Set velocity to 105 or higher on a step. The 303 filter snaps wide open with saturated overdrive!</li>
-        <li><strong>Modulation Curves:</strong> Press <strong>ENV</strong> to switch into CURVE view. Click in the grid to draw filter cutoffs or MIDI CC automation.</li>
-        <li><strong>Silent MIDI Mode:</strong> Press <strong>LFO</strong> until it says <strong>MUTE</strong>. The internal audio is silenced so you can sequence hardware gear with zero latency!</li>
-      </ul>
-    </div>
-    <div>
-      <h2>Documentation & Firmwares</h2>
-      <p>
-        Read the comprehensive <strong><a href="manual.html">User Manual</a></strong> for full MIDI charts, polyrhythm settings, and memory maps. To flash this firmware onto a real M-VAVE FM-1 groovebox, check the <strong><a href="install.html">Installation Guide</a></strong>.
-      </p>
+    <div class="pane" id="pane-ref">
+      <h2>Controls</h2>
+      <p class="hint">Every control on the FM-1, as HERA uses it.</p>
+      <table class="ref" id="refTable"></table>
     </div>
   </section>
 </main>
 
-<script src="emulator.js?v=20261018a"></script>
+<div class="tour" id="tour">
+  <div class="th"><b id="tourTitle">Guided tour</b><button class="btn small" id="tourMenu">Chapters</button><button class="btn small" id="tourClose">✕</button></div>
+  <div class="tb" id="tourBody"></div>
+  <div class="tf"><button class="btn small" id="tourPrev">Back</button><div class="prog"><i id="tourProg"></i></div><button class="btn small acc" id="tourNext">Next</button></div>
+</div>
+
+<script type="module" src="hera.js"></script>
 </body>
 </html>

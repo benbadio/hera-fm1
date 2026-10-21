@@ -1,38 +1,38 @@
 <!doctype html>
 <!-- SPDX-License-Identifier: GPL-3.0-only
      Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
-     MORPHEUS: in-browser Web MIDI installer modeled after Felucca & X0X installer. -->
+     HERA: in-browser Web MIDI installer modeled after Felucca & X0X installer. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Install · MORPHEUS</title>
+<title>Install · HERA</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎛️</text></svg>">
 <style>
-  :root { --bg: #060a08; --fg: #e0fbe6; --dim: #6d947b; --accent: #00ff66; }
+  :root { --bg: #0b0b10; --fg: #ececf2; --dim: #8a8a9a; --accent: #ff7c1a; }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --bg: #060a08; --fg: #e0fbe6; --dim: #6d947b; }
+    :root:not([data-theme="light"]) { --bg: #0b0b10; --fg: #ececf2; --dim: #8a8a9a; }
   }
-  :root[data-theme="dark"] { --bg: #060a08; --fg: #e0fbe6; --dim: #6d947b; }
+  :root[data-theme="dark"] { --bg: #0b0b10; --fg: #ececf2; --dim: #8a8a9a; }
   body { margin: 0; background: var(--bg); color: var(--fg);
          font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif; }
   main { max-width: 520px; margin: 0 auto; padding: 48px 16px; }
-  h1 { font-size: 24px; font-weight: 600; margin: 0 0 24px; color: #fff; text-shadow: 0 0 14px rgba(0, 255, 102, 0.4); }
+  h1 { font-size: 24px; font-weight: 600; margin: 0 0 24px; color: #fff; text-shadow: 0 0 14px rgba(255, 124, 26, 0.4); }
   .lang { float: right; font-size: 13px; color: var(--dim); cursor: pointer; text-decoration: underline; background: none; padding: 0; border: 0; }
   p { margin: 0 0 16px; }
-  button { font: inherit; background: var(--accent); color: #041407; font-weight: 700; border: 0; padding: 10px 24px; cursor: pointer; border-radius: 4px; box-shadow: 0 0 12px rgba(0, 255, 102, 0.4); transition: all 0.15s ease; }
-  button:hover:not(:disabled) { background: #33ff88; box-shadow: 0 0 18px rgba(0, 255, 102, 0.65); }
+  button { font: inherit; background: var(--accent); color: #1e1e28; font-weight: 700; border: 0; padding: 10px 24px; cursor: pointer; border-radius: 4px; box-shadow: 0 0 12px rgba(255, 124, 26, 0.4); transition: all 0.15s ease; }
+  button:hover:not(:disabled) { background: #ff7c1a; box-shadow: 0 0 18px rgba(255, 124, 26, 0.65); }
   button:disabled { opacity: .3; cursor: default; box-shadow: none; }
   #status { margin-top: 16px; min-height: 1.6em; }
   .small { color: var(--dim); font-size: 13px; }
   progress { width: 100%; height: 6px; margin-top: 16px; accent-color: var(--accent); }
-  pre { color: var(--dim); font-size: 12px; white-space: pre-wrap; margin-top: 16px; max-height: 160px; overflow-y: auto; background: #0c1810; border: 1px solid #1a3322; padding: 8px; border-radius: 4px; }
+  pre { color: var(--dim); font-size: 12px; white-space: pre-wrap; margin-top: 16px; max-height: 160px; overflow-y: auto; background: #15151d; border: 1px solid #2c2c3a; padding: 8px; border-radius: 4px; }
   pre:empty { display: none; }
-  h2 { font-size: 18px; font-weight: 600; margin: 40px 0 12px; color: var(--accent); text-shadow: 0 0 8px rgba(0, 255, 102, 0.3); }
+  h2 { font-size: 18px; font-weight: 600; margin: 40px 0 12px; color: var(--accent); text-shadow: 0 0 8px rgba(255, 124, 26, 0.3); }
   ol { margin: 0 0 16px; padding-left: 20px; }
   input[type=file] { font: inherit; font-size: 13px; color: var(--dim); max-width: 100%; }
   .home { display: inline-block; font-weight: 700; letter-spacing: .03em; color: var(--dim); text-decoration: none; margin: 0 0 12px; }
-  .home:hover, .home:focus-visible { color: var(--accent); text-shadow: 0 0 8px rgba(0, 255, 102, 0.5); }
+  .home:hover, .home:focus-visible { color: var(--accent); text-shadow: 0 0 8px rgba(255, 124, 26, 0.5); }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   #alert { font-weight: 600; color: #ff5555; }
   #alert:empty { display: none; }
@@ -46,13 +46,13 @@
 <main>
   <button class="lang" id="lang" type="button"></button>
   <div class="nav-strip">
-    <a class="home" href="index.html">MORPHEUS</a>
+    <a class="home" href="index.html">HERA</a>
     <a href="manual.html">Manual</a>
-    <a href="https://github.com/benbadio/morpheus-fm1" target="_blank" rel="noopener">Source</a>
+    <a href="https://github.com/benbadio/hera-fm1" target="_blank" rel="noopener">Source</a>
   </div>
   <h1 style="display:flex;align-items:center;gap:12px;">
-    <img src="assets/logo.svg" width="36" height="36" alt="White Rabbit Logo" style="filter:drop-shadow(0 0 8px rgba(0,255,102,0.6));flex-shrink:0;">
-    <span>Install MORPHEUS</span>
+    <img src="assets/logo.svg" width="36" height="36" alt="HERA" style="flex-shrink:0;">
+    <span>Install HERA</span>
   </h1>
   <p data-t="intro"></p>
   <p data-t="warn"></p>
@@ -82,15 +82,15 @@
   <p><button id="stockgo" disabled data-t="stockinstall"></button></p>
 
   <p><a href="manual.html" style="color:inherit" data-t="manual"></a></p>
-  <p class="small">MORPHEUS is built on the SLOOP / Felucca platform by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener" style="color:inherit">Hügelton Instruments<span class="sr" data-t="newtab"></span></a>.<br>
+  <p class="small">HERA is built on the SLOOP / Felucca platform by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener" style="color:inherit">Hügelton Instruments<span class="sr" data-t="newtab"></span></a>.<br>
     M-VAVE and FM-1 are trademarks of their respective owners.<br>
-    <span data-t="license"></span> <a href="https://github.com/benbadio/morpheus-fm1" target="_blank" rel="noopener" style="color:inherit">github.com/benbadio/morpheus-fm1<span class="sr" data-t="newtab"></span></a></p>
+    <span data-t="license"></span> <a href="https://github.com/benbadio/hera-fm1" target="_blank" rel="noopener" style="color:inherit">github.com/benbadio/hera-fm1<span class="sr" data-t="newtab"></span></a></p>
 </main>
 
 <script type="module">
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
-// FM-1 .fwsc package reader & SysEx Web MIDI updater for MORPHEUS
+// FM-1 .fwsc package reader & SysEx Web MIDI updater for HERA
 
 const BLOCKS = 20, BLK = 0x30, KEEP = 0x2F;
 
@@ -317,18 +317,18 @@ const TEXT = {
   ja: {
     intro: "FM-1 を USB で接続してください。（Chrome か Edge で使えます）",
     warn: "書き込み中は USB を抜かないでください。",
-    install: "MORPHEUS をインストール", other: "English",
+    install: "HERA をインストール", other: "English",
     manual: "マニュアル",
-    untested: "MORPHEUS は 8 トラックの ReBirth グルーヴボックス（808/909/303/Breaks/FM）& Reason Matrix パターンシーケンサーです。",
+    untested: "HERA は Roland J-6 スタイルのコードグルーヴボックスです（100 のコードセット、9 × 12 のフレーズ、64 パターンのシーケンサー）。",
     direct: "USB ケーブルはパソコンに直接つないでください。ハブや変換機を介さず直接接続を推奨します。",
     brick: "万一 FM-1 が起動しなくなった場合は、USB 経由で復旧できます:",
     bricklink: "起動しない FM-1 の復旧（マニュアル）",
     beta: "このカスタムファームウェアの使用は自己責任でお願いします。",
     back: "公式ファームウェアに戻すには、このページ下の「純正ファームウェアに戻す」か、M-VAVE 公式のアップデーター M-UPGRADE を使います。",
     stockh: "純正ファームウェアに戻す",
-    stockwhy: "M-VAVE の FM-1 V15 を、MORPHEUS（またはそのセーフモード）から同じ USB ケーブルで書き込みます。保存したパターンは初期化されることがあります。",
-    keep: "他のファームウェアを入れると、MORPHEUS のパターンは上書きされます。先にエミュレーターから JSON に保存しておけます:",
-    keeplink: "エミュレーターで JSON 保存",
+    stockwhy: "M-VAVE の FM-1 V15 を、HERA（またはそのセーフモード）から同じ USB ケーブルで書き込みます。保存したパターンは初期化されることがあります。",
+    keep: "他のファームウェアを入れると、HERA のパターンは上書きされます。先に Workbench のプロジェクトファイルに保存しておけます:",
+    keeplink: "Workbench でプロジェクトを書き出す",
     stock1: "M-VAVE の FM-1 V15 をダウンロード:",
     stock2: "ダウンロードしたファイルを選ぶ:",
     stock3: "FM-1 を USB で接続し、下のボタンを押す。",
@@ -356,18 +356,18 @@ const TEXT = {
   en: {
     intro: "Connect the FM-1 by USB. (Works in Chrome or Edge.)",
     warn: "Do not unplug the USB cable while writing.",
-    install: "Install MORPHEUS", other: "日本語",
+    install: "Install HERA", other: "日本語",
     manual: "The manual",
-    untested: "MORPHEUS is an 8-track ReBirth groovebox (808, 909, dual 303s, breakbeats, FM, sub & MIDI) with Reason Matrix pattern sequencing.",
+    untested: "HERA is a J-6-style chord groovebox: 100 chord sets, 9 x 12 phrase styles and a 64-pattern sequencer, on the FM-1's colour screen.",
     direct: "Connect the USB cable directly to the computer. No probe or Transporter is needed.",
     brick: "If the FM-1 no longer starts, you can recover it over USB:",
     bricklink: "recovering an FM-1 that won't start (manual)",
     beta: "This is custom open-source firmware. The author accepts no responsibility for device damage. Use at your own risk.",
     back: "To go back to the official firmware, use \"Back to the stock firmware\" below, or M-VAVE's own updater, M-UPGRADE (Downloads → PC Software → M-UPGRADE).",
     stockh: "Back to the stock firmware",
-    stockwhy: "This writes M-VAVE's own FM-1 V15 back, from MORPHEUS (or its safe mode) over the same USB cable. Patterns saved in MORPHEUS may be lost.",
-    keep: "Installing other firmware replaces MORPHEUS's patterns. To keep them, save them to a file first in the emulator:",
-    keeplink: "back up your patterns (JSON)",
+    stockwhy: "This writes M-VAVE's own FM-1 V15 back, from HERA (or its safe mode) over the same USB cable. Patterns saved in HERA may be lost.",
+    keep: "Installing other firmware replaces HERA's patterns. To keep them, export a project file from the Workbench first:",
+    keeplink: "export a project from the Workbench",
     stock1: "Download M-VAVE's FM-1 V15:",
     stock2: "Choose the file you downloaded:",
     stock3: "Connect the FM-1 by USB and press the button below.",
@@ -432,14 +432,14 @@ function sayPct(k, pct) {
 
 const log = (t) => { $("log").textContent += t + "\n"; };
 let image = null;
-const meta = {"version": "1.0.0", "product": "FM-1_8000013", "pkg": "firmware/morpheus.fwsc"};
+const meta = {"version": "1.0.0", "product": "FM-1_950", "pkg": "firmware/hera.fwsc"};
 
 let writing = false;
 window.addEventListener("beforeunload", (e) => { if (writing) { e.preventDefault(); e.returnValue = t("leave"); } });
 
 (async () => {
   if (!navigator.requestMIDIAccess) { sayK("nomidi"); return; }
-  say("Loading MORPHEUS firmware package...");
+  say("Loading HERA firmware package...");
   try {
     const r = await fetch(meta.pkg + "?v=" + Date.now());
     if (!r.ok) throw new Error(`${meta.pkg}: HTTP ${r.status}`);
@@ -448,7 +448,7 @@ window.addEventListener("beforeunload", (e) => { if (writing) { e.preventDefault
     if (!prod || !prod.startsWith("FM-1_")) { sayK("badpkg"); return; }
     meta.product = prod;
     image = logicalImage(pkg);
-    say(`MORPHEUS ready (${prod}). Connect FM-1 and click Install.`);
+    say(`HERA ready (${prod}). Connect FM-1 and click Install.`);
     $("go").disabled = false;
   } catch (e) {
     sayK("loadfail", e.message);

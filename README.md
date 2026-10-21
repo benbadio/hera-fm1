@@ -125,6 +125,17 @@ Every J-6 menu item in plain words, grouped as Pattern, Keys and chords, MIDI, S
 
 <br clear="right">
 
+## The Workbench (in your browser)
+
+`web/` is the **HERA Workbench**, modelled on M-VAVE's FM1 Open Workbench:
+- **The real firmware in the browser:** HERA compiled to WebAssembly on a virtual FM-1, playable with the mouse, the computer keyboard or a MIDI keyboard.
+- **An editor** with tabs for sounds, chord sets (with every chord's notes), phrases (with piano rolls), the 64-step grid, settings, and projects (save in the browser, export / import files).
+- **A guided tour** in the order of the J-6 manual. It highlights each control and moves on by itself when you've done the step.
+- **A manual** (`manual.html`) with "to do this, press that" tables.
+- **A Web MIDI installer** (`install.html`) for HERA and for restoring the factory V15.
+
+To run it locally, build it with `sh web/build.sh` (needs LLVM with wasm32: `brew install llvm lld`), then serve `web/` with any static server, e.g. `python3 -m http.server --directory web`. CI also packages it as the `hera-workbench` artifact.
+
 ## Using it
 
 | FM-1 | HERA |

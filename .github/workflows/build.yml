@@ -102,3 +102,37 @@ jobs:
             build/hera.bin
             build/hera.dis
           if-no-files-found: error
+
+  workbench:
+    name: Build the HERA Workbench (browser)
+    runs-on: ubuntu-latest
+    needs: firmware-build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install clang and lld (wasm32)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld
+
+      - name: Build hera.wasm
+        run: WASM_CC=clang sh web/build.sh
+
+      - name: Download the firmware package
+        uses: actions/download-artifact@v4
+        with:
+          name: hera-firmware
+          path: build-fw
+
+      - name: Bundle the firmware with the installer page
+        run: cp build-fw/hera.fwsc web/firmware/hera.fwsc
+
+      - name: Upload the Workbench
+        uses: actions/upload-artifact@v4
+        with:
+          name: hera-workbench
+          path: |
+            web
+            !web/src
+            !web/build.sh

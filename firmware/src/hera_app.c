@@ -382,39 +382,90 @@ static void splash(void)
     cv_blit(0, 200);
 }
 
-static void app_main(void)
+static uint32_t t_ui, t_led, t_splash;
+
+static void hera_setup(void)
 {
-    uint32_t t_ui = 0, t_led = 0, t_splash;
     j6_engine_init(hera_fx, J6_FX_MEM_LEN, &hera_store);
     ui.page = PG_PLAY;
     ui.chord_key = 0xFFu;
     ui.set_cursor = 1;
     splash();
     t_splash = fm1_ms + 1200u;
-    for (;;) {
-        j6_status_t s;
-        uint8_t a, b, c;
-        platform_poll();
-        j6_engine_status(&s);
-        buttons(&s);
-        keys(&s);
-        encoders(&s);
-        while (j6_engine_cmd_space() && midi_get(&a, &b, &c))
-            j6_engine_midi_in(J6_PORT_USB, a, b, c);
-        while (j6_engine_midi_out(&a, &b, &c))
-            midi_send(a, b, c);
-        j6_engine_poll();
-        if ((int32_t)(fm1_ms - t_led) >= 20) {
-            t_led = fm1_ms;
-            leds(&s);
+}
+
+/* one pass of the main loop (the browser build calls it from requestAnimationFrame) */
+static void hera_step(void)
+{
+    j6_status_t s;
+    uint8_t a, b, c;
+    j6_engine_status(&s);
+    buttons(&s);
+    keys(&s);
+    encoders(&s);
+    while (j6_engine_cmd_space() && midi_get(&a, &b, &c))
+        j6_engine_midi_in(J6_PORT_USB, a, b, c);
+    while (j6_engine_midi_out(&a, &b, &c))
+        midi_send(a, b, c);
+    j6_engine_poll();
+    if ((int32_t)(fm1_ms - t_led) >= 20) {
+        t_led = fm1_ms;
+        leds(&s);
+    }
+    if ((int32_t)(fm1_ms - t_splash) >= 0 && (int32_t)(fm1_ms - t_ui) >= 33) {
+        if (t_splash) {
+            t_splash = 0;
+            ui.force = 1;
         }
-        if ((int32_t)(fm1_ms - t_splash) >= 0 && (int32_t)(fm1_ms - t_ui) >= 33) {
-            if (t_splash) {
-                t_splash = 0;
-                ui.force = 1;
-            }
-            t_ui = fm1_ms;
-            ui_draw();
-        }
+        t_ui = fm1_ms;
+        ui_draw();
     }
 }
+
+#ifndef DINGHY_WEB
+static void app_main(void)
+{
+    hera_setup();
+    for (;;) {
+        platform_poll();
+        hera_step();
+    }
+}
+#endif
+
+#ifdef DINGHY_WEB
+/* the browser build's extra exports (web/src/web_platform.c has the panel and the audio) */
+uint8_t *web_store(void) { return &host_flash[0][0]; }
+uint32_t web_store_len(void) { return (uint32_t)sizeof host_flash; }
+void web_reload(void)                            /* after the page restored web_store(): load it */
+{
+    j6_engine_init(hera_fx, J6_FX_MEM_LEN, &hera_store);
+    ui.force = 1;
+}
+static j6_status_t web_st;
+const j6_status_t *web_status(void)
+{
+    j6_engine_status(&web_st);
+    return &web_st;
+}
+const char *web_style_name(uint32_t s) { return HERA_STYLE_NAME[s <= 9u ? s : 0]; }
+const char *web_var_name(uint32_t s, uint32_t v) { return HERA_VAR_NAME[s <= 9u ? s : 0][v <= 12u ? v : 0]; }
+const char *web_sound_name(uint32_t i) { return j6_sounds[i % J6_SOUNDS].name; }
+const char *web_param_label(uint32_t id)         /* the settings page's words, "" if not listed there */
+{
+    uint32_t i;
+    for (i = 0; i < SET_N; i++)
+        if (SET_ITEMS[i].id == (int16_t)id) return SET_ITEMS[i].label;
+    return "";
+}
+static char web_vbuf[32];
+const char *web_param_value(uint32_t id, int32_t v)
+{
+    h_value(web_vbuf, id, v);
+    return web_vbuf;
+}
+uint32_t web_page(void) { return ui.page; }
+static uint8_t web_scratch_buf[64];
+uint8_t *web_scratch(void) { return web_scratch_buf; }   /* out buffer for j6_chord_raw and friends */
+uint32_t web_status_size(void) { return (uint32_t)sizeof(j6_status_t); }
+#endif
