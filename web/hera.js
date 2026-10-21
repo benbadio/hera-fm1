@@ -60,7 +60,7 @@ export const H = {
 window.HERA = H;   // for the console
 
 // ---- audio: the firmware renders 1024 frames per callback at 44.1 kHz --------------------------------
-let ac = null, masterGain = 0.7;
+let ac = null, masterGain = 0.7, muted = false;
 function startAudio() {
   if (ac) { ac.resume(); return; }
   ac = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 44100, latencyHint: 'interactive' });
@@ -68,80 +68,109 @@ function startAudio() {
   sp.onaudioprocess = (ev) => {
     E.web_audio(1024);
     const a = new Int32Array(E.memory.buffer, E.web_audio_buf(), 2048);
-    const L = ev.outputBuffer.getChannelData(0), R = ev.outputBuffer.getChannelData(1), g = masterGain / 32768;
+    const L = ev.outputBuffer.getChannelData(0), R = ev.outputBuffer.getChannelData(1), g = (muted ? 0 : masterGain) / 32768;
     for (let i = 0; i < 1024; i++) { L[i] = a[2 * i] * g; R[i] = a[2 * i + 1] * g; }
   };
   sp.connect(ac.destination);
-  $('#audioBtn').textContent = '♪ Audio on';
+  $('#start').hidden = true;
   $('#devStatus').textContent = ac.sampleRate === 44100 ? 'Audio on (44.1 kHz)' : `Audio on (${ac.sampleRate} Hz: pitch is shifted)`;
 }
-$('#audioBtn').onclick = startAudio;
-$('#master').oninput = (e) => { masterGain = e.target.value / 100; };
+$('#btnStart').onclick = startAudio;
+$('#muteBtn').onclick = (e) => { muted = !muted; e.currentTarget.setAttribute('aria-pressed', muted); };
+$('#fnToggle').onchange = (e) => { $('#device').classList.toggle('nofn', !e.target.checked); };
 document.addEventListener('pointerdown', () => { if (!ac) startAudio(); }, { once: true });
 
-// ---- the panel ------------------------------------------------------------------------------------
-const ENC = [['SELECT', 'Style'], ['ALGORITHM', 'Variation'], ['K1', 'Filter'], ['K2', 'Envelope'], ['K3', 'Delay'], ['K4', 'Reverb'], ['PRESETS', 'Tempo / browse']];
+// ---- the panel: the FM-1 faceplate, in the real layout (1000 x 640 units) ---------------------------
+const dev = $('#device');
+const place = (e, x, y, w, h) => { Object.assign(e.style, { left: x / 10 + '%', top: y / 6.4 + '%', width: w / 10 + '%', height: h / 6.4 + '%' }); return e; };
+const add = (cls, x, y, w, h, html = '') => { const d = document.createElement('div'); d.className = cls; d.innerHTML = html; dev.appendChild(place(d, x, y, w, h)); return d; };
+const hint = $('#hintText'), HINT0 = 'Hover or touch any knob, button, key or the screen to see what it does. Click “Switch on” to hear it.';
+hint.textContent = HINT0;
+const hintOn = (e, text) => { e.addEventListener('pointerenter', () => { hint.textContent = text; }); e.addEventListener('pointerleave', () => { hint.textContent = HINT0; }); };
+
+add('tray', 300, 44, 236, 236).classList.replace('tray', 'bezel');
+const scr = add('screen-box', 318, 62, 200, 200, '<canvas id="screen" width="240" height="240"></canvas>');
+hintOn(scr, 'The 240 × 240 screen: exactly what the FM-1 draws. Everything is shown in words: chord names, the chord map, steps, sounds and settings.');
+
+// knobs: [hardware label, HERA function, x, y, r, encoder id (null = MASTER), hint]
+const KN = [
+  ['MASTER', 'Volume', 105, 100, 24, null, 'MASTER: the output volume.'],
+  ['SELECT', 'Style', 215, 100, 24, 0, 'SELECT: the phrase style, 1–9 (arpeggios, rhythms, chords, strums). Works on every page.'],
+  ['PRESETS', 'Tempo / browse', 105, 205, 24, 6, 'PRESETS: the tempo. On a page that lists things (chord sets, sounds, patterns, settings, steps) it moves the cursor. GLO: fine tempo, or jump a bank.'],
+  ['ALGORITHM', 'Variation', 215, 205, 24, 1, 'ALGORITHM: the phrase variation, 1–12.'],
+  ['K1', 'Filter', 610, 100, 22, 2, 'K1: filter cutoff. With GLO: resonance.'],
+  ['K2', 'Envelope', 714, 100, 22, 3, 'K2: envelope release. With GLO: attack.'],
+  ['K3', 'Delay', 818, 100, 22, 4, 'K3: delay level. With GLO: delay time.'],
+  ['K4', 'Reverb', 922, 100, 22, 5, 'K4: reverb level. With GLO: reverb time.'],
+];
 const encRot = [0, 0, 0, 0, 0, 0, 0];
-ENC.forEach(([name, fn], id) => {
-  const d = document.createElement('div');
-  d.className = 'enc';
-  d.id = 'enc' + id;
-  d.innerHTML = `<div class="knob"></div><div class="label">${name}<br><b>${fn}</b></div>`;
-  const k = d.querySelector('.knob');
+for (const [name, fn, x, y, r, id, tip] of KN) {
+  add('hw', x - 50, y - r - 24, 100, 18, name);
+  const k = add('knob', x - r, y - r, 2 * r, 2 * r);
+  const own = id === null ? 'master' : 'enc' + id;
+  k.id = own;
+  add('fn', x - 50, y + r + 12, 100, 14, fn);
+  hintOn(k, tip);
   let y0 = null, acc = 0;
-  const turn = (n) => { if (!n) return; H.enc(id, n); encRot[id] += n * 15; k.style.setProperty('--rot', encRot[id] + 'deg'); };
+  const turn = (n) => {
+    if (!n) return;
+    if (id === null) { masterGain = Math.max(0, Math.min(1, masterGain + n * 0.03)); k.style.setProperty('--rot', (masterGain * 270 - 135) + 'deg'); return; }
+    H.enc(id, n); encRot[id] += n * 15; k.style.setProperty('--rot', encRot[id] + 'deg');
+  };
+  if (id === null) k.style.setProperty('--rot', (masterGain * 270 - 135) + 'deg');
   k.addEventListener('pointerdown', (e) => { y0 = e.clientY; acc = 0; k.setPointerCapture(e.pointerId); });
   k.addEventListener('pointermove', (e) => { if (y0 === null) return; acc += y0 - e.clientY; y0 = e.clientY; const n = Math.trunc(acc / 8); acc -= n * 8; turn(n); });
   k.addEventListener('pointerup', () => { y0 = null; });
   k.addEventListener('wheel', (e) => { e.preventDefault(); turn(e.deltaY < 0 ? 1 : -1); }, { passive: false });
-  $('#encs').appendChild(d);
-});
-
-// buttons: id, cap text, HERA function
-const BL = [[8, 'HOME', 'Play page'], [11, 'SEQ', 'Sequencer'], [5, 'LFO', 'Sounds'], [2, 'FX', 'Effects'], [6, 'EDIT', 'Settings'], [9, 'SAVE', 'Save'], [7, 'GLO', 'Shift']];
-const BR = [[3, 'SEL', 'Chord'], [10, 'ARP', 'Phrase'], [4, 'ENV', 'Hold'], [0, 'OCT-', 'Oct -'], [1, 'OCT+', 'Oct +'], [13, 'REC', 'Rec'], [12, 'PLAY', 'Play / stop']];
-const capEl = [];
-function addButtons(list, host) {
-  for (const [id, cap, fn] of list) {
-    const d = document.createElement('div');
-    d.className = 'b';
-    d.id = 'btn' + id;
-    d.innerHTML = `<div class="cap"><span>${cap}</span></div><div class="label"><b>${fn}</b></div>`;
-    const c = d.querySelector('.cap');
-    capEl[id] = c;
-    const up = () => { if (c.classList.contains('down')) { c.classList.remove('down'); H.button(id, 0); } };
-    c.addEventListener('pointerdown', (e) => { c.classList.add('down'); H.button(id, 1); c.setPointerCapture(e.pointerId); });
-    c.addEventListener('pointerup', up);
-    c.addEventListener('pointercancel', up);
-    host.appendChild(d);
-  }
 }
-addButtons(BL, $('#btnsL'));
-addButtons(BR, $('#btnsR'));
 
-// 27 keys, F3 .. G5
+// buttons: [id, hardware label, HERA function, x, y, w, h, hint]
+const capEl = [];
+const BT = [
+  [0, 'OCT-', 'Octave −', 72, 268, 82, 38, 'OCT −: octave down. With GLO: transpose down. On the sequencer page: the previous page of steps.'],
+  [1, 'OCT+', 'Octave +', 170, 268, 82, 38, 'OCT +: octave up. With GLO: transpose up. On the sequencer page: the next page of steps.'],
+];
+const ROW1 = [[2, 'FX', 'Effects', 'FX: the effects page (delay and reverb).'], [3, 'SEL', 'Chord', 'SEL: tap = chord mode on / off. Hold = the chord map (which chord is on which key).'],
+  [4, 'ENV', 'Hold', 'ENV: HOLD, which keeps notes sounding. On a selected step it ties the step.'], [5, 'LFO', 'Sounds', 'LFO: the sounds page. Browse with PRESETS; the keys keep playing so you hear each one.'],
+  [6, 'EDIT', 'Settings', 'EDIT: the settings page. Press again to leave it (and save them).'], [7, 'GLO', 'Shift', 'GLO: the shift button (Shift on your computer keyboard). Hold it while you press or turn another control.']];
+const ROW2 = [[8, 'HOME', 'Play page', 'HOME: the play page.'], [9, 'SAVE', 'Save', 'SAVE: save this pattern. With GLO: save all patterns.'],
+  [10, 'ARP', 'Phrase', 'ARP: tap = phrase on / off. Hold = the phrase page.'], [11, 'SEQ', 'Sequencer', 'SEQ: the sequencer page; again: the patterns page; with a step selected: finish editing.'],
+  [12, 'PLAY', '', 'PLAY / STOP: tap = play or stop (Space). Hold = full stop, silences everything. GLO + PLAY: play from the selected step.'], [13, 'REC', 'Record', 'REC: record in real time.']];
+ROW1.forEach(([id, l, f, t], i) => BT.push([id, l, f, 582 + i * 63, 174, 54, 48, t]));
+ROW2.forEach(([id, l, f, t], i) => BT.push([id, l, f, 582 + i * 63, 236, 54, 48, t]));
+add('tray', 58, 258, 210, 58);
+add('tray', 568, 160, 400, 140);
+for (const [id, label, fn, x, y, w, h, tip] of BT) {
+  const box = add('btnbox', x, y, w, h, `<div class="cap${id === 12 ? ' two' : ''}"><span class="hw">${id === 12 ? 'PLAY<br>STOP' : label}</span>${fn ? `<span class="fn">${fn}</span>` : ''}</div>`);
+  box.id = 'btn' + id;
+  const c = box.querySelector('.cap');
+  capEl[id] = c;
+  hintOn(c, tip);
+  const up = () => { if (c.classList.contains('down')) { c.classList.remove('down'); H.button(id, 0); } };
+  c.addEventListener('pointerdown', (e) => { c.classList.add('down'); H.button(id, 1); c.setPointerCapture(e.pointerId); });
+  c.addEventListener('pointerup', up);
+  c.addEventListener('pointercancel', up);
+}
+
+// the 27 keys, F3 .. G5: 16 white pills and 11 black ones, as on the FM-1
 const keyEl = [];
+const WHITE_K = [0, 2, 4, 6, 7, 9, 11, 12, 14, 16, 18, 19, 21, 23, 24, 26], BLACK_K = [1, 3, 5, 8, 10, 13, 15, 17, 20, 22, 25], BLACK_AFTER = [0, 1, 2, 4, 5, 7, 8, 9, 11, 12, 14];
+const bed = add('tray', 36, 340, 928, 270);
+bed.id = 'keyboard';
 (function keyboard() {
-  const kb = $('#keyboard');
-  const whites = [];
-  for (let k = 0; k < 27; k++) if (![1, 3, 6, 8, 10].includes((53 + k) % 12)) whites.push(k);
-  const ww = 100 / whites.length;
-  let wi = 0;
-  for (let k = 0; k < 27; k++) {
-    const n = 53 + k, black = [1, 3, 6, 8, 10].includes(n % 12);
-    const d = document.createElement('div');
-    d.className = 'key ' + (black ? 'b' : 'w');
-    if (black) { d.style.left = (wi * ww - ww * 0.3) + '%'; d.style.width = (ww * 0.6) + '%'; }
-    else { d.style.left = (wi * ww) + '%'; d.style.width = ww + '%'; wi++; }
-    d.innerHTML = `<div class="kl">${n % 12 === 0 ? noteName(n) : ''}</div>`;
+  const x0 = 36, y0 = 340, w = 928, h = 270, pitch = (w - 24) / 16, kw = pitch * 0.78;
+  const mk = (k, black, x, y, kh) => {
+    const n = 53 + k, d = add('key ' + (black ? 'b' : 'w'), x, y, kw, kh, `<div class="kl">${n % 12 === 0 ? noteName(n) : ''}</div>`);
     d.dataset.k = k;
     const up = () => { d.classList.remove('down'); H.setKey(k, false); };
     d.addEventListener('pointerdown', (e) => { d.classList.add('down'); H.setKey(k, true); d.setPointerCapture(e.pointerId); });
     d.addEventListener('pointerup', up);
     d.addEventListener('pointercancel', up);
-    kb.appendChild(d);
+    hintOn(d, 'Keys: notes, or whole chords with chord mode on. On the sequencer page the white keys select steps; with a step selected they enter notes.');
     keyEl[k] = d;
-  }
+  };
+  WHITE_K.forEach((k, i) => mk(k, false, x0 + 12 + i * pitch + (pitch - kw) / 2, y0 + h * 0.43, h * 0.52));
+  BLACK_AFTER.forEach((a, i) => mk(BLACK_K[i], true, x0 + 12 + (a + 1) * pitch - kw / 2, y0 + h * 0.06, h * 0.33));
 })();
 
 // computer keyboard

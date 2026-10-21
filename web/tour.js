@@ -15,7 +15,7 @@ const LESSONS = [
   { ch: 'Welcome', t: 'This is HERA', target: '#device',
     x: `<p>This is a working FM-1 running the real HERA firmware. Everything you do here happens exactly as it would on the device.</p>
         <p>HERA is a chord groovebox in the style of the Roland J-6, with chords on every key, phrases that play them for you, and a 64-pattern sequencer.</p>
-        <p>Click <b>Start audio</b> at the top first, then <b>Next</b>.</p>` },
+        <p>Click <b>Switch on</b> on the panel first, then <b>Next</b>.</p>` },
 
   { ch: 'Sounds', t: 'Play a note', target: '#keyboard',
     x: `<p>Play any key, with the mouse or your computer keyboard (<kbd>Z</kbd> is C4).</p><p>The note shows in large text on the screen.</p>`,
@@ -112,7 +112,7 @@ function highlight(sel) {
   if (lastTarget) lastTarget.classList.remove('tour-target');
   lastTarget = sel ? $(sel) : null;
   if (lastTarget) {
-    const t = lastTarget.querySelector('.cap, .knob') || lastTarget;
+    const t = lastTarget.classList.contains('btnbox') ? lastTarget.querySelector('.cap') : lastTarget;
     lastTarget = t;
     t.classList.add('tour-target');
   }

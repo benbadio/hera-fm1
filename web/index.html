@@ -5,38 +5,45 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HERA Workbench</title>
 <link rel="stylesheet" href="hera.css">
+<link rel="stylesheet" href="fm1.css">
 </head>
 <body>
-<header class="top">
-  <h1>HE<span>RA</span> Workbench</h1>
-  <div class="sub">The J-6-style chord groovebox for the M-VAVE FM-1, running in your browser</div>
-  <div class="spacer"></div>
-  <button class="btn acc" id="audioBtn">▶ Start audio</button>
-  <button class="btn" id="tourBtn">Guided tour</button>
-  <button class="btn" id="midiBtn">Connect MIDI</button>
-  <a class="btn" href="install.html">Install on the FM-1</a>
-</header>
-
 <main class="wb">
-  <section>
-    <div class="device" id="device">
-      <div class="row encs" id="encs"></div>
-      <div class="mid">
-        <div class="btns" id="btnsL"></div>
-        <div class="screen-wrap"><canvas id="screen" width="240" height="240"></canvas></div>
-        <div class="btns" id="btnsR"></div>
-      </div>
-      <div class="keyboard" id="keyboard"></div>
-      <div class="devbar">
-        <div class="master"><input type="range" id="master" min="0" max="100" value="70"><div class="label">Master</div></div>
-        <span id="devStatus">Audio off: press <b>Start audio</b></span>
-      </div>
+  <header class="site">
+    <div class="brand">
+      <img src="assets/logo.svg" width="38" height="38" alt="HERA logo">
+      <div><h1>HE<span>RA</span></h1><p>The J-6-style chord groovebox for the M-VAVE FM-1, running in your browser</p></div>
     </div>
-    <p class="hint" style="color:var(--dim);font-size:12px;margin-top:8px">
-      Play with the mouse, or the computer keyboard: <b>Z S X D C V G B H N J M ,</b> = C4 to C5, <b>Q 2 W 3 E R 5 T</b> = C5 up.
-      <b>Space</b> = PLAY, <b>Shift</b> = GLO. Knobs: drag up and down, or scroll. This is the real HERA firmware, compiled to WebAssembly.
-    </p>
-  </section>
+    <nav aria-label="Navigation">
+      <a href="manual.html">Manual</a>
+      <a href="install.html">Install</a>
+      <a href="https://github.com/benbadio/hera-fm1" target="_blank" rel="noreferrer">Source</a>
+      <a href="https://github.com/benbadio/hera-fm1/issues/new/choose" target="_blank" rel="noreferrer">Feedback</a>
+    </nav>
+  </header>
+
+  <div class="devicebox">
+    <div class="fm1" id="device" role="group" aria-label="M-VAVE FM-1, running HERA">
+      <div class="start" id="start"><button id="btnStart" type="button">Switch on</button></div>
+    </div>
+  </div>
+
+<div class="tour" id="tour">
+    <div class="th"><b id="tourTitle">Guided tour</b><button class="btn small" id="tourMenu">Chapters</button><button class="btn small" id="tourClose">✕</button></div>
+    <div class="tb" id="tourBody"></div>
+    <div class="tf"><button class="btn small" id="tourPrev">Back</button><div class="prog"><i id="tourProg"></i></div><button class="btn small acc" id="tourNext">Next</button></div>
+  </div>
+
+  <div class="hint-banner" id="hintBanner"><span class="hint-icon">💡</span><span id="hintText"></span></div>
+
+  <div class="bar">
+    <button class="btn acc" id="tourBtn" type="button">🎓 Guided tour</button>
+    <button class="btn" id="midiBtn" type="button">Connect MIDI</button>
+    <button class="btn" id="muteBtn" type="button" aria-pressed="false">Mute</button>
+    <label class="chk"><input type="checkbox" id="fnToggle" checked> Show HERA functions on the panel</label>
+    <span id="devStatus" role="status">Off. Click “Switch on”.</span>
+  </div>
+  <p class="keys-help">Play with the mouse or touch, or the computer keyboard: <b>Z S X D C V G B H N J M ,</b> = C4 to C5, <b>Q 2 W 3 E R 5 T</b> = C5 up. <b>Space</b> = PLAY, <b>Shift</b> = GLO. Knobs: drag up and down, or scroll. This is the real HERA firmware, compiled to WebAssembly.</p>
 
   <section class="editor">
     <div class="tabs" id="tabs">
@@ -134,11 +141,6 @@
   </section>
 </main>
 
-<div class="tour" id="tour">
-  <div class="th"><b id="tourTitle">Guided tour</b><button class="btn small" id="tourMenu">Chapters</button><button class="btn small" id="tourClose">✕</button></div>
-  <div class="tb" id="tourBody"></div>
-  <div class="tf"><button class="btn small" id="tourPrev">Back</button><div class="prog"><i id="tourProg"></i></div><button class="btn small acc" id="tourNext">Next</button></div>
-</div>
 
 <script type="module" src="hera.js"></script>
 </body>

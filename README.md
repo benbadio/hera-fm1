@@ -130,7 +130,7 @@ Every J-6 menu item in plain words, grouped as Pattern, Keys and chords, MIDI, S
 ## The Workbench (in your browser)
 
 **Open it at [benbadio.github.io/hera-fm1](https://benbadio.github.io/hera-fm1/).** `web/` is the **HERA Workbench**, modelled on M-VAVE's FM1 Open Workbench:
-- **The real firmware in the browser:** HERA compiled to WebAssembly on a virtual FM-1, playable with the mouse, the computer keyboard or a MIDI keyboard.
+- **The real firmware in the browser:** HERA compiled to WebAssembly on a virtual FM-1 with the real panel layout (the same knobs, buttons and 27 keys), playable with the mouse, touch, the computer keyboard or a MIDI keyboard. Hover any control to see what it does.
 - **An editor** with tabs for sounds, chord sets (with every chord's notes), phrases (with piano rolls), the 64-step grid, settings, and projects (save in the browser, export / import files).
 - **A guided tour** in the order of the J-6 manual. It highlights each control and moves on by itself when you've done the step.
 - **A manual** (`manual.html`) with "to do this, press that" tables.
