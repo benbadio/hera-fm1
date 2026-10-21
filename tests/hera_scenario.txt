@@ -1,5 +1,5 @@
 # Hera host scenario: every page, as tests/run_hera_host.sh renders it
-# buttons: OCT- 0  OCT+ 1  FX 2  SCL 3  ENV 4  LFO 5  EDIT 6  GLO 7  HOME 8  SAVE 9  ARP 10  SEQ 11  PLAY 12  REC 13
+# buttons: OCT- 0  OCT+ 1  FX 2  SEL 3  ENV 4  LFO 5  EDIT 6  GLO 7  HOME 8  SAVE 9  ARP 10  SEQ 11  PLAY 12  REC 13
 # keys: bit k = FM-1 key k (0 = F3, 7 = C4, 9 = D4, 11 = E4)
 1500 shot
 1600 hold 3

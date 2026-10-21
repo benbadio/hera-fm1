@@ -99,7 +99,7 @@ ENC.forEach(([name, fn], id) => {
 
 // buttons: id, cap text, HERA function
 const BL = [[8, 'HOME', 'Play page'], [11, 'SEQ', 'Sequencer'], [5, 'LFO', 'Sounds'], [2, 'FX', 'Effects'], [6, 'EDIT', 'Settings'], [9, 'SAVE', 'Save'], [7, 'GLO', 'Shift']];
-const BR = [[3, 'SCL', 'Chord'], [10, 'ARP', 'Phrase'], [4, 'ENV', 'Hold'], [0, 'OCT-', 'Oct -'], [1, 'OCT+', 'Oct +'], [13, 'REC', 'Rec'], [12, 'PLAY', 'Play / stop']];
+const BR = [[3, 'SEL', 'Chord'], [10, 'ARP', 'Phrase'], [4, 'ENV', 'Hold'], [0, 'OCT-', 'Oct -'], [1, 'OCT+', 'Oct +'], [13, 'REC', 'Rec'], [12, 'PLAY', 'Play / stop']];
 const capEl = [];
 function addButtons(list, host) {
   for (const [id, cap, fn] of list) {
@@ -449,7 +449,7 @@ $('#midiBtn').onclick = connectMidi;
 const REF = [
   ['PLAY', 'Tap: play / stop. Hold: full stop (all sound off). GLO + PLAY: play from the selected step.'],
   ['REC', 'Real-time recording: REC, then PLAY (with a count-in if set).'],
-  ['SCL', 'Tap: chord mode on / off. Hold (or GLO + SCL): the chord map.'],
+  ['SEL', 'Tap: chord mode on / off. Hold (or GLO + SEL): the chord map.'],
   ['ARP', 'Tap: phrase (STYLE) on / off. Hold: the phrase page.'],
   ['ENV', 'HOLD: notes keep playing after you let go. In step edit: a tie to the next step.'],
   ['HOME · SEQ · LFO · FX · EDIT', 'Pages: play, sequencer (SEQ again: patterns), sounds, effects, settings.'],

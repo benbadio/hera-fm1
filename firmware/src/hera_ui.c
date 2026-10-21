@@ -428,7 +428,7 @@ static void body_chords(void)
     h_cat(p, " of 100");
     h_text(10, 4, b, H_ACC, H_BG);
     h_text_r(230, 4, j6_chord_genre(set), H_TXT, H_BG);
-    if (!st.chord) h_text(10, 22, "CHORD is off: tap SCL to play these", H_DIM, H_BG);
+    if (!st.chord) h_text(10, 22, "CHORD is off: tap SEL to play these", H_DIM, H_BG);
     else h_text(10, 22, "PRESETS knob: browse sets", H_DIM, H_BG);
     /* the key map: two columns of six keys, laid out like a keyboard (black keys darker) */
     for (k = 0; k < 12u; k++) {

@@ -7,7 +7,7 @@
  * (hera_ui.c) and this file: the FM-1 controls, storage and the main loop.
  *
  *   PLAY        tap: play / stop          hold 0.6 s: full stop (all sound off)    GLO+PLAY: play from step
- *   REC         record                    SCL tap: CHORD on/off   hold (or GLO+SCL): the chord map
+ *   REC         record                    SEL tap: CHORD on/off   hold (or GLO+SEL): the chord map
  *   ARP tap     STYLE (phrase) on/off     hold: the phrase page    ENV: HOLD (in step edit: tie)
  *   HOME        play page   SEQ: sequencer, again: patterns   LFO: sounds   FX: effects   EDIT: settings
  *   SAVE        write the pattern (GLO+SAVE: all)                OCT -/+: octave (GLO: key; sequencer: page)

@@ -33,14 +33,14 @@ const LESSONS = [
     done: (b) => get(ID().J6_P_KNOB0) !== b.cutoff },
 
   { ch: 'Chords', t: 'Chord mode', target: '#btn3',
-    x: `<p>Go back to the play page with <b>HOME</b>, then <b>tap SCL</b> to turn chord mode on (it lights).</p><p>Now every key plays a full chord.</p>`,
+    x: `<p>Go back to the play page with <b>HOME</b>, then <b>tap SEL</b> to turn chord mode on (it lights).</p><p>Now every key plays a full chord.</p>`,
     done: () => st().chord === 1 },
   { ch: 'Chords', t: 'Play some chords', target: '#keyboard',
     x: `<p>Play a few keys: C, F, G, A. The screen shows each chord's name.</p>
         <p>These are chord set 1 (Pop). There are 100 sets, from pop and jazz to trance, neo soul and classical.</p>`,
     done: (b) => st().lastChord !== b.lastChord && st().lastChord !== ID().J6_NO_CHORD },
   { ch: 'Chords', t: 'The chord map', target: '#btn3',
-    x: `<p><b>Hold SCL</b> for a moment: the <b>chord map</b> opens. It shows which chord sits on which key, something the J-6 can't show.</p>`,
+    x: `<p><b>Hold SEL</b> for a moment: the <b>chord map</b> opens. It shows which chord sits on which key, something the J-6 can't show.</p>`,
     done: () => st().page === PG.CHORDS },
   { ch: 'Chords', t: 'Pick another chord set', target: '#enc6',
     x: `<p>Turn <b>PRESETS</b> to browse the sets. The name of each set and all 12 chords appear at once; play keys to try them.</p>

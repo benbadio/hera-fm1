@@ -58,7 +58,7 @@ With a phrase running, a live **oscilloscope** shows the sound.
 ### Chord map
 <img src="docs/screens/chord-map.png" width="240" align="right" alt="Chord map page">
 
-Which chord is on which key, something the J-6 can't show. Hold **SCL** to open it.
+Which chord is on which key, something the J-6 can't show. Hold **SEL** to open it.
 - Turn **PRESETS** to browse all 100 sets. The set number and genre sit at the top.
 - Black keys are dark rows, white keys light rows, laid out like a keyboard.
 - The key you play lights up, so you can audition every chord before choosing a set.
@@ -144,7 +144,7 @@ To run it locally, build it with `sh web/build.sh` (needs LLVM with wasm32: `bre
 |---|---|
 | **PLAY** | Tap: play / stop. **Hold**: full stop (all sound off). GLO + PLAY: play from the selected step |
 | **REC** | Record (real time) |
-| **SCL** | Tap: chord mode on/off. **Hold** (or GLO + SCL): the **chord map**, i.e. which chord is on which key |
+| **SEL** | Tap: chord mode on/off. **Hold** (or GLO + SEL): the **chord map**, i.e. which chord is on which key |
 | **ARP** | Tap: phrase (STYLE) on/off. Hold: the phrase page |
 | **ENV** | HOLD (in step edit: tie) |
 | **HOME / SEQ / LFO / FX / EDIT** | Pages: play, sequencer (SEQ again: patterns), sounds, effects, settings |
