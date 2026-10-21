@@ -1,5 +1,9 @@
 # HERA: a chord groovebox for the M-VAVE FM-1
 
+**The workflow of the Roland AIRA Compact J-6, rebuilt for the FM-1, with a real screen to show it.**
+
+*An independent project. Not made, endorsed or supported by Roland.*
+
 HERA turns the FM-1 into a J-6-style chord machine:
 - **100 chord sets**, each mapping a chord to every key.
 - **9 phrase styles × 12 variations**: arpeggios, rhythms, and chord and strum phrases.
@@ -7,6 +11,21 @@ HERA turns the FM-1 into a J-6-style chord machine:
 - **A Juno-style 4-voice synth** with delay and reverb.
 
 Juno's Greek counterpart is Hera.
+
+## How it compares with the J-6
+
+| | Roland J-6 | HERA on the FM-1 |
+|---|---|---|
+| Chord sets | 100 | The same 100 voicings |
+| Phrase styles | 9 × 12 variations | The same 9 × 12 (styles 6–9 timed from a J-6) |
+| Sequencer | 64 patterns × 64 steps | The same, with 16 steps on screen at a time |
+| Display | 4-character LED | 240 × 240 colour screen with plain-word menus |
+| See which chord is on which key | No | Yes: the chord map page |
+| Preview a phrase before playing it | No | Yes: a piano roll of the phrase |
+| Keyboard | 13 keys | 27 keys (more than two octaves) |
+| Full stop | Not documented | Hold PLAY: all sound off, with no click |
+| Extra settings | — | Hold on step edit, Chord legato |
+| Sound | Roland's JUNO-60 model (ACB) | An open-source Juno-style voice (after Clipper) |
 
 It is an independent, clean-room recreation of the Roland J-6's *behaviour*. No Roland code, firmware or samples are used. The chord voicings come from the J-6 owner's manual, and the phrase timing for styles 6–9 was measured from a J-6 over MIDI (`capture/`, `tools/derive_phrases.py`). It is not made by, affiliated with or endorsed by Roland.
 
