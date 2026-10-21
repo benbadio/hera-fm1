@@ -657,7 +657,7 @@ static void body_sounds(void)
         h_cat(p, j6_sounds[s].name);
         h_text(12, y + 1, b, now ? H_BG : H_TXT, bg);
     }
-    h_text(8, 162, "Keys 1-8 sound   9-16 bank", H_DIM, H_BG);
+    h_text(8, 162, "PRESETS: sound  +GLO: bank", H_DIM, H_BG);
 }
 static uint32_t key_sounds(void) { return h_mix(2166136261u, j6_engine_pattern(st.pattern)->sound); }
 

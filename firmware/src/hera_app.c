@@ -165,8 +165,8 @@ static void enc_presets(int32_t d, const j6_status_t *s)
         int32_t v = (j6_engine_get(J6_P_CHORD_SET) + d + 1000) % (int32_t)J6_CHORD_SETS;
         j6_engine_set(J6_P_CHORD_SET, v);
         popup_num("Chord set", v + 1);
-    } else if (pg == PG_SOUNDS) {
-        j6_engine_set(J6_P_SOUND, clampi(j6_engine_get(J6_P_SOUND) + d, 0, (int32_t)J6_SOUNDS - 1));
+    } else if (pg == PG_SOUNDS) {              /* a sound a detent, GLO a bank */
+        j6_engine_set(J6_P_SOUND, clampi(j6_engine_get(J6_P_SOUND) + d * (ui.glo ? 8 : 1), 0, (int32_t)J6_SOUNDS - 1));
     } else if (pg == PG_PATTERNS) {
         j6_engine_cmd(J6_CMD_PATTERN, clampi((int32_t)s->pattern + d, 0, (int32_t)J6_PATTERNS - 1));
     } else if (pg == PG_SEQ && s->sel_step != J6_NONE) {
@@ -242,12 +242,7 @@ static uint32_t page_key(uint32_t key, const j6_status_t *s)
         j6_engine_cmd(J6_CMD_PATTERN, p);
         return 1;
     }
-    if (ui.page == PG_SOUNDS) {
-        int32_t cur = j6_engine_get(J6_P_SOUND), v = w < 8 ? cur / 8 * 8 + w : (w - 8) * 8 + cur % 8;
-        j6_engine_set(J6_P_SOUND, v);
-        return 1;
-    }
-    return 0;
+    return 0;                                  /* the sounds page: keys play, so you hear each sound */
 }
 
 static void keys(const j6_status_t *s)

@@ -101,7 +101,7 @@ All 64 patterns, 8 banks × 8, on one grid (**GLO + SEQ**).
 ### Sounds
 <img src="docs/screens/sounds.png" width="240" align="right" alt="Sounds page">
 
-64 Juno-style sounds in 8 banks: pads, strings, brass, keys, bass, leads, plucks and effects (**LFO**). Choose them with **PRESETS** or the white keys.
+64 Juno-style sounds in 8 banks: pads, strings, brass, keys, bass, leads, plucks and effects (**LFO**). Browse them with **PRESETS** (GLO + PRESETS jumps a bank) while the keys keep playing, so you hear each one as you go.
 
 The voice is after Clipper's Juno engine:
 - saw, pulse and sub oscillators, plus noise;

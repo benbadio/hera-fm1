@@ -25,7 +25,7 @@ const LESSONS = [
     done: () => st().page === PG.SOUNDS },
   { ch: 'Sounds', t: 'Browse the sounds', target: '#enc6',
     x: `<p>Turn <b>PRESETS</b> (drag it up, or scroll on it) to step through the sounds. Play a key after each one.</p>
-        <p>On the Sounds page the white keys work too: keys 1–8 pick a sound, 9–16 pick a bank.</p>`,
+        <p>Hold <b>GLO</b> (<kbd>Shift</kbd>) while turning to jump a whole bank of 8. The keys always play, so you can audition as you go.</p>`,
     done: (b) => get(ID().J6_P_SOUND) !== b.sound },
   { ch: 'Sounds', t: 'Shape it with the knobs', target: '#enc2',
     x: `<p><b>K1</b> is the filter. Turn it down and play: the sound gets darker. <b>K2</b> is the release, <b>K3</b> the delay, <b>K4</b> the reverb.</p>
