@@ -109,5 +109,5 @@ header.site nav a:hover { color: var(--acc); }
 @media (max-width: 700px) { .hint-banner { height: calc(6 * 1.45em + 22px); } }
 
 /* the name: a bold serif, in one colour */
-header.site h1, header.top h1 { font-family: "Playfair Display", Georgia, "Times New Roman", serif; font-weight: 900; color: var(--txt); }
+header.site h1, header.top h1 { font-family: "Playfair Display", Georgia, "Times New Roman", serif; font-weight: 900; color: var(--acc); }
 header.site h1 { font-size: 2.3rem; line-height: 1.1; }

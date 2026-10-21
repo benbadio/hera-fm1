@@ -21,7 +21,7 @@ HERA turns the FM-1 into a J-6-style chord machine:
 
 Juno's Greek counterpart is Hera.
 
-> **Version 0.1.** A preview: expect rough edges, and please [tell us](../../issues) what you find.
+> **Version 1.0.** Please [tell us](../../issues) what you find.
 
 <p align="center"><img src="docs/screens/all-pages.png" width="720" alt="Every HERA page on the FM-1 screen"></p>
 

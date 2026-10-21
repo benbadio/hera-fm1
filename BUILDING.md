@@ -80,4 +80,4 @@ Then open <http://localhost:8000>. (Opening `index.html` from disk doesn't work:
   2. Add the version to the *Version history* in [HERA.md](HERA.md): what's new and fixed in the firmware, and (if it matters to users) in the Workbench.
   3. Commit, then tag and push: `git tag v0.2 && git push origin v0.2`. The tag has to match `VERSION`.
 - `.github/workflows/release.yml` then builds the package on GitHub with the Firmware Hub's shared workflow, signs a build attestation, and attaches `hera-X.Y.fwsc` to the release. It also fills in the release notes from the version history and attaches the Workbench as a zip. Don't replace or add the `.fwsc` by hand afterwards: the hub compares its checksum with the signed one.
-- Check a package yourself with `gh attestation verify hera-0.1.fwsc --repo benbadio/hera-fm1 --signer-workflow zvenson/fm1-build/.github/workflows/build.yml`.
+- Check a package yourself with `gh attestation verify hera-1.0.fwsc --repo benbadio/hera-fm1 --signer-workflow zvenson/fm1-build/.github/workflows/build.yml`.

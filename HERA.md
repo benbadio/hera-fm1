@@ -164,9 +164,9 @@ Use the web [installer](https://benbadio.github.io/hera-fm1/install.html) in Chr
 
 The firmware's changes are listed first for each version; Workbench changes that matter to users have their own list. Every release on the [Releases](../../releases) page carries the same notes.
 
-### 0.1
+### 1.0
 
-The first preview.
+The first release.
 
 **Firmware**
 - 100 chord sets, each mapping a chord to every key, with a chord map page.
