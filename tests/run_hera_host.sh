@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")/.."
 mkdir -p build/hera
 rm -f build/hera/hera-*.ppm build/hera/hera-*.png
-cc -O2 -Wall -Wno-unused-function -DDINGHY_HOST -DAPP_VER="\"dev\"" "-D__attribute__(x)=" \
+cc -O2 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -Wall -Wno-unused-function -DDINGHY_HOST -DAPP_VER="\"dev\"" "-D__attribute__(x)=" \
    -Ifirmware/src -Ifirmware/src/dsp -Ifirmware/gen -o build/hera/hera_sim firmware/src/hera_app.c
 build/hera/hera_sim build/hera/hera tests/hera_scenario.txt | grep -v "MIDI out" || true
 python3 -I tools/hera_sheet.py build/hera/sheet.ppm $(ls build/hera/hera-*.ppm | sort -t- -k2 -n)
