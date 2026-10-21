@@ -870,6 +870,34 @@ static void test_tran_and_key(void)
 }
 
 /* real-time recording (SQ-30 .. SQ-33): REC, PLAY, a key during step 3 -> step 3 holds it */
+/* D7: a step selected for editing does not capture the keys once REC is armed */
+static void test_record_over_step_edit(void)
+{
+    const j6_pattern_t *p;
+    j6_status_t st;
+    eng();
+    j6_engine_set(J6_P_BEAT, J6_BEAT_1);
+    j6_engine_cmd(J6_CMD_STEP_SELECT, 4);
+    apply();
+    j6_engine_status(&st);
+    CHECK_EQ(st.sel_step, 4);
+    j6_engine_cmd(J6_CMD_REC, 0);
+    apply();
+    j6_engine_status(&st);
+    CHECK_EQ(st.sel_step, J6_NONE);
+    j6_engine_cmd(J6_CMD_PLAY, 0);
+    run_ticks(2u * 96u + 30u);                             /* inside step 3 */
+    j6_engine_cmd(J6_CMD_STEP_SELECT, 4);                  /* even a step picked while recording */
+    apply();
+    j6_engine_key(7, 1);
+    apply();
+    j6_engine_key(7, 0);
+    apply();
+    p = j6_engine_pattern(0);
+    CHECK_EQ(p->step[2].note[0], 67);
+    CHECK_EQ(j6_step_count(&p->step[4]), 0);
+}
+
 static void test_realtime_record(void)
 {
     const j6_pattern_t *p;
@@ -1899,6 +1927,7 @@ int main(void)
     RUN(test_midi_in_notes);
     RUN(test_tran_and_key);
     RUN(test_realtime_record);
+    RUN(test_record_over_step_edit);
     RUN(test_live_phrase_locks_to_pattern);
     RUN(test_settings);
     RUN(test_storage);

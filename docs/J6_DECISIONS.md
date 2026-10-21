@@ -10,3 +10,4 @@ Behaviour the J-6 manual doesn't specify, decided by the project owner.
 | D4 | SYnC = MIDI or USB | Follow clock from that port only. | As built. |
 | D5 | Program Change at power-on | None is sent for the pattern selected at boot. | As built. |
 | D6 | Active Sensing | Keep: the J-6 sends it (see its MIDI chart). | Left where it is: the engine's timed loop queues it every 250 ms. Everything the engine sends goes through that one outgoing queue, so moving it would add a second writer to the queue for no benefit. |
+| D7 | Keys while recording with a step selected | Recording wins: the keys go into the step that is playing, never into the selected step. | Arming REC (standby or punch-in) leaves step edit; while recording, key and MIDI notes go to real-time recording first (SQ-32), step edit second. Needed since PRESETS selects steps on HERA's sequencer page, so a selection easily stays on. |

@@ -79,7 +79,7 @@ const LESSONS = [
     x: `<p>While it plays, <b>hold PLAY</b> for half a second: everything stops, and all sound fades out, delay and reverb tails included. Handy when a phrase is still holding.</p>`,
     done: () => st().seq !== ID().J6_SEQ_PLAYING && st().voices === 0 },
   { ch: 'Sequencer', t: 'Record in real time', target: '#btn13',
-    x: `<p>Press <b>REC</b>, then <b>PLAY</b>, and play chords along with the pattern. They are recorded into the steps. Tap PLAY to stop.</p>`,
+    x: `<p>Press <b>REC</b>, then <b>PLAY</b>, and play chords along with the pattern. Each one goes into the step that is playing when you press it: a chord replaces what is in the step, a single note adds to it (up to 4). Recording keeps going round the loop, so you can add more each time. Tap PLAY to stop.</p>`,
     done: () => st().rec === 1 },
 
   { ch: 'Patterns', t: 'Save your pattern', target: '#btn9',
@@ -133,8 +133,8 @@ function finishLesson() {
   doneSet.add(cur);
   localStorage.setItem('hera.tourDone', JSON.stringify([...doneSet]));
   const w = $('#tourWait');
-  if (w) { w.className = 'done'; w.textContent = '✓ Done!'; }
-  setTimeout(() => { if (cur < LESSONS.length - 1) show(cur + 1); }, 900);
+  if (w) { w.className = 'done'; w.textContent = '✓ Done! Press Next when you are ready.'; }
+  if (cur < LESSONS.length - 1) $('#tourNext').textContent = 'Next';   /* the tour never moves on by itself */
 }
 export function tourTick() {
   if (cur < 0 || !$('#tour').classList.contains('on')) return;

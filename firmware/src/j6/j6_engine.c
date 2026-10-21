@@ -667,12 +667,12 @@ static void j6e_key(int32_t key, uint32_t down)
         j6e_s.kid[ki] = (uint8_t)(key + (int32_t)J6E_CHORD_ID);
         j6e_s.last_chord = tag;
         if (c) j6e_s.last_note = cn[0];
-        if (j6e_step_edit() && c) {                                 /* SQ-11, SQ-13 */
+        if (c && j6_seq_recording(&j6e_seq)) {                      /* D7: recording before step edit */
+            j6_seq_rec_input(&j6e_seq, cn, c, tag, j6e_rec_phrase());   /* SQ-33 */
+        } else if (j6e_step_edit() && c) {                          /* SQ-11, SQ-13 */
             j6_pattern_t *p = j6e_edit_begin(&was);
             uint32_t r = j6_step_key_chord(p, j6e_s.sel, cn, c, tag);
             j6e_edit_end(was, r != J6_EDIT_NONE && r != J6_EDIT_FULL);
-        } else if (c && j6_seq_recording(&j6e_seq)) {
-            j6_seq_rec_input(&j6e_seq, cn, c, tag, j6e_rec_phrase());   /* SQ-33 */
         }
     } else {
         int32_t note = j6_key_note(key, j6e_s.oct, j6e_s.g.key);
@@ -682,13 +682,13 @@ static void j6e_key(int32_t key, uint32_t down)
         }
         j6e_s.kid[ki] = (uint8_t)note;
         j6e_s.last_note = (uint8_t)note;
-        if (j6e_step_edit()) {                                      /* SQ-12 */
+        if (j6_seq_recording(&j6e_seq)) {                           /* D7: recording before step edit */
+            uint8_t n8 = (uint8_t)note;
+            j6_seq_rec_input(&j6e_seq, &n8, 1, J6_NO_CHORD, j6e_rec_phrase());
+        } else if (j6e_step_edit()) {                               /* SQ-12 */
             j6_pattern_t *p = j6e_edit_begin(&was);
             uint32_t r = j6_step_key_note(p, j6e_s.sel, (uint32_t)note);
             j6e_edit_end(was, r != J6_EDIT_NONE && r != J6_EDIT_FULL);
-        } else if (j6_seq_recording(&j6e_seq)) {
-            uint8_t n8 = (uint8_t)note;
-            j6_seq_rec_input(&j6e_seq, &n8, 1, J6_NO_CHORD, j6e_rec_phrase());
         }
     }
     j6_held_press(&j6e_hkeys, j6e_s.kid[ki]);
@@ -789,6 +789,10 @@ static void j6e_cmd(uint32_t cmd, int32_t arg)
         j6_evq_clear(&j6e_s.q);
         j6_seq_rec(&j6e_seq, &j6e_s.q);
         j6e_route(&j6e_s.q, j6e_s.tick);
+        if (j6_seq_recording(&j6e_seq) || j6_seq_state(&j6e_seq) == J6_SEQ_STANDBY) {
+            j6e_s.sel = J6_NONE;             /* D7: arming REC leaves step edit, so the keys record at the playhead */
+            j6e_live_update();
+        }
         j6e_rec_held();
         break;
     case J6_CMD_PATTERN:
@@ -1130,13 +1134,13 @@ static void j6e_midi_note(uint32_t note, uint32_t vel)
     if (vel) {
         j6e_s.mvel[note] = (uint8_t)vel;
         j6e_s.last_note = (uint8_t)note;
-        if (j6e_step_edit()) {
+        if (j6_seq_recording(&j6e_seq)) {                           /* D7: recording before step edit */
+            uint8_t n8 = (uint8_t)note;
+            j6_seq_rec_input(&j6e_seq, &n8, 1, J6_NO_CHORD, j6e_rec_phrase());
+        } else if (j6e_step_edit()) {
             j6_pattern_t *p = j6e_edit_begin(&was);
             uint32_t r = j6_step_key_note(p, j6e_s.sel, note);
             j6e_edit_end(was, r != J6_EDIT_NONE && r != J6_EDIT_FULL);
-        } else if (j6_seq_recording(&j6e_seq)) {
-            uint8_t n8 = (uint8_t)note;
-            j6_seq_rec_input(&j6e_seq, &n8, 1, J6_NO_CHORD, j6e_rec_phrase());
         }
         j6_held_press(&j6e_hmidi, note);
     } else {
