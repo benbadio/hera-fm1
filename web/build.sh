@@ -22,4 +22,10 @@ mkdir -p build/web
 cc -std=c99 -Ifirmware/src/j6 -o build/web/gen_ids web/src/gen_ids.c && build/web/gen_ids > web/hera_ids.js
 mkdir -p web/data web/screens && cp data/phrases_6_9.json web/data/ && cp docs/screens/*.png web/screens/
 sed -i.bak -E "s/^const meta = .*/const meta = {\"version\": \"$VER\", \"product\": \"$PRODUCT\", \"pkg\": \"firmware\/hera.fwsc\"};/" web/install.html && rm -f web/install.html.bak
+# cache-busting: Pages lets browsers keep files for 10 minutes, so every asset link carries this build's stamp
+STAMP=${GITHUB_SHA:-$(git rev-parse --short HEAD 2>/dev/null || echo dev)}
+STAMP=$(echo "$STAMP" | cut -c1-10)
+for f in web/index.html web/manual.html web/hera.js; do
+    sed -i.bak -E "s/\?v=[A-Za-z0-9]+/?v=$STAMP/g" "$f" && rm -f "$f.bak"
+done
 ls -la web/hera.wasm web/hera_ids.js
