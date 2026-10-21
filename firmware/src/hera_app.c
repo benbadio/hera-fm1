@@ -170,8 +170,9 @@ static void enc_presets(int32_t d, const j6_status_t *s)
     } else if (pg == PG_PATTERNS) {
         int32_t q = s->queued != J6_NONE ? (int32_t)s->queued : (int32_t)s->pattern;   /* a pattern a detent, GLO a bank */
         j6_engine_cmd(J6_CMD_PATTERN, clampi(q + d * (ui.glo ? 8 : 1), 0, (int32_t)J6_PATTERNS - 1));
-    } else if (pg == PG_SEQ && s->sel_step != J6_NONE) {
-        int32_t n = clampi((int32_t)s->sel_step + d, 0, (int32_t)J6_STEPS - 1);
+    } else if (pg == PG_SEQ && !ui.glo) {      /* the step: the first turn picks the page's first step */
+        int32_t n = s->sel_step != J6_NONE ? clampi((int32_t)s->sel_step + d, 0, (int32_t)J6_STEPS - 1)
+                                           : (int32_t)ui.seq_page * 16;
         j6_engine_cmd(J6_CMD_STEP_SELECT, n);
         ui.seq_page = (uint8_t)(n / 16);
     } else {                                   /* tempo: 1 BPM a detent, GLO 0.1 */
@@ -218,13 +219,8 @@ static void encoders(const j6_status_t *s)
 static uint32_t page_key(uint32_t key, const j6_status_t *s)
 {
     int32_t w = WHITE_STEP[key];
-    if (ui.page == PG_SEQ) {
-        if (s->sel_step == J6_NONE) {
-            if (w < 0) return 0;
-            j6_engine_cmd(J6_CMD_STEP_SELECT, (int32_t)ui.seq_page * 16 + w);
-            return 1;
-        }
-        if (ui.glo) {                          /* step tools */
+    if (ui.page == PG_SEQ) {                   /* the keys play, or enter notes in the selected step */
+        if (s->sel_step != J6_NONE && ui.glo) {   /* step tools */
             static const uint8_t TOOL[5] = {J6_CMD_STEP_COPY, J6_CMD_STEP_PASTE, J6_CMD_STEP_INSERT,
                                             J6_CMD_STEP_CLEAR, J6_CMD_PATTERN_DUPL};
             static const char *const TN[5] = {"Step copied", "Step pasted", "Step inserted", "Step cleared",
@@ -235,10 +231,8 @@ static uint32_t page_key(uint32_t key, const j6_status_t *s)
             }
             return 1;
         }
-        return 0;                              /* step edit: the key enters notes */
     }
-    if (w < 0) return 0;
-    return 0;                                  /* sounds and patterns pages: keys play, so you hear what you pick */
+    return 0;                                  /* every other page: keys play, so you hear what you pick */
 }
 
 static void keys(const j6_status_t *s)
@@ -338,12 +332,28 @@ static void buttons(const j6_status_t *s)
 static void leds(const j6_status_t *s)
 {
     uint32_t k, blink = (fm1_ms / 250u) & 1u;
+    static uint32_t flash_step = J6_NONE, flash_t0;
+    uint32_t flash = 0;
+    if (s->step_now != flash_step) {           /* the playing step flashes to the tempo: lit for the first half of its length */
+        flash_step = s->step_now;
+        flash_t0 = fm1_ms;
+    }
+    if (s->step_now != J6_NONE) {
+        uint32_t len_ms = j6_pattern_step_ticks(j6_engine_pattern(s->pattern)) * 6250u / (s->tempo10 ? s->tempo10 : 1200u);
+        flash = (fm1_ms - flash_t0) < len_ms / 2u;
+    }
     for (k = 0; k < 27u; k++) {
         uint32_t on = (s->keys_lit >> k) & 1u;
-        if (ui.page == PG_SEQ && s->sel_step == J6_NONE && WHITE_STEP[k] >= 0) {
-            uint32_t step = ui.seq_page * 16u + (uint32_t)WHITE_STEP[k];
-            const j6_pattern_t *p = j6_engine_pattern(s->pattern);
-            on = (step < p->last && p->step[step].note[0] != J6_NO_NOTE) || (s->step_now == step && blink);
+        if (ui.page == PG_SEQ) {               /* the white keys' lights are the steps of this page */
+            on = (fm1_in.notes >> k) & 1u;
+            if (WHITE_STEP[k] >= 0) {
+                uint32_t step = ui.seq_page * 16u + (uint32_t)WHITE_STEP[k];
+                const j6_pattern_t *p = j6_engine_pattern(s->pattern);
+                uint32_t filled = step < p->last && (p->step[step].note[0] != J6_NO_NOTE || p->step[step].chord != J6_NO_CHORD);
+                if (s->step_now == step) on |= filled ? !flash : flash;   /* the playhead flips the light, empty or filled */
+                else if (s->sel_step == step) on |= blink;                /* the step being edited blinks */
+                else on |= filled;
+            }
         }
         fm1_led_key(KEY_LED(k), (int)on);
     }

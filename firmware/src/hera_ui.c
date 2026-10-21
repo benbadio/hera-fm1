@@ -584,7 +584,7 @@ static void body_seq(void)
             h_text(4, 164, "ENV: tie   PRESETS: move", H_DIM, H_BG);
         }
     } else {
-        h_text(4, 150, "White keys: pick a step", H_DIM, H_BG);
+        h_text(4, 150, "PRESETS: pick a step to edit", H_DIM, H_BG);
         h_text(4, 164, "OCT: page   SEQ: patterns", H_DIM, H_BG);
     }
 }

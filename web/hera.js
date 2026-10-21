@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // HERA Workbench: the real firmware (hera.wasm) on a virtual FM-1, plus an editor and a guided tour.
-import { ID } from './hera_ids.js?v=aef5e86';
-import { startTour, startTourChapter, tourTick } from './tour.js?v=aef5e86';
+import { ID } from './hera_ids.js?v=364d753';
+import { startTour, startTourChapter, tourTick } from './tour.js?v=364d753';
 
 const $ = (s) => document.querySelector(s);
 const NOTE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const noteName = (n) => NOTE[n % 12] + (Math.floor(n / 12) - 1);
 
 // ---- the firmware ---------------------------------------------------------------------------------
-const wasm = await WebAssembly.instantiate(await (await fetch('hera.wasm?v=aef5e86')).arrayBuffer(), {});
+const wasm = await WebAssembly.instantiate(await (await fetch('hera.wasm?v=364d753')).arrayBuffer(), {});
 const E = wasm.instance.exports;
 const u8 = () => new Uint8Array(E.memory.buffer);
 const cstr = (p) => { const m = u8(); let s = ''; while (m[p]) s += String.fromCharCode(m[p++]); return s; };
@@ -166,7 +166,7 @@ bed.id = 'keyboard';
     d.addEventListener('pointerdown', (e) => { d.classList.add('down'); H.setKey(k, true); d.setPointerCapture(e.pointerId); });
     d.addEventListener('pointerup', up);
     d.addEventListener('pointercancel', up);
-    hintOn(d, 'Keys: notes, or whole chords with chord mode on. On the sequencer page the white keys select steps; with a step selected they enter notes.');
+    hintOn(d, 'Keys: notes, or whole chords with chord mode on. On the sequencer page they enter notes into the step chosen with PRESETS; the lights under the white keys show the 16 steps.');
     keyEl[k] = d;
   };
   WHITE_K.forEach((k, i) => mk(k, false, x0 + 12 + i * pitch + (pitch - kw) / 2, y0 + h * 0.43, h * 0.52));
@@ -306,7 +306,7 @@ function refreshChords(full) {
 
 // phrases
 let phrases = null;
-fetch('data/phrases_6_9.json?v=aef5e86').then((r) => r.json()).then((j) => { phrases = j; refreshEditor(true); }).catch(() => {});
+fetch('data/phrases_6_9.json?v=364d753').then((r) => r.json()).then((j) => { phrases = j; refreshEditor(true); }).catch(() => {});
 for (let s = 1; s <= 9; s++) {
   const b = el('div', 'cell', `<div class="n">Style ${s}</div>${H.styleName(s)}`);
   b.onclick = () => H.set(ID.J6_P_STYLE, s);
@@ -487,7 +487,7 @@ const REF = [
   ['K1 – K4', 'Filter, envelope (release), delay level, reverb level. GLO: resonance, attack, delay time, reverb time.'],
   ['SELECT · ALGORITHM', 'Phrase style 1–9 · variation 1–12.'],
   ['PRESETS', 'Tempo (GLO: 0.1 BPM), or what the page browses: chord sets, sounds, patterns, settings.'],
-  ['Keys', 'Notes, or chords in chord mode. Sequencer: white keys pick a step; then keys enter notes, SEQ finishes. GLO + F3 G3 A3 B3 C4: copy, paste, insert, clear, double.'],
+  ['Keys', 'Notes, or chords in chord mode. Sequencer: PRESETS picks the step; then keys enter notes, SEQ finishes; the lights under the white keys show the steps. GLO + F3 G3 A3 B3 C4: copy, paste, insert, clear, double.'],
 ];
 $('#refTable').innerHTML = '<tr><th>Control</th><th>What it does in HERA</th></tr>' + REF.map(([a, b]) => `<tr><td><b>${a}</b></td><td>${b}</td></tr>`).join('');
 

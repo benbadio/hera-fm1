@@ -23,7 +23,7 @@
 5800 release 10
 6000 shot
 6100 btn 11
-6200 keys 0x1
+6200 enc 6 1
 6300 keys 0
 6400 keys 0x80
 6500 keys 0

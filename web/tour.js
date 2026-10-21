@@ -64,11 +64,12 @@ const LESSONS = [
   { ch: 'Sequencer', t: 'The sequencer page', target: '#btn11',
     x: `<p>Turn HOLD off again (<b>ENV</b>), then press <b>SEQ</b>. You see 16 steps of the current pattern; a pattern has up to 64.</p>`,
     done: () => st().page === PG.SEQ && st().hold === 0 },
-  { ch: 'Sequencer', t: 'Pick a step', target: '#keyboard',
-    x: `<p>On this page the <b>white keys pick steps</b>. Press the leftmost white key (F3) to edit step 1.</p>`,
+  { ch: 'Sequencer', t: 'Pick a step', target: '#enc6',
+    x: `<p>The keys always play, as on every page. Turn <b>PRESETS</b> to choose the step to edit: the first turn picks step 1.</p>
+        <p>The lights under the white keys are the 16 steps of this page: a lit key is a step with notes in it, and while the pattern plays the current step flashes to the tempo.</p>`,
     done: () => st().sel === 0 },
   { ch: 'Sequencer', t: 'Enter a chord', target: '#keyboard',
-    x: `<p>Now the keys enter notes again. With chord mode on, press one key: its chord goes into step 1.</p>
+    x: `<p>With a step chosen, the keys enter notes into it. With chord mode on, press one key: its chord goes into step 1.</p>
         <p>Turn <b>PRESETS</b> to move to the next step and add another chord, then press <b>SEQ</b> to finish editing.</p>`,
     done: () => st().sel === ID().J6_NONE && H().pattern(st().pattern).steps.some((s) => s.notes.length) },
   { ch: 'Sequencer', t: 'Play it', target: '#btn12',

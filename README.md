@@ -78,7 +78,7 @@ For the chord and strum styles (6–9), a **piano roll** draws the actual phrase
 <img src="docs/screens/sequencer-edit.png" width="240" align="right" alt="Sequencer page, editing a step">
 
 - **Layout:** 64 steps in 4 pages of 16, shown as a grid of chords and notes. Ties, per-step phrases (an orange mark) and the last step are all visible. **OCT − / +** turns pages.
-- **Entering steps:** pick a step with a white key, play keys to enter notes or chords, and press **SEQ** when done.
+- **Entering steps:** turn **PRESETS** to pick a step, play keys to enter notes or chords, and press **SEQ** when done. The lights under the white keys are the 16 steps of the page: lit = has notes, flashing = playing now, blinking = being edited.
 - **Moving and editing:** **PRESETS** moves to the next step. Holding **GLO** shows the step tools: copy, paste, insert, clear, double.
 
 <br clear="right">
@@ -153,7 +153,7 @@ To run it locally, build it with `sh web/build.sh` (needs LLVM with wasm32: `bre
 | **K1–K4** | Filter, envelope (release), delay level, reverb level. GLO: resonance, attack, delay time, reverb time |
 | **SELECT / ALGORITHM** | Phrase style / variation |
 | **PRESETS** | Tempo, or whatever the page browses (chord sets, sounds, patterns, settings) |
-| **Keys** | Notes, or chords in chord mode. On the sequencer page the white keys pick steps; then keys enter notes |
+| **Keys** | Notes, or chords in chord mode. On the sequencer page, PRESETS picks the step and the keys enter notes |
 
 The settings page uses plain words: MIDI channel, clock source, hold on step edit, chord legato, count-in, tune and more. Leaving the page saves them.
 
