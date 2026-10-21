@@ -12,7 +12,7 @@ It is an independent, clean-room recreation of the Roland J-6's *behaviour*. No 
 
 <p align="center"><img src="docs/screens/all-pages.png" width="720" alt="Every HERA page on the FM-1 screen"></p>
 
-## The screens
+## Features
 
 The FM-1's colour screen shows everything in plain words.
 - **Top bar:** pattern (with `*` when unsaved), page name, tempo and transport.
