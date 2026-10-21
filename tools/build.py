@@ -49,8 +49,20 @@ SDK_SHA256 = {
 }
 
 APP = "hera"                        # firmware/src/<APP>_app.c, build/<APP>.bin / .fwsc
-VERSION = (SRC / "VERSION").read_text().strip()   # X.Y, the one place it is set
-PRODUCT = "FM-1_95" + VERSION.split(".")[1][0]    # HERA's package identity (FM-1_95N: N = minor version; docs/MAKE-IT-YOURS.md)
+VERSION = (SRC / "VERSION").read_text().strip()   # X.Y or X.Y.Z, the one place it is set
+VERSION_RE = re.compile(r"(\d)\.(\d{1,2})(?:\.(\d{1,2}))?(-[A-Za-z0-9]+)?")
+
+
+def identity(version):
+    """HERA's package identity: FM-1_43 + X + YY + ZZ (0.1 -> FM-1_4300100, 1.0 -> FM-1_4310000).
+    Its own prefix, unused on the hub (thefirmwarehub.com/kb/#identity)."""
+    m = VERSION_RE.fullmatch(version)
+    if not m:
+        raise SystemExit(f"version {version}: use X.Y, X.Y.Z or X.Y-suffix")
+    return f"FM-1_43{m[1]}{int(m[2]):02d}{int(m[3] or 0):02d}"
+
+
+PRODUCT = identity(VERSION)
 
 
 def toolchain():
@@ -272,18 +284,16 @@ def mmio_check():
 def main():
     global PRODUCT, VERSION
     ap = argparse.ArgumentParser()
-    ap.add_argument("--release", metavar="X.Y", help="release build: identity FM-1_95Y, version string X.Y (default: the VERSION file)")
+    ap.add_argument("--release", metavar="X.Y", help="release build: the version, which must match the VERSION file (a -suffix may be added)")
     ap.add_argument("--sdk", type=Path, help="JieLi AC79 SDK checkout (default: $AC79_SDK)")
     a = ap.parse_args()
     name = f"{APP}.fwsc"
-    if a.release:                   # one digit each: the identity has room for two (X.Y; a .Z only in the text)
-        m = re.fullmatch(r"(\d)\.(\d)(\.\d)?(-[A-Za-z0-9]+)?", a.release)
-        if not m:
-            raise SystemExit(f"--release {a.release}: use X.Y, X.Y.Z or X.Y-suffix, one digit each")
-        if m[1] + "." + m[2] != VERSION:
+    if a.release:
+        m = VERSION_RE.fullmatch(a.release)
+        if not m or a.release.split("-")[0] != VERSION:
             raise SystemExit(f"--release {a.release}: the VERSION file says {VERSION}; change it first")
-        PRODUCT = "FM-1_95" + m[2]
-        VERSION = m[1] + "." + m[2] + (m[3] or "")
+        PRODUCT = identity(a.release)
+        VERSION = a.release
         name = f"{APP}-{a.release}.fwsc"
     fm1pkg_make.SDK = a.sdk
     for rel, sha in SDK_SHA256.items():          # fail early without the SDK

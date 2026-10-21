@@ -4,7 +4,7 @@
 
 *An independent project. Not made, endorsed or supported by Roland.*
 
-**[Play it in your browser](https://benbadio.github.io/hera-fm1/)** · [Manual](https://benbadio.github.io/hera-fm1/manual.html) · [Install on your FM-1](https://benbadio.github.io/hera-fm1/install.html) · Version 0.1 (identity `FM-1_951`), a preview before 1.0
+**[Play it in your browser](https://benbadio.github.io/hera-fm1/)** · [Manual](https://benbadio.github.io/hera-fm1/manual.html) · [Install on your FM-1](https://benbadio.github.io/hera-fm1/install.html) · Version 0.1 (identity `FM-1_4300100`), a preview before 1.0
 
 HERA turns the FM-1 into a J-6-style chord machine:
 - **100 chord sets**, each mapping a chord to every key.
@@ -160,7 +160,7 @@ The settings page uses plain words: MIDI channel, clock source, hold on step edi
 ## Building
 
 - **GitHub Actions** (`.github/workflows/build.yml`, Ubuntu) builds `hera.fwsc` with JieLi's Linux toolchain and uploads it.
-- **Releases:** the version lives in `VERSION` (now `0.1`; the identity is `FM-1_95` + the minor digit). Push a matching tag, e.g. `git tag v0.1 && git push origin v0.1`, and `.github/workflows/release.yml` builds and signs the package on GitHub with the Firmware Hub's shared workflow, then attaches `hera-0.1.fwsc` to the release.
+- **Releases:** the version lives in `VERSION` (now `0.1`). The package identity follows it: `FM-1_43` + X + YY + ZZ, so 0.1 is `FM-1_4300100` and 1.0 is `FM-1_4310000`. Push a matching tag, e.g. `git tag v0.1 && git push origin v0.1`, and `.github/workflows/release.yml` builds and signs the package on GitHub with the Firmware Hub's shared workflow, then attaches `hera-0.1.fwsc` to the release.
 - **Locally on Linux x86-64:**
   1. `tools/get_toolchain.sh`
   2. Clone the AC79 SDK (tag `AC79NN_SDK_V1.2.1_2023-12-13`) to `~/fw-AC79_AIoT_SDK`.
