@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // HERA Workbench: the real firmware (hera.wasm) on a virtual FM-1, plus an editor and a guided tour.
-import { ID } from './hera_ids.js?v=d8fbde1';
-import { startTour, startTourChapter, tourTick } from './tour.js?v=d8fbde1';
+import { ID } from './hera_ids.js?v=a8ebc26';
+import { startTour, startTourChapter, tourTick } from './tour.js?v=a8ebc26';
 
 const $ = (s) => document.querySelector(s);
 const NOTE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const noteName = (n) => NOTE[n % 12] + (Math.floor(n / 12) - 1);
 
 // ---- the firmware ---------------------------------------------------------------------------------
-const wasm = await WebAssembly.instantiate(await (await fetch('hera.wasm?v=d8fbde1')).arrayBuffer(), {});
+const wasm = await WebAssembly.instantiate(await (await fetch('hera.wasm?v=a8ebc26')).arrayBuffer(), {});
 const E = wasm.instance.exports;
 const u8 = () => new Uint8Array(E.memory.buffer);
 const cstr = (p) => { const m = u8(); let s = ''; while (m[p]) s += String.fromCharCode(m[p++]); return s; };
@@ -306,7 +306,7 @@ function refreshChords(full) {
 
 // phrases
 let phrases = null;
-fetch('data/phrases_6_9.json?v=d8fbde1').then((r) => r.json()).then((j) => { phrases = j; refreshEditor(true); }).catch(() => {});
+fetch('data/phrases_6_9.json?v=a8ebc26').then((r) => r.json()).then((j) => { phrases = j; refreshEditor(true); }).catch(() => {});
 for (let s = 1; s <= 9; s++) {
   const b = el('div', 'cell', `<div class="n">Style ${s}</div>${H.styleName(s)}`);
   b.onclick = () => H.set(ID.J6_P_STYLE, s);

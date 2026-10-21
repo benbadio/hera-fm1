@@ -295,7 +295,12 @@ static void buttons(const j6_status_t *s)
         j6_engine_cmd(J6_CMD_STYLE, 0);
         ui_popup("Phrase", s->style_on ? "off" : "on");
     }
-    if (pr & BTN(BTN_REC)) j6_engine_cmd(J6_CMD_REC, 0);
+    if (pr & BTN(BTN_REC)) {
+        if (s->seq_state == J6_SEQ_STOPPED) ui_popup("Record ready", "press PLAY");
+        else if (s->seq_state == J6_SEQ_PLAYING) ui_popup(s->recording ? "Recording off" : "Recording on", s->recording ? "still playing" : "");
+        else ui_popup("Record off", "");
+        j6_engine_cmd(J6_CMD_REC, 0);
+    }
     if (pr & BTN(BTN_ENV)) {
         j6_engine_cmd(J6_CMD_HOLD, 0);
         if (s->sel_step == J6_NONE) ui_popup("Hold", s->hold ? "off" : "on");
@@ -342,9 +347,10 @@ static void leds(const j6_status_t *s)
         uint32_t len_ms = j6_pattern_step_ticks(j6_engine_pattern(s->pattern)) * 6250u / (s->tempo10 ? s->tempo10 : 1200u);
         flash = (fm1_ms - flash_t0) < len_ms / 2u;
     }
+    uint32_t rec = s->recording || s->seq_state == J6_SEQ_STANDBY || s->seq_state == J6_SEQ_COUNTIN;
     for (k = 0; k < 27u; k++) {
         uint32_t on = (s->keys_lit >> k) & 1u;
-        if (ui.page == PG_SEQ) {               /* the white keys' lights are the steps of this page */
+        if (ui.page == PG_SEQ || rec) {        /* the white keys' lights are the steps of this page (and while recording, on any page: the step that takes your notes flashes) */
             on = (fm1_in.notes >> k) & 1u;
             if (WHITE_STEP[k] >= 0) {
                 uint32_t step = ui.seq_page * 16u + (uint32_t)WHITE_STEP[k];
@@ -402,6 +408,7 @@ static void hera_step(void)
     uint8_t a, b, c;
     j6_engine_status(&s);
     buttons(&s);
+    if (s.recording && s.step_now != J6_NONE && s.sel_step == J6_NONE) ui.seq_page = (uint8_t)(s.step_now / 16u);   /* the lights follow the recording */
     keys(&s);
     encoders(&s);
     while (j6_engine_cmd_space() && midi_get(&a, &b, &c))

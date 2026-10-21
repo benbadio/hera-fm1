@@ -282,7 +282,19 @@ static void draw_top(void)
         q[0] = '>';
         x = h_text(x + 2, 2, q, H_DIM, H_PANEL);
     }
-    h_text(x + 8, 2, PAGE_TITLE[ui.page], H_TXT, H_PANEL);
+    if (st.seq_state == J6_SEQ_STANDBY) {          /* record: say what it is waiting for, as the J-6's blinking PLAY does */
+        h_pill(x + 4, 1, "Press PLAY", 1, H_REC);
+    } else if (st.seq_state == J6_SEQ_COUNTIN) {
+        char c[16];
+        h_cat(h_num(h_cat(c, "Count-in "), (int32_t)st.countin_left), "");
+        h_pill(x + 4, 1, c, 1, H_REC);
+    } else if (st.recording) {
+        char c[16];
+        h_cat(h_num(h_cat(c, "REC step "), st.step_now == J6_NONE ? 1 : (int32_t)st.step_now + 1), "");
+        h_pill(x + 4, 1, c, 1, H_REC);
+    } else {
+        h_text(x + 8, 2, PAGE_TITLE[ui.page], H_TXT, H_PANEL);
+    }
     h_fix1(b, st.tempo10);
     h_text_r(212, 2, b, st.ext_clock ? H_OK : H_TXT, H_PANEL);
     /* transport glyph */
@@ -768,6 +780,7 @@ static uint32_t key_top(void)
 {
     uint32_t h = 2166136261u;
     h = h_mix(h, st.pattern | (uint32_t)st.queued << 8 | (uint32_t)st.seq_state << 16 | (uint32_t)st.recording << 24);
+    h = h_mix(h, st.recording ? (uint32_t)st.step_now : 0u);
     h = h_mix(h, st.tempo10 | (uint32_t)st.ext_clock << 16 | (uint32_t)st.countin_left << 20);
     h = h_mix(h, (st.dirty[st.pattern / 32u] >> (st.pattern % 32u)) & 1u);
     return h_mix(h, ui.page);

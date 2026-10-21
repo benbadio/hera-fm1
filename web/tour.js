@@ -79,7 +79,9 @@ const LESSONS = [
     x: `<p>While it plays, <b>hold PLAY</b> for half a second: everything stops, and all sound fades out, delay and reverb tails included. Handy when a phrase is still holding.</p>`,
     done: () => st().seq !== ID().J6_SEQ_PLAYING && st().voices === 0 },
   { ch: 'Sequencer', t: 'Record in real time', target: '#btn13',
-    x: `<p>Press <b>REC</b>, then <b>PLAY</b>, and play chords along with the pattern. Each one goes into the step that is playing when you press it: a chord replaces what is in the step, a single note adds to it (up to 4). Recording keeps going round the loop, so you can add more each time. Tap PLAY to stop.</p>`,
+    x: `<p>This is how the J-6 records. Press <b>REC</b>: the screen says <b>Press PLAY</b> and the pattern waits. Press <b>PLAY</b> and it starts recording (after the count-in, if you set one in Settings).</p>
+        <p>Watch the lights under the white keys: the flashing one is the step that is playing. Whatever you play goes into <b>that</b> step: a chord replaces what is in it, a single note adds to it (up to 4). A step is long (4 beats by default), so play one chord per step.</p>
+        <p>It keeps going round the loop, adding to what is there. <b>REC</b> again stops recording but the pattern keeps playing; press REC during playback to punch in. <b>PLAY</b> stops everything.</p>`,
     done: () => st().rec === 1 },
 
   { ch: 'Patterns', t: 'Save your pattern', target: '#btn9',
