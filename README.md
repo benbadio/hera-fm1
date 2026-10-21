@@ -10,6 +10,102 @@ Juno's Greek counterpart is Hera.
 
 It is an independent, clean-room recreation of the Roland J-6's *behaviour*. No Roland code, firmware or samples are used. The chord voicings come from the J-6 owner's manual, and the phrase timing for styles 6–9 was measured from a J-6 over MIDI (`capture/`, `tools/derive_phrases.py`). It is not made by, affiliated with or endorsed by Roland.
 
+<p align="center"><img src="docs/screens/all-pages.png" width="720" alt="Every HERA page on the FM-1 screen"></p>
+
+## The screens
+
+The FM-1's colour screen shows everything in plain words.
+- **Top bar:** pattern (with `*` when unsaved), page name, tempo and transport.
+- **Bottom bar:** what the four knobs do, or a short pop-up after any change.
+
+The screenshots come from the host simulator (`tests/run_hera_host.sh`).
+
+### Play
+<img src="docs/screens/play-phrase.png" width="240" align="right" alt="Play page with a phrase running">
+
+The home page.
+- **The chord (or note) you just played, in large text.**
+- The chord set and its genre.
+- The sound.
+- The phrase style and variation in words.
+- Lights for PHRASE, CHORD and HOLD.
+
+With a phrase running, a live **oscilloscope** shows the sound.
+
+<br clear="right">
+
+### Chord map
+<img src="docs/screens/chord-map.png" width="240" align="right" alt="Chord map page">
+
+Which chord is on which key, something the J-6 can't show. Hold **SCL** to open it.
+- Turn **PRESETS** to browse all 100 sets. The set number and genre sit at the top.
+- Black keys are dark rows, white keys light rows, laid out like a keyboard.
+- The key you play lights up, so you can audition every chord before choosing a set.
+
+<br clear="right">
+
+### Phrase
+<img src="docs/screens/phrase.png" width="240" align="right" alt="Phrase page">
+
+Turn **SELECT** for the style and **ALGORITHM** for the variation. Hold **ARP** to open the page.
+
+For the chord and strum styles (6–9), a **piano roll** draws the actual phrase: the timing measured from a J-6, with accents in orange. You can see a variation's rhythm before you hear it.
+
+<br clear="right">
+
+### Sequencer
+<img src="docs/screens/sequencer-edit.png" width="240" align="right" alt="Sequencer page, editing a step">
+
+- **Layout:** 64 steps in 4 pages of 16, shown as a grid of chords and notes. Ties, per-step phrases (a green mark) and the last step are all visible. **OCT − / +** turns pages.
+- **Entering steps:** pick a step with a white key, play keys to enter notes or chords, and press **SEQ** when done.
+- **Moving and editing:** **PRESETS** moves to the next step. Holding **GLO** shows the step tools: copy, paste, insert, clear, double.
+
+<br clear="right">
+
+<img src="docs/screens/sequencer.png" width="240" align="right" alt="Sequencer page while playing">
+
+While it plays, a green frame follows the playhead. The key lights show which steps hold notes.
+
+<br clear="right">
+
+### Patterns
+<img src="docs/screens/patterns.png" width="240" align="right" alt="Patterns page">
+
+All 64 patterns, 8 banks × 8, on one grid (**GLO + SEQ**).
+- **Shown:** the current pattern, patterns with notes, unsaved ones (a dot), and a queued next one (a green frame).
+- **Choosing:** white keys 1–8 pick a pattern, and 9–16 pick a bank.
+
+<br clear="right">
+
+### Sounds
+<img src="docs/screens/sounds.png" width="240" align="right" alt="Sounds page">
+
+64 Juno-style sounds in 8 banks: pads, strings, brass, keys, bass, leads, plucks and effects (**LFO**). Choose them with **PRESETS** or the white keys.
+
+The voice is after Clipper's Juno engine:
+- saw, pulse and sub oscillators, plus noise;
+- a 4-position high-pass;
+- a 24 dB transistor-ladder filter;
+- chorus I, II and I+II.
+
+<br clear="right">
+
+### Effects
+<img src="docs/screens/effects.png" width="240" align="right" alt="Effects page">
+
+Delay and reverb, each with a level and a time (**FX**). With tempo sync on, the delay time reads as a note value.
+
+<br clear="right">
+
+### Settings
+<img src="docs/screens/settings.png" width="240" align="right" alt="Settings page">
+
+Every J-6 menu item in plain words, grouped as Pattern, Keys and chords, MIDI, Sync and System (**EDIT**). Two settings are new in HERA: *Hold on step edit* and *Chord legato*.
+- **PRESETS** chooses an item, and **K1** changes it.
+- Leaving the page saves the settings.
+
+<br clear="right">
+
 ## Using it
 
 | FM-1 | HERA |
