@@ -176,9 +176,10 @@ Use the web [installer](https://benbadio.github.io/hera-fm1/install.html) in Chr
 
 The firmware's changes are listed first for each version; Workbench changes that matter to users have their own list. Every release on the [Releases](../../releases) page carries the same notes.
 
-### 1.1 (not released yet)
+### 1.1
 
 **Firmware**
+- A new boot screen: the HERA name in a bold serif wordmark.
 - Settings has a RESET group: Clear pattern (empties the current pattern's steps) and Factory reset (erases all patterns and settings). Both ask you to hold SAVE.
 
 **Workbench**

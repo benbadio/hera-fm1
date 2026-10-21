@@ -21,7 +21,7 @@ HERA turns the FM-1 into a J-6-style chord machine:
 
 Juno's Greek counterpart is Hera.
 
-> **Version 1.0.** Please [tell us](../../issues) what you find.
+> **Version 1.1.** Please [tell us](../../issues) what you find.
 
 <p align="center"><img src="docs/screens/all-pages.png" width="720" alt="Every HERA page on the FM-1 screen"></p>
 
@@ -189,12 +189,13 @@ If something goes wrong, hold **OCT −** while switching on for the USB rescue.
 ## Credits
 
 - **Ben Badio**: HERA.
-- **[Felucca](https://github.com/hugelton/Felucca)** by **Leo Kuroshita** (@kurogedelic) / **Hügelton Instruments**: the platform HERA runs on (hardware access, USB, the update loader), through **Dinghy**.
-- **[SLOOP](https://github.com/isod89/sloop-fm1)** by isod89: improvements to that platform, and the model for these docs.
+- **[Dinghy](https://github.com/zvenson/dinghy)** by **zvenson**: the starter firmware HERA was built from.
+- **[Felucca](https://github.com/hugelton/Felucca)** by **Leo Kuroshita** (@kurogedelic) / **Hügelton Instruments**: the platform Dinghy is based on, and so HERA: hardware access, USB, the update loader.
+- **[SLOOP](https://github.com/isod89/sloop-fm1)** by isod89: the version of that platform Dinghy carries, and the model for these docs.
 - **[Clipper](https://github.com/isod89/clipper-fm1)** by 3dSam: HERA's Juno-style voice and chorus.
-- **MORPHEUS**, the firmware this repository grew from.
+- **MORPHEUS**, my earlier firmware (also built on Dinghy), whose repository HERA grew from.
 - **[The Firmware Hub](https://thefirmwarehub.com)** (zvenson), and everyone who documented the FM-1.
-- Font: Terminus (SIL OFL 1.1).
+- Fonts: Terminus (the screen) and Playfair Display (the name), both SIL OFL 1.1.
 
 The full list, with licences, is in [LICENSING.md](LICENSING.md).
 

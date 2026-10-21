@@ -19,12 +19,13 @@
 #define APP_NAME "HERA"
 #endif
 #ifndef FELUCCA_ID
-#define FELUCCA_ID "FM-1_4310000"
+#define FELUCCA_ID "FM-1_4310100"
 #endif
 
 /* storage: 65 sectors of 4 KiB in Felucca's data area (patterns 0..63, then the globals) */
 #define APP_STORE_LO 0x00097000u
 #define APP_STORE_HI (APP_STORE_LO + 65u * 0x1000u)
+#include "hera_wordmark.h"
 #include "platform.c"
 
 #include "j6/j6_chord.c"
@@ -396,14 +397,40 @@ static void leds(const j6_status_t *s)
     fm1_led_key(BTN_GLO, ui.glo);
 }
 
+/* the name on the splash: a bold high-contrast serif wordmark (Playfair Display Black), drawn from a 4-bit
+ * coverage bitmap (firmware/gen/hera_wordmark.h, made by tools/gen_wordmark.py) blended from the background to blue */
+static uint16_t blend565(uint16_t bg, uint16_t fg, uint32_t t)   /* t 0..15 */
+{
+    uint32_t r = ((bg >> 11) * (15u - t) + (fg >> 11) * t) / 15u;
+    uint32_t g = (((bg >> 5) & 63u) * (15u - t) + ((fg >> 5) & 63u) * t) / 15u;
+    uint32_t b = ((bg & 31u) * (15u - t) + (fg & 31u) * t) / 15u;
+    return (uint16_t)(r << 11 | g << 5 | b);
+}
+
+static void wordmark(int32_t x0, int32_t y0)
+{
+    uint16_t col[16];
+    uint32_t t, y, x;
+    for (t = 0; t < 16u; t++) col[t] = blend565(H_BG, H_ACC, t);
+    for (y = 0; y < HERA_WM_H; y++) {
+        const unsigned char *row = &hera_wordmark[y * HERA_WM_STRIDE];
+        for (x = 0; x < HERA_WM_W;) {           /* runs of one coverage value are one rectangle */
+            uint32_t a = (x & 1u) ? row[x >> 1] & 15u : row[x >> 1] >> 4, n = 1;
+            while (x + n < HERA_WM_W && (((x + n) & 1u) ? row[(x + n) >> 1] & 15u : row[(x + n) >> 1] >> 4) == a) n++;
+            if (a) cv_rect(x0 + (int32_t)x, y0 + (int32_t)y, (int32_t)n, 1, col[a]);
+            x += n;
+        }
+    }
+}
+
 static void splash(void)
 {
     cv_oy = 0;
     lcd_fill(0, 0, 240, 240, H_BG);
     cv_begin(240, 90, H_BG);
-    h_text_c(120, 10, "HERA", H_ACC, H_BG, 4u);
+    wordmark((240 - HERA_WM_W) / 2, 10);
     h_text_c(120, 76, "chord groovebox", H_DIM, H_BG, 1u);
-    cv_blit(0, 60);
+    cv_blit(0, 56);
     cv_begin(240, 20, H_BG);
     h_text_c(120, 2, "v" APP_VER, H_LINE, H_BG, 1u);
     cv_blit(0, 200);
