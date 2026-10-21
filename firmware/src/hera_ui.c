@@ -42,6 +42,7 @@ typedef struct {
     uint8_t chord_key;                   /* last chord key 0..11 (for the map highlight), 0xFF none */
     uint32_t popup_until;                /* ms */
     char popup[32];
+    uint8_t act_pct;                     /* a settings action being confirmed: 0..100 % of the hold */
     uint32_t key_top, key_body, key_bot, key_scope;
 } hera_ui_t;
 static hera_ui_t ui;
@@ -196,9 +197,13 @@ static void ui_popup(const char *label, const char *value)
 
 /* ---- settings list (human-readable, grouped) ----------------------------------------------------- */
 typedef struct {
-    int16_t id;                          /* J6_P_*, or -1 for a group header */
+    int16_t id;                          /* J6_P_*, -1 for a group header, or HERA_ACT_* for an action */
     const char *label;
 } hera_item_t;
+#define HERA_ACT_CLEAR 1000              /* actions: held SAVE confirms */
+#define HERA_ACT_FACTORY 1001
+#define HERA_HOLD_MS 1500u
+static int is_act(int32_t id) { return id >= HERA_ACT_CLEAR; }
 static const hera_item_t SET_ITEMS[] = {
     {-1, "PATTERN"},
     {J6_P_TEMPO10, "Tempo"},
@@ -228,6 +233,9 @@ static const hera_item_t SET_ITEMS[] = {
     {-1, "SYSTEM"},
     {J6_P_TUNE10, "Tune"},
     {J6_P_USBD, "USB audio level"},
+    {-1, "RESET"},
+    {HERA_ACT_CLEAR, "Clear pattern"},
+    {HERA_ACT_FACTORY, "Factory reset"},
 };
 #define SET_N (sizeof SET_ITEMS / sizeof SET_ITEMS[0])
 
@@ -328,8 +336,13 @@ static void draw_bottom(void)
         return;
     }
     if (ui.page == PG_SETTINGS) {
-        h_text_c(120, 4, "PRESETS: choose   K1: change", H_DIM, H_BG, 1u);
-        h_text_c(120, 22, "Leave the page to save", H_DIM, H_BG, 1u);
+        if (is_act(SET_ITEMS[ui.set_cursor].id)) {
+            h_text_c(120, 4, ui.set_cursor == SET_N - 1u ? "Erases ALL patterns + settings" : "Empties this pattern's steps", H_DIM, H_BG, 1u);
+            h_text_c(120, 22, "Hold SAVE to confirm", H_JRED, H_BG, 1u);
+        } else {
+            h_text_c(120, 4, "PRESETS: choose   K1: change", H_DIM, H_BG, 1u);
+            h_text_c(120, 22, "Leave the page to save", H_DIM, H_BG, 1u);
+        }
         cv_blit(0, 200);
         return;
     }
@@ -726,6 +739,16 @@ static void body_settings(void)
         }
         cv_rect(2, y, 236, 21, cur ? H_PANEL2 : H_BG);
         if (cur) cv_rect(2, y, 3, 21, H_ACC);
+        if (is_act(it->id)) {                  /* an action: held SAVE confirms, the row fills as you hold */
+            uint16_t bg = cur ? H_PANEL2 : H_BG;
+            if (cur && ui.act_pct) {
+                cv_rect(5, y, (233 * (int32_t)ui.act_pct) / 100, 21, H_JRED);
+                bg = H_JRED;
+            }
+            h_text(10, y + 3, it->label, H_TXT, bg);
+            h_text_r(232, y + 3, cur ? "hold SAVE" : "", cur ? H_JRED : H_DIM, bg);
+            continue;
+        }
         h_text(10, y + 3, it->label, H_TXT, cur ? H_PANEL2 : H_BG);
         h_value(b, (uint32_t)it->id, j6_engine_get((uint32_t)it->id));
         h_text_r(232, y + 3, b, cur ? H_ACC : H_DIM, cur ? H_PANEL2 : H_BG);
@@ -734,9 +757,9 @@ static void body_settings(void)
 static uint32_t key_settings(void)
 {
     uint32_t h = 2166136261u, i;
-    h = h_mix(h, ui.set_cursor | (uint32_t)ui.set_top << 8);
+    h = h_mix(h, ui.set_cursor | (uint32_t)ui.set_top << 8 | (uint32_t)ui.act_pct << 16);
     for (i = 0; i < SET_N; i++)
-        if (SET_ITEMS[i].id >= 0) h = h_mix(h, (uint32_t)j6_engine_get((uint32_t)SET_ITEMS[i].id));
+        if (SET_ITEMS[i].id >= 0 && !is_act(SET_ITEMS[i].id)) h = h_mix(h, (uint32_t)j6_engine_get((uint32_t)SET_ITEMS[i].id));
     return h;
 }
 

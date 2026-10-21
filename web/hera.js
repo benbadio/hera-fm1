@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // HERA Workbench: the real firmware (hera.wasm) on a virtual FM-1, plus an editor and a guided tour.
-import { ID } from './hera_ids.js?v=81b67be';
-import { startTour, startTourChapter, tourTick } from './tour.js?v=81b67be';
+import { ID } from './hera_ids.js?v=32e1542';
+import { startTour, startTourChapter, tourTick } from './tour.js?v=32e1542';
 
 const $ = (s) => document.querySelector(s);
 const NOTE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const noteName = (n) => NOTE[n % 12] + (Math.floor(n / 12) - 1);
 
 // ---- the firmware ---------------------------------------------------------------------------------
-const wasm = await WebAssembly.instantiate(await (await fetch('hera.wasm?v=81b67be')).arrayBuffer(), {});
+const wasm = await WebAssembly.instantiate(await (await fetch('hera.wasm?v=32e1542')).arrayBuffer(), {});
 const E = wasm.instance.exports;
 const u8 = () => new Uint8Array(E.memory.buffer);
 const cstr = (p) => { const m = u8(); let s = ''; while (m[p]) s += String.fromCharCode(m[p++]); return s; };
@@ -306,7 +306,7 @@ function refreshChords(full) {
 
 // phrases
 let phrases = null;
-fetch('data/phrases_6_9.json?v=81b67be').then((r) => r.json()).then((j) => { phrases = j; refreshEditor(true); }).catch(() => {});
+fetch('data/phrases_6_9.json?v=32e1542').then((r) => r.json()).then((j) => { phrases = j; refreshEditor(true); }).catch(() => {});
 for (let s = 1; s <= 9; s++) {
   const b = el('div', 'cell', `<div class="n">Style ${s}</div>${H.styleName(s)}`);
   b.onclick = () => H.set(ID.J6_P_STYLE, s);
@@ -366,6 +366,8 @@ $('#tempo').onchange = (e) => H.set(ID.J6_P_TEMPO10, Math.round(+e.target.value 
 $('#last').onchange = (e) => H.set(ID.J6_P_LAST, +e.target.value);
 $('#sqSave').onclick = () => { E.j6_engine_write(0); log('#prLog', `Pattern ${patName(H.status().pattern)} saved (in the browser's FM-1 memory).`); };
 $('#sqClear').onclick = () => { if (confirm('Clear every step of this pattern?')) H.cmd(ID.J6_CMD_PATTERN_CLEAR); };
+$('#setClear').onclick = () => $('#sqClear').click();
+$('#setFactory').onclick = () => $('#prReset').click();
 const stepEls = [];
 for (let s = 0; s < 64; s++) {
   const c = el('div', 'cell');

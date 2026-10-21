@@ -78,6 +78,7 @@ On the Settings page, K1 changes the selected setting and K2 to K4 do nothing.
 |---|---|
 | **SAVE** | Save the current pattern |
 | **GLO + SAVE** | Save all patterns |
+| **SAVE** held (on a RESET item in Settings) | Confirms Clear pattern or Factory reset |
 
 ### The PRESETS knob
 It depends on the page.
@@ -146,6 +147,17 @@ Press **EDIT**, choose with **PRESETS**, change with **K1**. Settings marked *pa
 | Tune | 433.0 to 448.0 Hz | 440.0 | |
 | USB audio level | Volume knob, or 1 to 127 | Volume knob | |
 
+### Reset
+
+At the bottom of the Settings list is a **RESET** group. Choose an item with **PRESETS**, then hold **SAVE** for about a second and a half until the row fills. A tap does nothing.
+
+| Item | What it does |
+|---|---|
+| **Clear pattern** | Empties the steps of the current pattern. Its sound, tempo and settings stay. SAVE keeps the result |
+| **Factory reset** | Erases all 64 patterns and every setting, as when HERA was first installed. It can't be undone |
+
+HERA's patterns and settings survive installing another firmware and coming back, so after a reinstall you may find your old patterns: Factory reset removes them.
+
 ## MIDI and sync
 
 HERA works over USB MIDI. It sends and receives notes on the MIDI channel, and sends and receives program changes (0 to 63 select a pattern) on their own channel. It can send MIDI clock, start and stop, and follow an incoming clock from the source you choose. The details are in [docs/MIDI.md](docs/MIDI.md).
@@ -163,6 +175,14 @@ Use the web [installer](https://benbadio.github.io/hera-fm1/install.html) in Chr
 ## Version history
 
 The firmware's changes are listed first for each version; Workbench changes that matter to users have their own list. Every release on the [Releases](../../releases) page carries the same notes.
+
+### 1.1 (not released yet)
+
+**Firmware**
+- Settings has a RESET group: Clear pattern (empties the current pattern's steps) and Factory reset (erases all patterns and settings). Both ask you to hold SAVE.
+
+**Workbench**
+- The Settings tab has Clear pattern and Factory reset buttons, and the tour has a lesson on starting fresh.
 
 ### 1.0
 

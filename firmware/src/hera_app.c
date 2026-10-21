@@ -188,7 +188,7 @@ static void encoders(const j6_status_t *s)
     for (k = 0; k < 4u; k++) {
         if (!(d = fm1_enc_take(ENC_KNOB1 + k))) continue;
         if (ui.page == PG_SETTINGS) {
-            if (k == 0u) {
+            if (k == 0u && !is_act(SET_ITEMS[ui.set_cursor].id)) {
                 uint32_t id = (uint32_t)SET_ITEMS[ui.set_cursor].id;
                 j6_engine_set(id, j6_engine_get(id) + d * set_step(id));
                 set_popup_param(SET_ITEMS[ui.set_cursor].label, id);
@@ -314,7 +314,27 @@ static void buttons(const j6_status_t *s)
     if (pr & BTN(BTN_LFO)) ui_page(PG_SOUNDS);
     if (pr & BTN(BTN_FX)) ui_page(PG_FX);
     if (pr & BTN(BTN_EDIT)) ui_page(ui.page == PG_SETTINGS ? PG_PLAY : PG_SETTINGS);
-    if (pr & BTN(BTN_SAVE)) {
+    {                                          /* the settings actions: hold SAVE to confirm (a tap does nothing there) */
+        int32_t act = ui.page == PG_SETTINGS && is_act(SET_ITEMS[ui.set_cursor].id) ? SET_ITEMS[ui.set_cursor].id : -1;
+        uint32_t held_ms = (held & BTN(BTN_SAVE)) && act >= 0 && !(btn_long & BTN(BTN_SAVE)) ? fm1_ms - btn_t0[BTN_SAVE] : 0;
+        ui.act_pct = (uint8_t)(held_ms >= HERA_HOLD_MS ? 100u : held_ms * 100u / HERA_HOLD_MS);
+        if ((pr & BTN(BTN_SAVE)) && act >= 0) ui_popup("Keep holding SAVE", "to confirm");
+        if (held_ms >= HERA_HOLD_MS) {
+            btn_long |= BTN(BTN_SAVE);
+            ui.act_pct = 0;
+            if (act == HERA_ACT_CLEAR) {
+                j6_engine_cmd(J6_CMD_PATTERN_CLEAR, 0);
+                ui_popup("Pattern cleared", "SAVE to keep it");
+            } else {
+                j6_engine_factory_reset();
+                ui.seq_page = 0;
+                ui.set_cursor = 1;
+                ui.set_top = 0;
+                ui_popup("Factory reset", "everything erased");
+            }
+        }
+    }
+    if ((pr & BTN(BTN_SAVE)) && !(ui.page == PG_SETTINGS && is_act(SET_ITEMS[ui.set_cursor].id))) {
         char b[12];
         h_pat(b, s->pattern);
         if (j6_engine_write(ui.glo ? 1u : 0u) == 0) ui_popup(ui.glo ? "Saved" : "Saved", ui.glo ? "all patterns" : b);

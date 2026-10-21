@@ -85,7 +85,15 @@ Press **EDIT**. Turn **PRESETS** to choose a setting and **K1** to change it. Le
 - **Hold on step edit**: whether HOLD is released when you start editing a step.
 - **Chord legato**: whether a chord keeps sounding when you move to a neighbouring chord.
 
-## 9. Tempo
+## 9. Starting fresh
+
+Settings has a **RESET** group at the bottom. Turn **PRESETS** to the item you want, then **hold SAVE** until the row fills (about a second and a half). A tap does nothing, so you can't do it by accident.
+- **Clear pattern** empties the steps of the current pattern. Its sound, tempo and settings stay. Press **SAVE** afterwards to keep the empty pattern.
+- **Factory reset** erases all 64 patterns and every setting, and puts HERA back as it was when you first installed it. It can't be undone.
+
+HERA keeps its patterns and settings when you install a different firmware and come back, so a factory reset is also how you start from nothing after reinstalling.
+
+## 10. Tempo
 
 On most pages, turn **PRESETS** for the tempo (hold **GLO** for 0.1 BPM steps). On pages where PRESETS browses something else (chord sets, sounds, patterns, settings, steps), use **HOME** and turn it there.
 

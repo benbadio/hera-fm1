@@ -84,6 +84,9 @@ const LESSONS = [
         <p>It keeps going round the loop, adding to what is there. <b>REC</b> again stops recording but the pattern keeps playing; press REC during playback to punch in. <b>PLAY</b> stops everything.</p>`,
     done: () => st().rec === 1 },
 
+  { ch: 'Patterns', t: 'Start fresh', target: '#btn6',
+    x: `<p>To empty a pattern: press <b>EDIT</b>, turn <b>PRESETS</b> to the bottom of the list (<b>RESET</b>), choose <b>Clear pattern</b>, then <b>hold SAVE</b> until the row fills. Its steps are emptied; its sound and tempo stay.</p>
+        <p><b>Factory reset</b> is next to it and erases every pattern and setting, so it asks you to hold SAVE as well. Press <b>EDIT</b> again to leave the page.</p>` },
   { ch: 'Patterns', t: 'Save your pattern', target: '#btn9',
     x: `<p>Stop playback (tap PLAY), then press <b>SAVE</b>. The <b>*</b> next to the pattern name at the top of the screen goes away.</p>
         <p>On the FM-1 it is kept through power-off. In the browser, use the Project tab to keep it.</p>`,

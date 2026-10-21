@@ -6,8 +6,8 @@
 <title>HERA Workbench</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@800;900&display=swap">
-<link rel="stylesheet" href="hera.css?v=81b67be">
-<link rel="stylesheet" href="fm1.css?v=81b67be">
+<link rel="stylesheet" href="hera.css?v=32e1542">
+<link rel="stylesheet" href="fm1.css?v=32e1542">
 </head>
 <body>
 <main class="wb">
@@ -111,8 +111,14 @@
 
     <div class="pane" id="pane-settings">
       <h2>Settings</h2>
-      <p class="hint">The same list as the device's settings page (EDIT).</p>
+      <p class="hint">The same list as the device's settings page (EDIT). On the device, Clear pattern and Factory reset are at the bottom of that page: choose one with PRESETS and hold SAVE.</p>
       <div class="setlist" id="setList"></div>
+      <h2 style="margin-top:18px">Reset</h2>
+      <div class="toolbar">
+        <button class="btn" id="setClear">Clear this pattern</button>
+        <button class="btn" id="setFactory">Factory reset</button>
+      </div>
+      <p class="hint">Clear pattern empties the steps of the current pattern (its sound, tempo and settings stay). Factory reset erases all 64 patterns and the settings, here in the browser's FM-1 memory.</p>
     </div>
 
     <div class="pane" id="pane-project">
@@ -144,6 +150,6 @@
 </main>
 
 
-<script type="module" src="hera.js?v=81b67be"></script>
+<script type="module" src="hera.js?v=32e1542"></script>
 </body>
 </html>
