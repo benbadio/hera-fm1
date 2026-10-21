@@ -64,8 +64,13 @@ jobs:
 
       - name: Clone the JieLi AC79 SDK
         run: |
-          git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 \
-            https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$HOME/fw-AC79_AIoT_SDK"
+          for i in 1 2 3; do                     # gitee.com drops a clone now and then: try again
+            git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 \
+              https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$HOME/fw-AC79_AIoT_SDK" && break
+            rm -rf "$HOME/fw-AC79_AIoT_SDK"
+            sleep 20
+          done
+          test -d "$HOME/fw-AC79_AIoT_SDK"
 
       - name: Build HERA
         run: |
