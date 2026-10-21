@@ -1,0 +1,22 @@
+name: Release HERA
+
+# Push a tag vX.Y (matching the VERSION file) and the hub's shared workflow builds HERA on GitHub,
+# signs a build attestation for the package and attaches it to the release of that tag.
+# The Firmware Hub then shows "Built from source on GitHub" (thefirmwarehub.com/kb/#sign).
+# Do not replace or add the .fwsc by hand afterwards: the hub checks its SHA-256 against the signed one.
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    uses: zvenson/fm1-build/.github/workflows/build.yml@v1
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    with:
+      build: ./build.sh --release "${GITHUB_REF_NAME#v}"
+      packages: build/*.fwsc
+      test: CC=clang sh tests/j6/run_tests.sh

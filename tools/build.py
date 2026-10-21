@@ -49,8 +49,8 @@ SDK_SHA256 = {
 }
 
 APP = "hera"                        # firmware/src/<APP>_app.c, build/<APP>.bin / .fwsc
-PRODUCT = "FM-1_950"                # HERA's package identity (FM-1_95N: N = minor version; docs/MAKE-IT-YOURS.md)
-VERSION = None                      # APP_VER for release builds
+VERSION = (SRC / "VERSION").read_text().strip()   # X.Y, the one place it is set
+PRODUCT = "FM-1_95" + VERSION.split(".")[1][0]    # HERA's package identity (FM-1_95N: N = minor version; docs/MAKE-IT-YOURS.md)
 
 
 def toolchain():
@@ -153,7 +153,7 @@ def build_loader():
 # ---- app
 
 def build_app():
-    flags = [*CFLAGS, "-Ifirmware/hal", "-Ifirmware/src", "-Ifirmware/src/dsp", "-Ifirmware/gen", "-Ifirmware/src/j6", f'-DFELUCCA_ID="{PRODUCT}"', f'-DAPP_VER="{VERSION or "0.0"}"']
+    flags = [*CFLAGS, "-Ifirmware/hal", "-Ifirmware/src", "-Ifirmware/src/dsp", "-Ifirmware/gen", "-Ifirmware/src/j6", f'-DFELUCCA_ID="{PRODUCT}"', f'-DAPP_VER="{VERSION}"']
     cmds = [("cc", "-c", FW / "crt0.S", "-o", OUT / "crt0.o"),
             ("cc", "-c", FW / "hal" / "fm1_vec.S", "-o", OUT / "fm1_vec.o"),
             ("cc", "-c", FW / "hal" / "fm1_isr.S", "-o", OUT / "fm1_isr.o"),
@@ -272,7 +272,7 @@ def mmio_check():
 def main():
     global PRODUCT, VERSION
     ap = argparse.ArgumentParser()
-    ap.add_argument("--release", metavar="X.Y", help="release build: identity FM-1_95Y, version string X.Y")
+    ap.add_argument("--release", metavar="X.Y", help="release build: identity FM-1_95Y, version string X.Y (default: the VERSION file)")
     ap.add_argument("--sdk", type=Path, help="JieLi AC79 SDK checkout (default: $AC79_SDK)")
     a = ap.parse_args()
     name = f"{APP}.fwsc"
@@ -280,6 +280,8 @@ def main():
         m = re.fullmatch(r"(\d)\.(\d)(\.\d)?(-[A-Za-z0-9]+)?", a.release)
         if not m:
             raise SystemExit(f"--release {a.release}: use X.Y, X.Y.Z or X.Y-suffix, one digit each")
+        if m[1] + "." + m[2] != VERSION:
+            raise SystemExit(f"--release {a.release}: the VERSION file says {VERSION}; change it first")
         PRODUCT = "FM-1_95" + m[2]
         VERSION = m[1] + "." + m[2] + (m[3] or "")
         name = f"{APP}-{a.release}.fwsc"

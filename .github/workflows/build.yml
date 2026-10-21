@@ -136,3 +136,36 @@ jobs:
             web
             !web/src
             !web/build.sh
+
+  pages:
+    name: Publish the HERA Workbench (GitHub Pages)
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [host-test, workbench]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download the Workbench
+        uses: actions/download-artifact@v4
+        with:
+          name: hera-workbench
+          path: site
+
+      - name: Set up Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

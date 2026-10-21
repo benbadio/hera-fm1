@@ -19,7 +19,7 @@
 #define APP_NAME "HERA"
 #endif
 #ifndef FELUCCA_ID
-#define FELUCCA_ID "FM-1_950"
+#define FELUCCA_ID "FM-1_951"
 #endif
 
 /* storage: 65 sectors of 4 KiB in Felucca's data area (patterns 0..63, then the globals) */

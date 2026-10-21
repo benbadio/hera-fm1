@@ -4,6 +4,8 @@
 
 *An independent project. Not made, endorsed or supported by Roland.*
 
+**[Play it in your browser](https://benbadio.github.io/hera-fm1/)** · [Manual](https://benbadio.github.io/hera-fm1/manual.html) · [Install on your FM-1](https://benbadio.github.io/hera-fm1/install.html) · Version 0.1 (identity `FM-1_951`), a preview before 1.0
+
 HERA turns the FM-1 into a J-6-style chord machine:
 - **100 chord sets**, each mapping a chord to every key.
 - **9 phrase styles × 12 variations**: arpeggios, rhythms, and chord and strum phrases.
@@ -127,14 +129,14 @@ Every J-6 menu item in plain words, grouped as Pattern, Keys and chords, MIDI, S
 
 ## The Workbench (in your browser)
 
-`web/` is the **HERA Workbench**, modelled on M-VAVE's FM1 Open Workbench:
+**Open it at [benbadio.github.io/hera-fm1](https://benbadio.github.io/hera-fm1/).** `web/` is the **HERA Workbench**, modelled on M-VAVE's FM1 Open Workbench:
 - **The real firmware in the browser:** HERA compiled to WebAssembly on a virtual FM-1, playable with the mouse, the computer keyboard or a MIDI keyboard.
 - **An editor** with tabs for sounds, chord sets (with every chord's notes), phrases (with piano rolls), the 64-step grid, settings, and projects (save in the browser, export / import files).
 - **A guided tour** in the order of the J-6 manual. It highlights each control and moves on by itself when you've done the step.
 - **A manual** (`manual.html`) with "to do this, press that" tables.
 - **A Web MIDI installer** (`install.html`) for HERA and for restoring the factory V15.
 
-To run it locally, build it with `sh web/build.sh` (needs LLVM with wasm32: `brew install llvm lld`), then serve `web/` with any static server, e.g. `python3 -m http.server --directory web`. CI also packages it as the `hera-workbench` artifact.
+To run it locally, build it with `sh web/build.sh` (needs LLVM with wasm32: `brew install llvm lld`), then serve `web/` with any static server, e.g. `python3 -m http.server --directory web`. CI also packages it as the `hera-workbench` artifact, and every push to `main` publishes it to GitHub Pages with the latest firmware in the installer.
 
 ## Using it
 
@@ -158,6 +160,7 @@ The settings page uses plain words: MIDI channel, clock source, hold on step edi
 ## Building
 
 - **GitHub Actions** (`.github/workflows/build.yml`, Ubuntu) builds `hera.fwsc` with JieLi's Linux toolchain and uploads it.
+- **Releases:** the version lives in `VERSION` (now `0.1`; the identity is `FM-1_95` + the minor digit). Push a matching tag, e.g. `git tag v0.1 && git push origin v0.1`, and `.github/workflows/release.yml` builds and signs the package on GitHub with the Firmware Hub's shared workflow, then attaches `hera-0.1.fwsc` to the release.
 - **Locally on Linux x86-64:**
   1. `tools/get_toolchain.sh`
   2. Clone the AC79 SDK (tag `AC79NN_SDK_V1.2.1_2023-12-13`) to `~/fw-AC79_AIoT_SDK`.
@@ -173,7 +176,11 @@ Install it like any open FM-1 firmware:
 - the Web MIDI installer, or
 - `python3 tools/fm1_install.py build/hera.fwsc`.
 
-The factory V15 restore and the USB rescue (hold **OCT −** while switching on) stay available.
+The factory V15 restore and the USB rescue (hold **OCT −** while switching on) stay available. HERA includes Felucca's update loader, so any other firmware, or V15, installs on top of it in the usual way.
+
+### What HERA keeps
+
+HERA keeps its 64 patterns and its global settings in its own area of the FM-1's flash (65 sectors of 4 KiB). It doesn't read the projects, presets or samples of V15 or of other firmwares. Installing another firmware can overwrite HERA's patterns, and there's no way yet to copy them off the FM-1, so treat patterns on the device as temporary for now.
 
 ## Credits and licence
 GPL-3.0-only. See `LICENSING.md`.
