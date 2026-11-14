@@ -225,3 +225,5 @@ How it's built, and where the details are.
 HERA is a behavioral recreation of the Roland AIRA Compact J-6. It contains no Roland code, firmware or samples, and it is not made by, affiliated with or endorsed by Roland Corporation.
 
 "Roland", "AIRA", "J-6" and "JUNO" are trademarks of Roland Corporation; "M-VAVE" and "FM-1" belong to their owners. These names are used only to say what HERA works like and what it runs on.
+
+You can also try HERA in the browser, no flashing needed, in the free community [FM-1 Emulator](https://fm1-emulator.atst.tools/).
